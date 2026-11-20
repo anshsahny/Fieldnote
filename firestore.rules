@@ -1,0 +1,97 @@
+rules_version = '2';
+
+// Fieldnote Firestore rules (P0 baseline; P2 adds emulator tests with @firebase/rules-unit-testing).
+// Model: users/{uid} holds { orgId, role: 'tech' | 'dispatcher' }. Everything else lives under
+// orgs/{orgId}/... and is visible only to members of that org.
+// users/{uid} docs are provisioned by the seed script (Admin SDK), never by clients, so a client
+// can't pick its own org or promote itself to dispatcher.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function inOrg(orgId) {
+      return hasProfile() && profile().orgId == orgId;
+    }
+
+    function isDispatcher(orgId) {
+      return inOrg(orgId) && profile().role == 'dispatcher';
+    }
+
+    // Ledger rows are metadata only (no prompt/response content), small, and typed.
+    // ts is client-set because iOS logs events offline and syncs them later.
+    function validInferenceEvent(d) {
+      return d.keys().hasAll(['feature', 'platform', 'source', 'latencyMs', 'ts'])
+        && d.keys().hasOnly(['feature', 'platform', 'source', 'latencyMs', 'promptTokensEst',
+                             'ts', 'model', 'mode', 'ok'])
+        && d.feature is string && d.feature.size() <= 64
+        && d.platform in ['ios', 'web']
+        && d.source in ['ON_DEVICE', 'IN_CLOUD', 'NONE']
+        && d.latencyMs is number && d.latencyMs >= 0 && d.latencyMs < 600000
+        && d.ts is timestamp
+        && (!('promptTokensEst' in d) || (d.promptTokensEst is int && d.promptTokensEst >= 0
+                                          && d.promptTokensEst < 1000000))
+        && (!('model' in d) || (d.model is string && d.model.size() <= 128))
+        && (!('mode' in d) || (d.mode is string && d.mode.size() <= 32))
+        && (!('ok' in d) || d.ok is bool);
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /orgs/{orgId} {
+      allow read: if inOrg(orgId);
+      allow write: if false;
+
+      // Fix packs: everyone in the org reads; only dispatchers create/publish.
+      match /fixpacks/{packId} {
+        allow read: if inOrg(orgId);
+        allow create, update, delete: if isDispatcher(orgId);
+      }
+
+      // Jobs: dispatchers create/assign/edit/delete; techs may only touch progress fields
+      // (so a tech can't reassign a job or rewrite the customer/address).
+      match /jobs/{jobId} {
+        allow read: if inOrg(orgId);
+        allow create, delete: if isDispatcher(orgId);
+        allow update: if isDispatcher(orgId)
+          || (inOrg(orgId)
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['status', 'equipment', 'updatedAt']));
+
+        // Diagnosis sessions (may be created offline and synced later).
+        match /sessions/{sessionId} {
+          allow read, create, update: if inOrg(orgId);
+          allow delete: if isDispatcher(orgId);
+        }
+      }
+
+      // Customer reports written by the field app; dispatchers read them in the inbox.
+      match /reports/{reportId} {
+        allow read, create, update: if inOrg(orgId);
+        allow delete: if isDispatcher(orgId);
+      }
+
+      // Hybrid Ledger: metadata only. Clients append; only dispatchers can read the ledger.
+      match /inferenceEvents/{eventId} {
+        allow create: if inOrg(orgId) && validInferenceEvent(request.resource.data);
+        allow read: if isDispatcher(orgId);
+        allow update, delete: if false;
+      }
+    }
+
+    // Default deny for anything not matched above.
+  }
+}
