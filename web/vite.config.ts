@@ -5,7 +5,9 @@ import react from '@vitejs/plugin-react';
 // applied on localhost (see src/lib/appCheckDebug.ts).
 export default defineConfig({
   plugins: [react()],
-  server: { host: 'localhost', port: 5173, strictPort: true },
+  // fs.allow '..': the app imports shared/prompts/*.md, content/samples/*, and
+  // remoteconfig.template.json from the repo root (single source for both platforms).
+  server: { host: 'localhost', port: 5173, strictPort: true, fs: { allow: ['..'] } },
   preview: { host: 'localhost', port: 4173, strictPort: true },
   build: { sourcemap: false },
   test: {

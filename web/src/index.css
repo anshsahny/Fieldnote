@@ -117,7 +117,7 @@ a {
 main {
   flex: 1;
   width: 100%;
-  max-width: 880px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 32px 16px;
 }
@@ -195,6 +195,84 @@ h2 {
   font-size: 0.85rem;
   border-top: 1px solid var(--border);
   background: var(--surface);
+}
+
+.spike {
+  max-width: none;
+}
+
+.spike-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+button,
+select {
+  font: inherit;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+button {
+  background: var(--brand);
+  color: var(--brand-contrast);
+  border-color: var(--brand);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+select {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.file-label {
+  margin-left: 12px;
+  font-size: 0.875rem;
+}
+
+.file-label input {
+  margin-left: 6px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+td pre {
+  margin: 0;
+  white-space: pre-wrap;
+  max-width: 420px;
+  font-size: 0.8rem;
 }
 
 @media (max-width: 520px) {

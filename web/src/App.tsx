@@ -1,5 +1,12 @@
+import { lazy, Suspense } from 'react';
 import { Link, Route, Routes } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
+
+// Dev-only debug page: in production builds this branch is dropped, so the spike code
+// (and its real AI calls) never ships to Hosting.
+const SpikePage = import.meta.env.DEV
+  ? lazy(() => import('./pages/spike/SpikePage').then((m) => ({ default: m.SpikePage })))
+  : null;
 
 function NotFound() {
   return (
@@ -30,6 +37,16 @@ export function App() {
       <main id="main" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          {SpikePage && (
+            <Route
+              path="/spike"
+              element={
+                <Suspense fallback={<p>Loading…</p>}>
+                  <SpikePage />
+                </Suspense>
+              }
+            />
+          )}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
