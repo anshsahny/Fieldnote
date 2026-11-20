@@ -1,0 +1,63 @@
+# ---------- Secrets (never commit) ----------
+GoogleService-Info.plist
+firebase-web-config.txt
+.local-secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.xcconfig.local
+Secrets.xcconfig
+*.debugtoken
+service-account*.json
+*-firebase-adminsdk-*.json
+
+# ---------- Node / web ----------
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+playwright-report/
+test-results/
+blob-report/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- Firebase ----------
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+database-debug.log*
+pubsub-debug.log*
+.runtimeconfig.json
+
+# ---------- Xcode / Swift ----------
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+.swiftpm/
+.build/
+timeline.xctimeline
+playground.xcworkspace
+
+# ---------- Manufacturer PDFs (store URLs in content/sources.json instead) ----------
+content/**/*.pdf
+*.manual.pdf
+
+# ---------- OS / editors ----------
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
