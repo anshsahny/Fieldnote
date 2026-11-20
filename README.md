@@ -7,8 +7,10 @@ The cloud turns manufacturer manuals into compact, validated **fix packs**. The 
 with zero bars in a basement. The web console uses Chrome's on-device Gemini Nano to pre-triage
 customer photos of error displays before dispatch.
 
-> **Status:** Phase 0 (setup) complete. Firebase, App Check, Firestore rules, and Remote Config are
-> wired on both platforms; AI features land in Phase 1. Plan: [`PLAN.md`](PLAN.md).
+> **Status:** Phase 1 (hybrid spikes) passed its GO gate on real hardware. On-device inference works
+> on the iPhone (Apple Foundation Models via Firebase AI Logic, including in airplane mode) and in Chrome
+> (Gemini Nano, text + image), with cloud fallback on both. The product features come next. Plan:
+> [`PLAN.md`](PLAN.md) · P1 results: [`docs/phases/P1-hybrid-spikes.md`](docs/phases/P1-hybrid-spikes.md).
 
 ## Repo layout
 
@@ -83,6 +85,10 @@ npm run test:e2e   # Playwright smoke test (uses your installed Chrome)
 ```
 
 ### 3. iOS app
+The app uses **firebase-ios-sdk 12.19.3** on purpose: it is the last release with Firebase AI Logic's
+hybrid API (`HybridModel` / `FirebaseAI.SystemLanguageModel`), which 13.0 removed. On-device inference
+needs an iPhone with Apple Intelligence enabled and its model downloaded.
+
 ```bash
 open ios/Fieldnote.xcodeproj
 ```
@@ -94,6 +100,12 @@ Pick your team under *Signing & Capabilities* (or set `DEVELOPMENT_TEAM` and the
 xcodebuild -project ios/Fieldnote.xcodeproj -scheme Fieldnote \
   -destination 'platform=iOS Simulator,name=iPhone 17' test
 ```
+
+### Hybrid spikes (debug builds only)
+- Web: `npm run dev` in `web/`, then open http://localhost:5173/spike in Chrome and click **Run all**
+  in each mode. Each row shows the SDK-reported `inferenceSource` and latency.
+- iOS: **Debug → Hybrid spikes** in the app, or headless with launch arguments
+  `-FNRunSpikes all` / `-FNRunSpikes offline` (results print as `FNSPIKE {json}` lines).
 
 ### 4. Firebase backend
 ```bash
