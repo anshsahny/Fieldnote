@@ -1,0 +1,69 @@
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import {
+  getToken,
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+  type AppCheck,
+} from 'firebase/app-check';
+import { firebaseOptionsFrom, parsePublicEnv } from '../lib/env';
+import { resolveAppCheckDebugToken } from '../lib/appCheckDebug';
+
+declare global {
+  // Read by the App Check SDK at initializeAppCheck() time.
+  var FIREBASE_APPCHECK_DEBUG_TOKEN: string | boolean | undefined;
+}
+
+export interface FirebaseClient {
+  app: FirebaseApp;
+  appCheck: AppCheck;
+  projectId: string;
+  appCheckMode: 'debug' | 'recaptcha-enterprise';
+}
+
+let client: FirebaseClient | undefined;
+
+/**
+ * Initializes Firebase + App Check exactly once. App Check must be initialized before any
+ * Firebase AI Logic / Firestore call (App Check is enforced for AI Logic in this project).
+ */
+export function getFirebase(): FirebaseClient {
+  if (client) return client;
+
+  const env = parsePublicEnv(import.meta.env as unknown as Record<string, unknown>);
+  const app = initializeApp(firebaseOptionsFrom(env));
+
+  const debugToken = resolveAppCheckDebugToken({
+    isDev: import.meta.env.DEV,
+    hostname: globalThis.location?.hostname ?? '',
+    // Only defined under `vite dev`; production builds never load .env.development.local.
+    token: import.meta.env.DEV ? import.meta.env.VITE_APPCHECK_DEBUG_TOKEN : undefined,
+  });
+  if (debugToken !== undefined) {
+    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
+  }
+
+  const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(env.VITE_RECAPTCHA_SITE_KEY),
+    isTokenAutoRefreshEnabled: true,
+  });
+
+  client = {
+    app,
+    appCheck,
+    projectId: env.VITE_FIREBASE_PROJECT_ID,
+    appCheckMode: debugToken === undefined ? 'recaptcha-enterprise' : 'debug',
+  };
+  return client;
+}
+
+export type AppCheckStatus = { ok: true } | { ok: false; error: string };
+
+/** Smoke check: can this client obtain an App Check token? (No AI call.) */
+export async function checkAppCheck(appCheck: AppCheck): Promise<AppCheckStatus> {
+  try {
+    const result = await getToken(appCheck, false);
+    return result.token ? { ok: true } : { ok: false, error: 'Empty App Check token' };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
