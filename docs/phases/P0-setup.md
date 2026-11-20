@@ -51,13 +51,20 @@
 7. Walk you through the first iPhone run (select your Personal Team; trust the developer certificate on the iPhone: Settings → General → VPN & Device Management).
 
 ## Acceptance checks
-- [ ] `cd web && npm run build && npm test` pass (empty test OK).
-- [ ] iOS project builds for Simulator and runs on the iPhone (blank screen OK).
-- [ ] Firestore rules and Remote Config deployed.
-- [ ] Repo public, About shows Apache-2.0, config files and tokens not in git (`git status` clean of them).
-- [ ] Agent skills installed and listed in `docs/agent-skills.md`.
+- [x] `cd web && npm run build && npm test` pass (empty test OK).
+- [x] iOS project builds for Simulator and runs on the iPhone (blank screen OK).
+- [x] Firestore rules and Remote Config deployed.
+- [x] Repo public, About shows Apache-2.0, config files and tokens not in git (`git status` clean of them).
+- [x] Agent skills installed and listed in `docs/agent-skills.md`.
 
-## Checkpoint report (fill in)
-- Project ID / bundle ID / repo URL: …
-- Model names chosen: …
-- Anything blocked: …
+## Checkpoint report (filled in 2026-11-20)
+- **Project ID / bundle ID / repo URL:** `fieldnote-c28dc` / `com.anshsahny.fieldnote` (Personal Team `655S9W994A`) / https://github.com/anshsahny/Fieldnote
+- **Model names chosen:** `cloud_model_fast` = `gemini-3.8-flash`, `cloud_model_compile` = `gemini-4-hydrogen` (stable, no billing required; verified on the models page 2026-11-19).
+- **Anything blocked:** nothing.
+- **Evidence:**
+  - Web: 13 Vitest tests pass; `npm run build` (tsc + Vite + dist secret scan) passes; Playwright smoke passes; App Check token acquired on localhost with the `chrome-localhost` debug token.
+  - iOS: 7 Swift Testing tests (9 cases) pass on the iPhone 17 Simulator (iOS 27.2); App Check token acquired on the Simulator (simulator token) and on the iPhone (device token, confirmed by the user).
+  - Deploys: Firestore rules + indexes released; Remote Config template live (18 parameters in 4 groups).
+  - Secrets: 6 secret files gitignored with `.example` twins; committed files scanned for the actual secret values (clean).
+  - Agent skills: `firebase@firebase` v1.1.0 (14 skills + MCP server) at project scope; rules auditor used on `firestore.rules` (2 fixes).
+- **Open items carried forward:** GitHub topics not set yet (description and license are). App Attest entitlement deferred (Release builds aren't distributed). Rules emulator tests are P2. Free signing expires after 7 days: re-run on the iPhone before filming (Sat Nov 28) and before submission.

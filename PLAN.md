@@ -237,3 +237,10 @@ Code: validate `choice ∈ allowed`; if `unclear` or confidence < threshold (Rem
 
 ## 11. Progress log
 _(Claude Code appends: date, phase, what's done, test status, open issues.)_
+
+**Nov 19–20 · P0 Setup: complete (awaiting approval to start P1)**
+- Done: secrets gitignored + `.example` twins + `scripts/setup-local-secrets.mjs`; web console scaffold (Vite/React/TS) with Firebase + App Check (reCAPTCHA Enterprise, localhost debug token); iOS app via XcodeGen with firebase-ios-sdk 13.2.0 and App Check debug provider; Firestore rules/indexes and Remote Config deployed; Firebase agent skills installed at project scope; README extended.
+- Tests: web 13/13 (Vitest), build + dist secret scan OK, Playwright smoke OK; iOS 7 tests (9 cases) OK on the Simulator.
+- Verified live: App Check tokens on Chrome localhost, iOS Simulator, and the real iPhone.
+- Open: GitHub topics; App Attest entitlement (deferred); rules emulator tests (P2); 7-day free-signing renewal before filming/submission.
+- P1 heads-up: use limited-use App Check tokens for AI Logic; the iOS `HybridModel` / `SystemLanguageModel` API is in the hybrid get-started doc (verified 2026-11-19).
