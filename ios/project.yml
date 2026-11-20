@@ -1,0 +1,100 @@
+# XcodeGen spec: the source of truth for ios/Fieldnote.xcodeproj.
+# Regenerate after editing:  cd ios && xcodegen generate
+# Don't change build settings in Xcode's UI; they are overwritten on the next generate.
+name: Fieldnote
+
+options:
+  bundleIdPrefix: com.anshsahny
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: 655S9W994A
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "6.0"
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "13.2.0"
+
+targets:
+  Fieldnote:
+    type: application
+    platform: iOS
+    sources:
+      - path: Fieldnote
+    info:
+      path: Fieldnote/Info.plist
+      properties:
+        CFBundleDisplayName: Fieldnote
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+        # App Check debug tokens. Filled from the gitignored Config/Secrets.xcconfig in Debug
+        # builds only; empty in Release. See Fieldnote/Firebase/AppCheckDebugToken.swift.
+        FNAppCheckDebugTokenSimulator: $(FN_APPCHECK_DEBUG_TOKEN_SIMULATOR)
+        FNAppCheckDebugTokenDevice: $(FN_APPCHECK_DEBUG_TOKEN_DEVICE)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.anshsahny.fieldnote
+        PRODUCT_NAME: Fieldnote
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+    dependencies:
+      - package: Firebase
+        product: FirebaseAILogic
+      - package: Firebase
+        product: FirebaseAppCheck
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseRemoteConfig
+
+  FieldnoteTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: FieldnoteTests
+    dependencies:
+      - target: Fieldnote
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.anshsahny.fieldnote.tests
+
+schemes:
+  Fieldnote:
+    build:
+      targets:
+        Fieldnote: all
+        FieldnoteTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - FieldnoteTests
+    archive:
+      config: Release

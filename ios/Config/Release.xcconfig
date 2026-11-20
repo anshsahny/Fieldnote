@@ -1,0 +1,3 @@
+// Release configuration: never carries App Check debug tokens.
+FN_APPCHECK_DEBUG_TOKEN_SIMULATOR =
+FN_APPCHECK_DEBUG_TOKEN_DEVICE =

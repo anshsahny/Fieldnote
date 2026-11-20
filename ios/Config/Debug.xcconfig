@@ -1,0 +1,5 @@
+// Debug configuration.
+// Secrets.xcconfig is gitignored (generate it with: node scripts/setup-local-secrets.mjs).
+// The `?` makes the include optional, so a fresh clone still builds; App Check then falls back
+// to a generated debug token that the Xcode console prints for you to register.
+#include? "Secrets.xcconfig"
