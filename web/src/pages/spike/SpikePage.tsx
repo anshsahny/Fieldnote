@@ -31,6 +31,7 @@ export function SpikePage() {
   const [rows, setRows] = useState<SpikeRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string>();
+  const [copied, setCopied] = useState(false);
   const image = useRef<Part | null>(null);
   const [imageLabel, setImageLabel] = useState('sample: customer-photo-led.jpg');
 
@@ -65,6 +66,17 @@ export function SpikePage() {
     }
     window.__fieldnoteSpike = { ...window.__fieldnoteSpike, rows: [...next, ...(window.__fieldnoteSpike?.rows ?? [])] };
     setBusy(null);
+  }
+
+  async function copyResults() {
+    const summary = {
+      userAgent: navigator.userAgent.match(/Chrome\/[\d.]+/)?.[0] ?? navigator.userAgent,
+      availability,
+      rows: rows.map(({ label, mode, source, latencyMs, pass, check }) => ({ label, mode, source, latencyMs, pass, check })),
+    };
+    await navigator.clipboard.writeText(JSON.stringify(summary, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   async function onFile(file?: File) {
@@ -130,7 +142,12 @@ export function SpikePage() {
         ))}
       </div>
       <p aria-live="polite" className="lede" data-testid="spike-busy">
-        {busy ?? (config ? 'Ready.' : 'Loading Remote Config…')}
+        {busy ?? (config ? 'Ready.' : 'Loading Remote Config…')}{' '}
+        {rows.length > 0 && !busy && (
+          <button type="button" className="secondary" onClick={copyResults}>
+            {copied ? 'Copied' : 'Copy results'}
+          </button>
+        )}
       </p>
 
       <div className="table-wrap">
