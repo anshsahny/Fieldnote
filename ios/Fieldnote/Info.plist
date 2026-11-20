@@ -26,6 +26,8 @@
 	<string>$(FN_APPCHECK_DEBUG_TOKEN_SIMULATOR)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Fieldnote reads equipment nameplates and error displays with the camera. Photos stay on your iPhone.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

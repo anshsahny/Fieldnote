@@ -20,7 +20,7 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Diagnose with zero bars.")
                             .font(.title2.bold())
-                        Text("Phase 0 placeholder. Firebase and App Check are wired; on-device AI arrives in Phase 1.")
+                        Text("Phase 1 build. Firebase, App Check, and hybrid inference are wired; the technician flow arrives in Phase 3.")
                             .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
@@ -35,11 +35,20 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                     }
                     LabeledContent("Debug token", value: FirebaseBootstrap.debugTokenSource.rawValue)
-                    LabeledContent("AI Logic", value: "Not called yet (Phase 1)")
+                    LabeledContent("On-device model", value: AIService.onDeviceAvailability)
                 }
+
+                #if DEBUG
+                Section("Debug") {
+                    NavigationLink("Hybrid spikes") { SpikeView() }
+                }
+                #endif
             }
             .navigationTitle("Fieldnote")
             .task { await refreshAppCheck() }
+            #if DEBUG
+            .task { await SpikeAutomation.runIfRequested() }
+            #endif
             .refreshable { await refreshAppCheck() }
         }
     }

@@ -25,9 +25,11 @@ settings:
     CURRENT_PROJECT_VERSION: "1"
 
 packages:
+  # Pinned to 12.x on purpose: 12.13–12.19 is the line with Firebase AI Logic hybrid inference
+  # (HybridModel / FirebaseAI.SystemLanguageModel). 13.0.0 removed it. See PLAN.md Decision log.
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk
-    from: "13.2.0"
+    exactVersion: "12.19.3"
 
 targets:
   Fieldnote:
@@ -35,6 +37,14 @@ targets:
     platform: iOS
     sources:
       - path: Fieldnote
+      # Single source of truth shared with the web app, copied into the bundle at build time.
+      - path: ../shared/prompts
+        type: folder
+        buildPhase: resources
+      - path: ../remoteconfig.template.json
+        buildPhase: resources
+      - path: ../content/samples/nameplate-gmvc96.png
+        buildPhase: resources
     info:
       path: Fieldnote/Info.plist
       properties:
@@ -47,6 +57,7 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: Fieldnote reads equipment nameplates and error displays with the camera. Photos stay on your iPhone.
         # App Check debug tokens. Filled from the gitignored Config/Secrets.xcconfig in Debug
         # builds only; empty in Release. See Fieldnote/Firebase/AppCheckDebugToken.swift.
         FNAppCheckDebugTokenSimulator: $(FN_APPCHECK_DEBUG_TOKEN_SIMULATOR)
