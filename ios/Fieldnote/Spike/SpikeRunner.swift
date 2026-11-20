@@ -173,12 +173,19 @@ final class SpikeRunner {
         Self.log(["event": "done", "passed": "\(results.filter(\.pass).count)/\(results.count)"])
     }
 
-    /// Airplane-mode run (launch arg -FNRunSpikes offline): the same prompts must still answer.
+    /// Airplane-mode run (launch arg -FNRunSpikes offline): the same prompts must still answer
+    /// on-device, including a cloud-first route, which must fall back to the on-device model.
     func runOffline() async {
         await loadConfig()
-        if let sample = Self.sampleNameplate() { await runNameplate(image: sample, label: "offline") }
-        await runStructured(times: 3)
-        Self.log(["event": "done", "passed": "\(results.filter(\.pass).count)/\(results.count)"])
+        if let sample = Self.sampleNameplate() {
+            await runNameplate(image: sample, label: "offline, on-device first", route: .preferOnDevice)
+            await runNameplate(image: sample, label: "offline, cloud first", route: .preferInCloud)
+        }
+        await runStructured(times: 5)
+        await runTools(route: .preferOnDevice)
+        let onDevice = results.filter { $0.source.hasPrefix("ON_DEVICE") }.count
+        Self.log(["event": "done", "passed": "\(results.filter(\.pass).count)/\(results.count)",
+                  "onDeviceRows": "\(onDevice)/\(results.count)"])
     }
 
     // MARK: Helpers
