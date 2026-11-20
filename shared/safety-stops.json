@@ -1,0 +1,35 @@
+{
+  "$comment": "Universal safety stops added to every fix pack. The validator requires all of these IDs. Triggers are matched against the technician's notes by deterministic code (never by the model) before any model call.",
+  "safetyStops": [
+    {
+      "id": "GAS",
+      "triggers": ["smell gas", "gas smell", "gas odor", "gas odour", "rotten egg", "sulfur smell", "hissing gas"],
+      "message": "Stop. Possible gas leak. Don't operate switches or the furnace. Leave the area, then follow your company's gas leak procedure and call the gas utility."
+    },
+    {
+      "id": "CO",
+      "triggers": ["co alarm", "carbon monoxide", "co detector", "co reading", "co is high", "high co"],
+      "message": "Stop. Possible carbon monoxide. Get everyone outside to fresh air, leave the furnace off, and call 911 from outside."
+    },
+    {
+      "id": "BURNING",
+      "triggers": ["burning smell", "scorch", "smoke", "melted", "melting", "charred"],
+      "message": "Stop. Possible overheating or fire. Shut off power at the disconnect and don't restart until the cause is found and fixed."
+    },
+    {
+      "id": "WATER_ELECTRICAL",
+      "triggers": ["water on the board", "water near electrical", "wet wiring", "water in the control", "water on the control", "flooded"],
+      "message": "Stop. Water near live electrical parts. Shut off power at the disconnect before touching anything and dry the area first."
+    },
+    {
+      "id": "EXPOSED_WIRING",
+      "triggers": ["exposed wire", "bare wire", "frayed wire", "sparking", "arcing", "sparks"],
+      "message": "Stop. Exposed or damaged wiring. Shut off and lock out power before going any further."
+    },
+    {
+      "id": "FLAME_ROLLOUT",
+      "triggers": ["flame rollout", "flames coming out", "rollout switch tripped", "flames outside the burner", "rollout tripped"],
+      "message": "Stop. Flame rollout is a fire hazard. Shut off gas and power. Don't reset the rollout switch until the heat exchanger and venting are inspected."
+    }
+  ]
+}

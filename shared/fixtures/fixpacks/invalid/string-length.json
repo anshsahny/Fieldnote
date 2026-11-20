@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "packId": "acme-test-furnace-v1",
+  "brand": "Acme (test fixture)",
+  "family": "Acme AF96 test furnace",
+  "equipmentType": "gas_furnace",
+  "displayType": "led_flash",
+  "modelPatterns": [
+    "^AF96\\d{4}[A-Z]{2}$"
+  ],
+  "version": 1,
+  "sourceRefs": [
+    {
+      "id": "src1",
+      "title": "Acme AF96 test manual (fictional)",
+      "url": "https://example.com/acme-af96.pdf",
+      "pages": "10-12"
+    }
+  ],
+  "faultCodes": [
+    {
+      "code": "3",
+      "display": "Red LED flashes 3 times, then pauses",
+      "meaning": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "likelyCauses": [
+        "Blocked vent or intake",
+        "Failed inducer motor",
+        "Kinked or cracked pressure switch hose"
+      ],
+      "firstStep": "C3-1",
+      "sourceRef": "src1",
+      "pages": "11"
+    },
+    {
+      "code": "4",
+      "display": "Red LED flashes 4 times, then pauses",
+      "meaning": "Main limit switch open",
+      "likelyCauses": [
+        "Dirty filter",
+        "Blower not running"
+      ],
+      "firstStep": "C4-1",
+      "sourceRef": "src1",
+      "pages": "12"
+    }
+  ],
+  "steps": {
+    "C3-1": {
+      "instruction": "Call for heat and check whether the inducer motor runs.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "runs",
+          "does not run"
+        ]
+      },
+      "next": {
+        "runs": "C3-2",
+        "does not run": "C3-3"
+      },
+      "pages": "11"
+    },
+    "C3-2": {
+      "instruction": "Check the pressure switch hose for kinks, cracks, or water.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C3-4",
+        "no": "C3-5"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C3-3": {
+      "instruction": "Inducer does not run on a call for heat.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Check inducer voltage; replace the inducer motor if it has power but won't run.",
+        "parts": [
+          "inducer motor"
+        ]
+      }
+    },
+    "C3-4": {
+      "instruction": "Hose is damaged or blocked.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear or replace the pressure switch hose, then retest.",
+        "parts": [
+          "pressure switch hose"
+        ]
+      }
+    },
+    "C3-5": {
+      "instruction": "Hose is fine.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Inspect the vent and intake for blockage; if clear, test or replace the pressure switch."
+      }
+    },
+    "C4-1": {
+      "instruction": "Check the air filter.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "dirty",
+          "clean"
+        ]
+      },
+      "next": {
+        "dirty": "C4-2",
+        "clean": "C4-3"
+      }
+    },
+    "C4-2": {
+      "instruction": "Filter is dirty.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the filter and confirm the limit closes after cooling.",
+        "parts": [
+          "air filter"
+        ]
+      }
+    },
+    "C4-3": {
+      "instruction": "Filter is clean.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Check blower operation and duct restrictions."
+      }
+    }
+  },
+  "safetyStops": [
+    {
+      "id": "GAS",
+      "triggers": [
+        "smell gas"
+      ],
+      "message": "Stop. Possible gas leak."
+    },
+    {
+      "id": "CO",
+      "triggers": [
+        "co alarm"
+      ],
+      "message": "Stop. Possible carbon monoxide."
+    },
+    {
+      "id": "BURNING",
+      "triggers": [
+        "burning smell"
+      ],
+      "message": "Stop. Possible overheating."
+    },
+    {
+      "id": "WATER_ELECTRICAL",
+      "triggers": [
+        "wet wiring"
+      ],
+      "message": "Stop. Water near electrical parts."
+    },
+    {
+      "id": "EXPOSED_WIRING",
+      "triggers": [
+        "bare wire"
+      ],
+      "message": "Stop. Exposed wiring."
+    },
+    {
+      "id": "FLAME_ROLLOUT",
+      "triggers": [
+        "flame rollout"
+      ],
+      "message": "Stop. Flame rollout."
+    }
+  ]
+}

@@ -1,0 +1,1301 @@
+{
+  "schemaVersion": 1,
+  "packId": "acme-test-furnace-v1",
+  "brand": "Acme (test fixture)",
+  "family": "Acme AF96 test furnace",
+  "equipmentType": "gas_furnace",
+  "displayType": "led_flash",
+  "modelPatterns": [
+    "^AF96\\d{4}[A-Z]{2}$"
+  ],
+  "version": 1,
+  "sourceRefs": [
+    {
+      "id": "src1",
+      "title": "Acme AF96 test manual (fictional)",
+      "url": "https://example.com/acme-af96.pdf",
+      "pages": "10-12"
+    }
+  ],
+  "faultCodes": [
+    {
+      "code": "3",
+      "display": "Red LED flashes 3 times, then pauses",
+      "meaning": "Pressure switch stuck open",
+      "likelyCauses": [
+        "Blocked vent or intake",
+        "Failed inducer motor",
+        "Kinked or cracked pressure switch hose"
+      ],
+      "firstStep": "C3-1",
+      "sourceRef": "src1",
+      "pages": "11"
+    },
+    {
+      "code": "4",
+      "display": "Red LED flashes 4 times, then pauses",
+      "meaning": "Main limit switch open",
+      "likelyCauses": [
+        "Dirty filter",
+        "Blower not running"
+      ],
+      "firstStep": "C4-1",
+      "sourceRef": "src1",
+      "pages": "12"
+    }
+  ],
+  "steps": {
+    "C3-1": {
+      "instruction": "Call for heat and check whether the inducer motor runs.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "runs",
+          "does not run"
+        ]
+      },
+      "next": {
+        "runs": "C3-2",
+        "does not run": "C3-3"
+      },
+      "pages": "11"
+    },
+    "C3-2": {
+      "instruction": "Check the pressure switch hose for kinks, cracks, or water.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C3-4",
+        "no": "C3-5"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C3-3": {
+      "instruction": "Inducer does not run on a call for heat.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Check inducer voltage; replace the inducer motor if it has power but won't run.",
+        "parts": [
+          "inducer motor"
+        ]
+      }
+    },
+    "C3-4": {
+      "instruction": "Hose is damaged or blocked.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear or replace the pressure switch hose, then retest.",
+        "parts": [
+          "pressure switch hose"
+        ]
+      }
+    },
+    "C3-5": {
+      "instruction": "Hose is fine.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Inspect the vent and intake for blockage; if clear, test or replace the pressure switch."
+      }
+    },
+    "C4-1": {
+      "instruction": "Check the air filter.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "dirty",
+          "clean"
+        ]
+      },
+      "next": {
+        "dirty": "C4-2",
+        "clean": "C4-3"
+      }
+    },
+    "C4-2": {
+      "instruction": "Filter is dirty.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the filter and confirm the limit closes after cooling.",
+        "parts": [
+          "air filter"
+        ]
+      }
+    },
+    "C4-3": {
+      "instruction": "Filter is clean.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Check blower operation and duct restrictions."
+      }
+    },
+    "P-0": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-1": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-2": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-3": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-4": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-5": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-6": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-7": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-8": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-9": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-10": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-11": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-12": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-13": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-14": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-15": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-16": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-17": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-18": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-19": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-20": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-21": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-22": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-23": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-24": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-25": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-26": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-27": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-28": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-29": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-30": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-31": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-32": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-33": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-34": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-35": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-36": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-37": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-38": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-39": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-40": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-41": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-42": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-43": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-44": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-45": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-46": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-47": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-48": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-49": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-50": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-51": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-52": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-53": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-54": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-55": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-56": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-57": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-58": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-59": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-60": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-61": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-62": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-63": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-64": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-65": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-66": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-67": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-68": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-69": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-70": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-71": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-72": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-73": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-74": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-75": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-76": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-77": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-78": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-79": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-80": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-81": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-82": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-83": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-84": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-85": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-86": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-87": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-88": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-89": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-90": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-91": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-92": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-93": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-94": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-95": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-96": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-97": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-98": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-99": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-100": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-101": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-102": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-103": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-104": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-105": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-106": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-107": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-108": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-109": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-110": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-111": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-112": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-113": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-114": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-115": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-116": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-117": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-118": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-119": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-120": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-121": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-122": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-123": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-124": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-125": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-126": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-127": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-128": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-129": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-130": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-131": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-132": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-133": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-134": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-135": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-136": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-137": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-138": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-139": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-140": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-141": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-142": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-143": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-144": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-145": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-146": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-147": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-148": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-149": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-150": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-151": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-152": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-153": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-154": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-155": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-156": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-157": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-158": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    },
+    "P-159": {
+      "instruction": "Padding step to exceed the 25 KB limit.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Padding."
+      }
+    }
+  },
+  "safetyStops": [
+    {
+      "id": "GAS",
+      "triggers": [
+        "smell gas"
+      ],
+      "message": "Stop. Possible gas leak."
+    },
+    {
+      "id": "CO",
+      "triggers": [
+        "co alarm"
+      ],
+      "message": "Stop. Possible carbon monoxide."
+    },
+    {
+      "id": "BURNING",
+      "triggers": [
+        "burning smell"
+      ],
+      "message": "Stop. Possible overheating."
+    },
+    {
+      "id": "WATER_ELECTRICAL",
+      "triggers": [
+        "wet wiring"
+      ],
+      "message": "Stop. Water near electrical parts."
+    },
+    {
+      "id": "EXPOSED_WIRING",
+      "triggers": [
+        "bare wire"
+      ],
+      "message": "Stop. Exposed wiring."
+    },
+    {
+      "id": "FLAME_ROLLOUT",
+      "triggers": [
+        "flame rollout"
+      ],
+      "message": "Stop. Flame rollout."
+    }
+  ]
+}

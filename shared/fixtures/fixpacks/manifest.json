@@ -1,0 +1,113 @@
+[
+  {
+    "file": "valid/minimal.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "invalid/next-target.json",
+    "valid": false,
+    "errors": [
+      "E_NEXT_TARGET"
+    ]
+  },
+  {
+    "file": "invalid/first-step.json",
+    "valid": false,
+    "errors": [
+      "E_FIRST_STEP",
+      "E_ORPHAN_STEP"
+    ]
+  },
+  {
+    "file": "invalid/orphan-step.json",
+    "valid": false,
+    "errors": [
+      "E_ORPHAN_STEP"
+    ]
+  },
+  {
+    "file": "invalid/cycle.json",
+    "valid": false,
+    "errors": [
+      "E_CYCLE"
+    ]
+  },
+  {
+    "file": "invalid/ask-next-mismatch.json",
+    "valid": false,
+    "errors": [
+      "E_ASK_NEXT_MISMATCH"
+    ]
+  },
+  {
+    "file": "invalid/step-shape.json",
+    "valid": false,
+    "errors": [
+      "E_STEP_SHAPE"
+    ]
+  },
+  {
+    "file": "invalid/safety-missing.json",
+    "valid": false,
+    "errors": [
+      "E_SAFETY_MISSING"
+    ]
+  },
+  {
+    "file": "invalid/safety-ref.json",
+    "valid": false,
+    "errors": [
+      "E_SAFETY_REF"
+    ]
+  },
+  {
+    "file": "invalid/string-length.json",
+    "valid": false,
+    "errors": [
+      "E_STRING_LENGTH"
+    ]
+  },
+  {
+    "file": "invalid/duplicate-code.json",
+    "valid": false,
+    "errors": [
+      "E_DUPLICATE_CODE"
+    ]
+  },
+  {
+    "file": "invalid/source-ref.json",
+    "valid": false,
+    "errors": [
+      "E_SOURCE_REF"
+    ]
+  },
+  {
+    "file": "invalid/model-pattern.json",
+    "valid": false,
+    "errors": [
+      "E_MODEL_PATTERN"
+    ]
+  },
+  {
+    "file": "invalid/schema.json",
+    "valid": false,
+    "errors": [
+      "E_SCHEMA"
+    ]
+  },
+  {
+    "file": "invalid/pack-size.json",
+    "valid": false,
+    "errors": [
+      "E_PACK_SIZE"
+    ]
+  },
+  {
+    "file": "invalid/not-json.json",
+    "valid": false,
+    "errors": [
+      "E_JSON"
+    ]
+  }
+]
