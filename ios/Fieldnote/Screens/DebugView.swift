@@ -4,6 +4,19 @@ import SwiftUI
 struct DebugView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
+    @State private var evalRunning = false
+    @State private var evalSummary: [String: String] = [:]
+
+    private func runEval(_ route: InferenceRoute) {
+        #if DEBUG
+        evalRunning = true
+        evalSummary = [:]
+        Task {
+            evalSummary = await NoteEval.run(name: "p3-notes", route: route)
+            evalRunning = false
+        }
+        #endif
+    }
 
     var body: some View {
         @Bindable var app = app
@@ -45,6 +58,16 @@ struct DebugView: View {
                     }
                 }
                 #if DEBUG
+                Section("Note eval (10 notes, eval/scenarios/p3-notes.json)") {
+                    Button(evalRunning ? "Running on this iPhone…" : "Run on-device (only_on_device)") { runEval(.onlyOnDevice) }
+                        .disabled(evalRunning)
+                    Button("Run in cloud (only_in_cloud)") { runEval(.onlyInCloud) }
+                        .disabled(evalRunning || !app.network.isOnline)
+                    if evalRunning { ProgressView().frame(maxWidth: .infinity) }
+                    ForEach(evalSummary.keys.sorted(), id: \.self) { key in
+                        LabeledContent(key, value: evalSummary[key] ?? "")
+                    }
+                }
                 Section("Developer") {
                     NavigationLink("Setup status (App Check)") { ContentView() }
                     NavigationLink("Hybrid spikes") { SpikeView() }

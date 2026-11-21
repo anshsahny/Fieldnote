@@ -51,6 +51,10 @@ targets:
       - path: ../content/fixpacks
         type: folder
         buildPhase: resources
+      # Eval scenarios (small JSON) for the Debug-only headless runner (Spike/NoteEval.swift).
+      - path: ../eval/scenarios
+        type: folder
+        buildPhase: resources
     info:
       path: Fieldnote/Info.plist
       properties:

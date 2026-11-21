@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "description": "P3 sample: 10 technician notes on real fix-pack steps. 'expect' is the allowed choice the note means, or 'clarify' when the note is hedged and the app should ask. P6 grows this into the full scenario set.",
+  "notes": [
+    { "id": "n01", "packId": "goodman-cvc96-mvc96-v1", "stepId": "CEE6-S1", "note": "rod's got a white crust on it, pretty dull", "expect": "coated or oxidized" },
+    { "id": "n02", "packId": "goodman-cvc96-mvc96-v1", "stepId": "CEE5-S1", "note": "fuse looks fine, meter shows continuity", "expect": "intact" },
+    { "id": "n03", "packId": "goodman-cvc96-mvc96-v1", "stepId": "CEE3-S1", "note": "filter is packed with dust, cant see light thru it", "expect": "blocked" },
+    { "id": "n04", "packId": "carrier-59sc5b-v1", "stepId": "C24-S1", "note": "3 amp fuse on the board is toast, the strip inside is broken", "expect": "fuse is blown" },
+    { "id": "n05", "packId": "carrier-59sc5b-v1", "stepId": "C13-S1", "note": "new filter, all registers open, returns clear", "expect": "clean and open" },
+    { "id": "n06", "packId": "rheem-r96v-v1", "stepId": "C11-S1", "note": "handle was perpendicular to the pipe", "expect": "valve off" },
+    { "id": "n07", "packId": "rheem-r96v-v1", "stepId": "C22-S1", "note": "blower kicks on fine in heat mode", "expect": "runs" },
+    { "id": "n08", "packId": "goodman-cvc96-mvc96-v1", "stepId": "CEE7-S1", "note": "havent looked at the connectors yet", "expect": "clarify" },
+    { "id": "n09", "packId": "carrier-59sc5b-v1", "stepId": "C31-S1", "note": "kind of breezy out today, vent might be ok", "expect": "clarify" },
+    { "id": "n10", "packId": "rheem-r96v-v1", "stepId": "C12-S1", "note": "rod looks maybe a little dark? hard to tell with this light", "expect": "clarify" }
+  ]
+}

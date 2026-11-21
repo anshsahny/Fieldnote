@@ -6,6 +6,7 @@ import Foundation
 ///   -FNRunSpikes offline    the airplane-mode subset
 ///   -FNOfflineStep write    Firestore: sign in, write offline, then exit (simulates a kill)
 ///   -FNOfflineStep verify   Firestore: confirm the write survived, reconnect, wait for sync
+///   -FNRunEval p3-notes     the note sample in eval/scenarios (see NoteEval; -FNEvalRoute picks the route)
 ///   -FNExitWhenDone YES     exit after printing FNSPIKE_DONE (for scripted runs)
 /// Results go to stdout as `FNSPIKE {json}` lines.
 enum SpikeAutomation {
@@ -13,6 +14,16 @@ enum SpikeAutomation {
         let defaults = UserDefaults.standard
         let spikes = defaults.string(forKey: "FNRunSpikes")
         let offlineStep = defaults.string(forKey: "FNOfflineStep")
+        if let evalName = defaults.string(forKey: "FNRunEval") {
+            let route = InferenceRoute(rawValue: defaults.string(forKey: "FNEvalRoute") ?? "") ?? .preferOnDevice
+            await NoteEval.run(name: evalName, route: route)
+            print("FNSPIKE_DONE")
+            if defaults.bool(forKey: "FNExitWhenDone") {
+                try? await Task.sleep(for: .milliseconds(500))
+                exit(0)
+            }
+            return
+        }
         guard spikes != nil || offlineStep != nil else { return }
 
         let runner = SpikeRunner()
