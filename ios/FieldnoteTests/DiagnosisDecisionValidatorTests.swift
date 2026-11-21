@@ -32,6 +32,29 @@ struct DiagnosisDecisionValidatorTests {
         #expect(r == .failure(.notAllowed("replace the board")))
     }
 
+    // Shorthand answers (seen on-device: "loose" for "loose or defective"). Same table as web.
+    @Test(arguments: [
+        ("loose", ["loose or defective", "blower ok"], "loose or defective"),
+        ("Coated", ["clean and shiny", "coated or oxidized"], "coated or oxidized"),
+        ("ok", ["restricted or undersized", "vent ok"], "vent ok"),
+        ("no short", ["short found", "no short found"], "no short found"),
+    ])
+    func uniqueShorthandIsAccepted(choice: String, options: [String], expected: String) throws {
+        let d = try DiagnosisDecisionValidator.validate(choice: choice, confidence: 0.8, say: "x", allowed: options).get()
+        #expect(d.choice == expected)
+    }
+
+    @Test(arguments: [
+        ("short", ["short found", "no short found"]),            // fits both options
+        ("pressure", ["pressure correct", "pressure incorrect"]), // fits both options
+        ("not blocked", ["blocked", "clear"]),                    // negation must be in the option
+        ("or", ["dirty or loose", "clean and secure"]),           // filler only
+    ])
+    func ambiguousOrNegatedShorthandIsRejected(choice: String, options: [String]) {
+        let r = DiagnosisDecisionValidator.validate(choice: choice, confidence: 0.8, say: "x", allowed: options)
+        #expect(r == .failure(.notAllowed(choice)))
+    }
+
     @Test(arguments: [7.0, -0.1, Double.nan])
     func confidenceOutsideZeroToOneIsRejected(confidence: Double) {
         let r = DiagnosisDecisionValidator.validate(choice: "runs", confidence: confidence, say: "x", allowed: allowed)

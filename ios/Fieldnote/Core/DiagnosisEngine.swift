@@ -37,6 +37,8 @@ final class DiagnosisEngine {
     enum Clarification: Equatable {
         case unclear(say: String?)
         case lowConfidence(choice: String, confidence: Double, say: String?)
+        /// The model was confident but the tech's own words were a guess ("might be ok").
+        case hedged(choice: String, say: String?)
         /// No AI available (both routes failed, or plain mode): taps only, never a dead end.
         case aiUnavailable
     }
@@ -153,10 +155,8 @@ final class DiagnosisEngine {
             lastNoteInterpretation = result
             let d = result.decision
             // 4. Code decides whether the model's answer is usable.
-            if d.choice == DiagnosisDecisionValidator.unclear {
-                phase = .clarifying(.unclear(say: d.say))
-            } else if d.confidence < confidenceThreshold {
-                phase = .clarifying(.lowConfidence(choice: d.choice, confidence: d.confidence, say: d.say))
+            if let clarification = Self.clarification(for: d, note: note, threshold: confidenceThreshold) {
+                phase = .clarifying(clarification)
             } else {
                 advance(with: d.choice, via: .note(note), interpretation: result)
             }
@@ -172,6 +172,28 @@ final class DiagnosisEngine {
         guard case .safetyStop(let stop) = phase else { return }
         acknowledgedStops.append(stop.id)
         phase = .answering
+    }
+
+    /// The rule for when a model answer may advance the diagnosis. Shared with the eval runner so
+    /// the eval measures exactly what the app does.
+    static func clarification(for d: ValidatedDecision, note: String, threshold: Double) -> Clarification? {
+        if d.choice == DiagnosisDecisionValidator.unclear { return .unclear(say: d.say) }
+        if d.confidence < threshold { return .lowConfidence(choice: d.choice, confidence: d.confidence, say: d.say) }
+        if HedgeDetector.isHedged(note) { return .hedged(choice: d.choice, say: d.say) }
+        return nil
+    }
+
+    var canUndo: Bool { !history.isEmpty && phase != .interpreting && !isSafetyStop }
+
+    /// Steps back over the last answer (tap, reading or note), e.g. when a note was misread.
+    /// Returns the undone entry so the UI can put the note text back in the field.
+    @discardableResult
+    func undoLast() -> Entry? {
+        guard canUndo, let last = history.popLast() else { return nil }
+        stepId = last.stepId
+        phase = .answering
+        lastNoteInterpretation = nil
+        return last
     }
 
     // MARK: Internals

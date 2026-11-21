@@ -36,6 +36,64 @@ struct DiagnosisEngineTests {
         DiagnosisEngine(pack: pack, fault: pack.faultCodes.first { $0.code == code }!, interpreter: interpreter, confidenceThreshold: 0.6)
     }
 
+    @Test(arguments: [
+        "kind of breezy out today, vent might be ok",
+        "rod looks maybe a little dark? hard to tell with this light",
+        "not sure if it leaks",
+        "I haven’t checked the wiring yet",
+        "probably the hose",
+    ])
+    func hedgedNotesAreDetected(note: String) {
+        #expect(HedgeDetector.isHedged(note))
+    }
+
+    @Test(arguments: [
+        "blower wheel wobbles on the shaft",
+        "sensor rod is shiny, no coating",
+        "make sure the filter is new", // "sure" alone is not a hedge
+        "mighty clean in there",       // word boundaries
+    ])
+    func confidentNotesAreNotHedged(note: String) {
+        #expect(!HedgeDetector.isHedged(note))
+    }
+
+    @Test func confidentModelStillAsksWhenTheTechWasGuessing() async {
+        let e = engine(carrier, code: "31", MockInterpreter(.answer("vent and wind clear", 0.9, "Vent seems fine.")))
+        await e.submitNote("kind of breezy out today, vent might be ok")
+        #expect(e.phase == .clarifying(.hedged(choice: "vent and wind clear", say: "Vent seems fine.")))
+        #expect(e.history.isEmpty)
+        e.tap("vent and wind clear")
+        #expect(e.history.count == 1)
+    }
+
+    @Test func undoStepsBackOverTapsAndConclusions() {
+        let e = engine(goodman, code: "EE0", nil)
+        #expect(!e.canUndo)
+        e.tap("gas supply ok")
+        e.tap("normal")
+        #expect(e.stepId == "CEE0-S3")
+        let undone = e.undoLast()
+        #expect(undone?.stepId == "CEE0-S2" && undone?.answer == "normal")
+        #expect(e.stepId == "CEE0-S2" && e.phase == .answering && e.history.count == 1)
+        e.tap("faulty")
+        #expect(e.phase == .concluded)
+        e.undoLast()
+        #expect(e.stepId == "CEE0-S2" && e.phase == .answering && e.outcome == nil)
+    }
+
+    @Test func misreadNoteCanBeUndoneAndRetapped() async {
+        // The iPhone case: "sensor rod is shiny, no coating" read as "oxidized" ends the diagnosis.
+        let e = engine(goodman, code: "EE0", MockInterpreter(.answer("oxidized", 0.9, "Coating mentioned.")))
+        for option in ["gas supply ok", "normal", "good"] { e.tap(option) }
+        await e.submitNote("sensor rod is shiny, no coating")
+        #expect(e.phase == .concluded)
+        let undone = e.undoLast()
+        #expect(undone?.via == .note("sensor rod is shiny, no coating"))
+        #expect(e.stepId == "CEE0-S4" && e.phase == .answering)
+        e.tap("clean")
+        #expect(e.stepId == "CEE0-S5")
+    }
+
     @Test func threePacksAreBundled() {
         #expect(Self.packs.map(\.brand) == ["Carrier", "Goodman", "Rheem"])
     }

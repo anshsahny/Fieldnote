@@ -18,6 +18,7 @@
 		23D8B14FE188AF729D597747 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 678317D3E7ECC44444540F95 /* RootView.swift */; };
 		257DE4BA44335234BF1D878A /* SafetyStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 809BAE38F8BC483F8840B3C9 /* SafetyStopView.swift */; };
 		265C47F36A3B2EF191A5063D /* nameplate-gmvc96.png in Resources */ = {isa = PBXBuildFile; fileRef = B999644B082EA8F751B2244D /* nameplate-gmvc96.png */; };
+		2684E30B696DB92B991840DB /* HedgeDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FE959F7720EF055B261CE0 /* HedgeDetector.swift */; };
 		290CDE041973E0B4C344DFD5 /* FixPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78D9AFD5345BB8078E900FEF /* FixPack.swift */; };
 		2E4409E3C037283052D757E7 /* FixPackValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A633740B128156C56D9153B /* FixPackValidatorTests.swift */; };
 		2F23D48373993898A9223553 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB5E85DAE4F101D6661B213 /* Theme.swift */; };
@@ -144,6 +145,7 @@
 		E8267AB8ABFBCDFB7313D445 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		EA7C6CFD9CA009F46E731AA6 /* fixpacks */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fixpacks; path = ../content/fixpacks; sourceTree = SOURCE_ROOT; };
 		EED7D57EC1E99C5F72FCA9BE /* SpikeRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRunner.swift; sourceTree = "<group>"; };
+		F3FE959F7720EF055B261CE0 /* HedgeDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HedgeDetector.swift; sourceTree = "<group>"; };
 		F5A61D7B530BFC2EE006F41B /* DiagnosisPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosisPrompt.swift; sourceTree = "<group>"; };
 		F5EAC687589D069EF64E345F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		FAF1B23662DACDD996B832AA /* DiagnosisEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosisEngineTests.swift; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				C301651A67E56AF482371572 /* DiagnosisEngine.swift */,
 				F5A61D7B530BFC2EE006F41B /* DiagnosisPrompt.swift */,
 				620EC1D525FF539206A072D3 /* FaultCodeLookup.swift */,
+				F3FE959F7720EF055B261CE0 /* HedgeDetector.swift */,
 				9CD46ABC8D2BA28F322371F6 /* NameplateExtractor.swift */,
 				22BFA8B071CBC0B78160771E /* ReadingRange.swift */,
 				BABC811E2FB16F2D6FEB5F5B /* SafetyGuard.swift */,
@@ -523,6 +526,7 @@
 				A993807C5D773D432650EF96 /* FirebaseBootstrap.swift in Sources */,
 				290CDE041973E0B4C344DFD5 /* FixPack.swift in Sources */,
 				573C4E551D0BB8C69162A2D3 /* FixPackValidator.swift in Sources */,
+				2684E30B696DB92B991840DB /* HedgeDetector.swift in Sources */,
 				73A6A7C50211D6985C239998 /* HybridInterpreter.swift in Sources */,
 				D34879C1F8C3CC31D55344B2 /* JobDetailView.swift in Sources */,
 				D4D020AD93C478C4C5B23584 /* JobStore.swift in Sources */,

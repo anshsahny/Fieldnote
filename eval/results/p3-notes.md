@@ -1,25 +1,48 @@
-# P3 note sample — results
+# P3 note samples — results
 
-Scenario file: `eval/scenarios/p3-notes.json` (10 notes: 7 clear, 3 hedged). Prompt `diagnosis` v2,
-confidence threshold 0.7 (Remote Config `diagnosis_confidence_threshold`). A note "asks" when the
-model returns `unclear` or confidence < threshold; asking on a hedged note is the correct outcome.
+Scenario files (bundled into Debug builds):
+- `eval/scenarios/p3-notes.json`: 10 notes, 7 clear and 3 hedged.
+- `eval/scenarios/p3-walkthrough.json`: the 12 notes from the iPhone walkthrough (Goodman EE0,
+  Rheem 11, Carrier 13), each with its flow's earlier answers as history.
 
-Runner: Debug build, `-FNRunEval p3-notes -FNEvalRoute <route>` or Diagnostics sheet → Note eval.
-Every request ≈ 520 tokens (budget 3,000).
+A note "asks" when the app's rule (`DiagnosisEngine.clarification`) says so: model answer
+`unclear`, confidence < threshold (0.7), or a hedged note ("might", "not sure", …). Asking on a
+hedged note is the correct outcome. Every request is about 520 tokens (budget 3,000).
 
-## iOS Simulator (Mac hardware), 2026-11-21
+Runner: Debug build, `-FNRunEval <file> -FNEvalRoute <route>`, or Diagnostics sheet → Note eval.
 
-| Route | Correct | Clear notes answered | Hedged notes asked | Clarify rate | Median latency |
-|---|---|---|---|---|---|
-| on-device (Apple Foundation Models) | 9/10 | 6/7 | 3/3 | 4/10 | 1.06 s (first call 3.2 s cold) |
-| cloud (gemini-3.5-flash-lite) | 10/10 | 7/7 | 3/3 | 3/10 | 0.99 s |
+## iPhone, on-device (2026-11-21, prompt v2, before the fixes below)
 
-On-device miss: n06 "handle was perpendicular to the pipe" → asked instead of answering "valve
-off" (needs trade knowledge; a safe miss, since the tech just taps the answer).
+| Set | Correct | Hedged notes asked | Median latency |
+|---|---|---|---|
+| p3-notes | 9/10 | 3/3 | **0.67 s** |
 
-Tuning made from this run: at threshold 0.6, n09 "vent might be ok" advanced on-device at
-confidence 0.60. Clear notes score 0.8–1.0, so the threshold moved to 0.7; n09 now asks.
+Walkthrough by hand in airplane mode: Rheem 11 perfect. Goodman EE0 concluded early: "sensor rod is
+shiny, no coating" was read as "oxidized". Carrier 13 stalled on "blower wheel wobbles on the shaft".
 
-## iPhone (on-device), airplane mode
+## Fixes from the iPhone run
 
-_Pending the P3 human check._
+- Carrier stall: the on-device model answered "loose" for the option "loose or defective"; the
+  validator only took exact matches and fell back to "pick an answer", and that prompt sat off-screen
+  behind the keyboard. The validator now accepts a shortened answer only when all its words belong
+  to exactly one option (iOS and web, same table of tests). The keyboard drops and the step scrolls
+  into view when the app asks.
+- Goodman misread: not reproducible on the Simulator (clean, 1.00, with and without history). Added
+  Undo (toolbar, AI turn, and conclusion card, which now shows how the last note was read) and a
+  negation rule in prompt v3.
+- Hedging moved into code: prompt v3 made one hedged note ("vent might be ok") advance on-device,
+  so hedge words now always ask, whatever the model's confidence.
+
+## iOS Simulator (Mac hardware), prompt v3 + fixes, 2 runs each
+
+| Route | p3-notes | Hedged asked | p3-walkthrough | Median latency |
+|---|---|---|---|---|
+| on-device (Apple Foundation Models) | 9/10 | 3/3 | 12/12 | 1.15 s |
+| cloud (gemini-3.5-flash-lite) | 10/10 | 3/3 | 12/12 | 0.87 s |
+
+Remaining on-device miss: n06 "handle was perpendicular to the pipe" asks instead of answering
+"valve off" (needs trade knowledge; a safe miss, since the tech taps the answer).
+
+## iPhone, on-device, prompt v3 + fixes
+
+_Pending the second P3 human check._

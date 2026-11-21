@@ -27,6 +27,29 @@ describe('validateDecision', () => {
   });
 });
 
+describe('shorthand answers (same table as iOS)', () => {
+  const decision = (choice: string) => JSON.stringify({ choice, confidence: 0.8, say: 'x' });
+
+  it.each([
+    ['loose', ['loose or defective', 'blower ok'], 'loose or defective'],
+    ['Coated', ['clean and shiny', 'coated or oxidized'], 'coated or oxidized'],
+    ['ok', ['restricted or undersized', 'vent ok'], 'vent ok'],
+    ['no short', ['short found', 'no short found'], 'no short found'],
+  ])('accepts "%s" when it fits exactly one option', (choice, options, expected) => {
+    const r = validateDecision(decision(choice), options);
+    expect(r.ok && r.decision.choice).toBe(expected);
+  });
+
+  it.each([
+    ['short', ['short found', 'no short found']],
+    ['pressure', ['pressure correct', 'pressure incorrect']],
+    ['not blocked', ['blocked', 'clear']],
+    ['or', ['dirty or loose', 'clean and secure']],
+  ])('rejects "%s" (ambiguous, negated, or filler)', (choice, options) => {
+    expect(validateDecision(decision(choice), options).ok).toBe(false);
+  });
+});
+
 describe('extractJsonObject', () => {
   it('handles braces inside strings', () => {
     expect(extractJsonObject('x {"say":"a } b","n":{"k":1}} y')).toBe('{"say":"a } b","n":{"k":1}}');

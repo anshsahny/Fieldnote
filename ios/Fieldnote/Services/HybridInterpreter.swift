@@ -12,10 +12,21 @@ nonisolated struct HybridInterpreter: ObservationInterpreter {
         do {
             let r = try await ai.respond(prompt.user, generating: DiagnosisDecision.self, instructions: prompt.system,
                                          route: route, cloudModel: cloudModel)
+            #if DEBUG
+            if case .failure(let f) = DiagnosisDecisionValidator.validate(r.content, allowed: prompt.allowed) {
+                print("FNDEBUG rejected \(f): \(r.content)")
+            }
+            #endif
             return interpretation(DiagnosisDecisionValidator.validate(r.content, allowed: prompt.allowed),
                                   source: r.source, model: r.modelVersion, latency: r.latencyMs)
         } catch {
+            #if DEBUG
+            print("FNDEBUG structured diagnosis failed: \(error)")
+            #endif
             let r = try await ai.respondText(prompt.user, instructions: prompt.system, route: route, cloudModel: cloudModel)
+            #if DEBUG
+            print("FNDEBUG text fallback: \(r.content.prefix(300))")
+            #endif
             return interpretation(DiagnosisDecisionValidator.parse(text: r.content, allowed: prompt.allowed),
                                   source: r.source, model: r.modelVersion, latency: r.latencyMs)
         }

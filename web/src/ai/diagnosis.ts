@@ -46,6 +46,32 @@ export function extractJsonObject(text: string): string | null {
   return null;
 }
 
+const FILLER_WORDS = new Set(['or', 'and', 'the', 'a', 'an', 'is', 'are']);
+
+function matchWords(s: string): Set<string> {
+  return new Set(
+    s
+      .toLowerCase()
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((w) => w && !FILLER_WORDS.has(w)),
+  );
+}
+
+/**
+ * Small models sometimes shorten an option ("loose" for "loose or defective"). Accept the shortened
+ * answer only when every one of its words is in exactly one allowed option. "no"/"not" are ordinary
+ * words, so a negated answer must match a negated option. Same rule as iOS `shorthandMatch`.
+ */
+export function shorthandMatch(choice: string, allowed: string[]): string | undefined {
+  const words = [...matchWords(choice)];
+  if (words.length === 0) return undefined;
+  const hits = allowed.filter((option) => {
+    const optionWords = matchWords(option);
+    return words.every((w) => optionWords.has(w));
+  });
+  return hits.length === 1 ? hits[0] : undefined;
+}
+
 export function validateDecision(text: string, allowed: string[]): DecisionResult {
   const json = extractJsonObject(text);
   if (!json) return { ok: false, error: 'No JSON object in the response' };
@@ -59,7 +85,9 @@ export function validateDecision(text: string, allowed: string[]): DecisionResul
   const { choice, confidence, say } = raw as Record<string, unknown>;
   if (typeof choice !== 'string') return { ok: false, error: '"choice" must be a string' };
   const normalized = choice.trim();
-  const match = [...allowed, UNCLEAR].find((a) => a.toLowerCase() === normalized.toLowerCase());
+  const match =
+    [...allowed, UNCLEAR].find((a) => a.toLowerCase() === normalized.toLowerCase()) ??
+    shorthandMatch(normalized, allowed);
   if (!match) return { ok: false, error: `"choice" "${normalized}" is not an allowed choice` };
   const conf = typeof confidence === 'string' ? Number(confidence) : confidence;
   if (typeof conf !== 'number' || !Number.isFinite(conf) || conf < 0 || conf > 1) {

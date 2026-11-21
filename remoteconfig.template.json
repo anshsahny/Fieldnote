@@ -103,7 +103,7 @@
         },
         "prompt_version_diagnosis": {
           "defaultValue": {
-            "value": "2"
+            "value": "3"
           },
           "valueType": "STRING"
         },

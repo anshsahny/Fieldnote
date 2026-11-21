@@ -8,7 +8,12 @@ import Foundation
 /// validation as the app, then the engine's rule: unclear or confidence < threshold => clarify.
 /// Output: one `FNEVAL {json}` line per note and an `FNEVAL_SUMMARY {json}` line.
 enum NoteEval {
-    private struct Scenario: Decodable { let id, packId, stepId, note, expect: String }
+    private struct Scenario: Decodable {
+        let id, packId, stepId, note, expect: String
+        /// Optional earlier answers as [stepId, answer] pairs, so the prompt carries the same
+        /// history it would mid-diagnosis.
+        let history: [[String]]?
+    }
     private struct File: Decodable { let version: Int; let notes: [Scenario] }
 
     /// Runs the sample and returns the summary (also printed), so the Diagnostics sheet can show it.
@@ -30,8 +35,12 @@ enum NoteEval {
         var correct = 0, clarified = 0, failures = 0, clearTotal = 0, hedgedTotal = 0, hedgedClarified = 0
         var onDeviceLatencies: [Int] = [], allLatencies: [Int] = [], misses: [String] = []
         for s in file.notes {
+            let history = (s.history ?? []).compactMap { pair -> DiagnosisPrompt.HistoryLine? in
+                guard pair.count == 2, let earlier = packs[s.packId]?.steps[pair[0]] else { return nil }
+                return .init(instruction: earlier.instruction, answer: pair[1])
+            }
             guard let step = packs[s.packId]?.steps[s.stepId],
-                  let prompt = try? DiagnosisPrompt.build(step: step, history: [], note: s.note, template: template) else {
+                  let prompt = try? DiagnosisPrompt.build(step: step, history: history, note: s.note, template: template) else {
                 emit("FNEVAL", ["id": s.id, "error": "unknown step \(s.packId)/\(s.stepId)"])
                 failures += 1
                 continue
@@ -39,7 +48,7 @@ enum NoteEval {
             do {
                 let r = try await interpreter.interpret(prompt)
                 let d = r.decision
-                let asks = d.choice == DiagnosisDecisionValidator.unclear || d.confidence < threshold
+                let asks = DiagnosisEngine.clarification(for: d, note: s.note, threshold: threshold) != nil
                 let outcome = asks ? "clarify" : d.choice
                 let ok = outcome == s.expect
                 if s.expect == "clarify" {

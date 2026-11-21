@@ -29,7 +29,7 @@ struct DiagnoseView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     faultHeader
                     if engine.phase == .concluded, let outcome = engine.outcome {
-                        ConclusionCard(engine: engine, outcome: outcome)
+                        ConclusionCard(engine: engine, outcome: outcome, onUndo: undo)
                     } else {
                         stepCard
                     }
@@ -39,6 +39,20 @@ struct DiagnoseView: View {
                 .padding(Theme.gutter)
             }
             .onChange(of: engine.stepId) { _, _ in withAnimation { proxy.scrollTo("top", anchor: .top) } }
+            // A clarification lives in the step card: drop the keyboard and bring it into view, or it
+            // sits off-screen and the note looks ignored.
+            .onChange(of: isClarifying) { _, clarifying in
+                guard clarifying else { return }
+                noteFocused = false
+                withAnimation { proxy.scrollTo("top", anchor: .top) }
+            }
+        }
+        .sensoryFeedback(.selection, trigger: isClarifying)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: undo) { Label("Undo last answer", systemImage: "arrow.uturn.backward") }
+                    .disabled(!engine.canUndo)
+            }
         }
         .screenBackground()
         .navigationTitle(engine.phase == .concluded ? "Conclusion" : "Step \(engine.stepNumber)")
@@ -61,6 +75,17 @@ struct DiagnoseView: View {
     private var isSafetyStop: Bool {
         if case .safetyStop = engine.phase { return true }
         return false
+    }
+
+    private var isClarifying: Bool {
+        if case .clarifying = engine.phase { return true }
+        return false
+    }
+
+    /// Step back one answer; a misread note goes back in the field so the tech can tap or rephrase.
+    private func undo() {
+        guard let entry = engine.undoLast() else { return }
+        if case .note(let text) = entry.via { note = text }
     }
 
     // MARK: Header
@@ -120,6 +145,7 @@ struct DiagnoseView: View {
 
     private var suggested: String? {
         if case .clarifying(.lowConfidence(let choice, _, _)) = engine.phase { return choice }
+        if case .clarifying(.hedged(let choice, _)) = engine.phase { return choice }
         return nil
     }
 
@@ -130,6 +156,9 @@ struct DiagnoseView: View {
             callout("Which one fits?", say ?? "Your note didn't clearly match an option.", Theme.caution, "questionmark.bubble")
         case .clarifying(.lowConfidence(let choice, let confidence, let say)):
             callout("Is it “\(choice)”?", (say ?? "") + " (confidence \(Int(confidence * 100))%) Tap to confirm, or pick another.",
+                    Theme.caution, "questionmark.bubble")
+        case .clarifying(.hedged(let choice, _)):
+            callout("You sounded unsure. Is it “\(choice)”?", "Tap it to confirm, or pick another.",
                     Theme.caution, "questionmark.bubble")
         case .clarifying(.aiUnavailable):
             callout(engine.isPlainMode ? "Plain mode" : "AI unavailable right now",
@@ -160,6 +189,11 @@ struct DiagnoseView: View {
                 Spacer()
                 InferenceBadge(kind: .init(interpretation.source, latencyMs: interpretation.latencyMs))
             }
+            Button(action: undo) {
+                Label("Not right? Undo", systemImage: "arrow.uturn.backward").font(.footnote.weight(.semibold))
+            }
+            .foregroundStyle(Theme.brand)
+            .frame(minHeight: 32)
             DisclosureGroup("Why this step?") {
                 Text(say).font(.footnote).foregroundStyle(Theme.textSecondary).frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -255,6 +289,10 @@ struct DiagnoseView: View {
                             .font(.footnote.weight(.semibold)).foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
+                } else if isClarifying {
+                    Label("Tap the answer that fits, above", systemImage: "arrow.up")
+                        .font(.footnote.weight(.semibold)).foregroundStyle(Theme.caution)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 HStack(alignment: .bottom, spacing: 10) {
                     TextField("Describe what you see…", text: $note, axis: .vertical)
@@ -299,6 +337,7 @@ struct DiagnoseView: View {
 struct ConclusionCard: View {
     let engine: DiagnosisEngine
     let outcome: FixPack.Outcome
+    let onUndo: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -307,6 +346,22 @@ struct ConclusionCard: View {
                 .foregroundStyle(color)
             Text(engine.step.instruction).font(.headline).foregroundStyle(Theme.textPrimary)
             Text(outcome.summary).font(.body).foregroundStyle(Theme.textPrimary)
+            // When a note decided the last step, show how it was read so a misread is easy to catch.
+            if let last = engine.history.last, case .note(let text) = last.via {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Based on your note “\(text)”, read as “\(last.answer)”.")
+                        .font(.footnote).foregroundStyle(Theme.textSecondary)
+                    Button(action: onUndo) {
+                        Label("Not right? Undo last answer", systemImage: "arrow.uturn.backward")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .foregroundStyle(Theme.brand)
+                    .frame(minHeight: 32)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.surfaceRaised, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
             if let parts = outcome.parts, !parts.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     SectionLabel(text: "Parts")

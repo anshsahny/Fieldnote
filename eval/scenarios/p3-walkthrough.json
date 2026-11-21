@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "description": "The P3 iPhone walkthrough notes (Goodman EE0, Rheem 11, Carrier 13) in order, each with the earlier answers of its flow as history, and the choice each note means.",
+  "notes": [
+    {
+      "id": "g1",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "stepId": "CEE0-S1",
+      "note": "meter valve is open and the water heater lights fine",
+      "expect": "gas supply ok"
+    },
+    {
+      "id": "g2",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "stepId": "CEE0-S2",
+      "history": [
+        [
+          "CEE0-S1",
+          "gas supply ok"
+        ]
+      ],
+      "note": "switch clicks normally, drain tubes are clear",
+      "expect": "normal"
+    },
+    {
+      "id": "g3",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "stepId": "CEE0-S3",
+      "history": [
+        [
+          "CEE0-S1",
+          "gas supply ok"
+        ],
+        [
+          "CEE0-S2",
+          "normal"
+        ]
+      ],
+      "note": "igniter looks good, no cracks, lined up right",
+      "expect": "good"
+    },
+    {
+      "id": "g4",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "stepId": "CEE0-S4",
+      "history": [
+        [
+          "CEE0-S1",
+          "gas supply ok"
+        ],
+        [
+          "CEE0-S2",
+          "normal"
+        ],
+        [
+          "CEE0-S3",
+          "good"
+        ]
+      ],
+      "note": "sensor rod is shiny, no coating",
+      "expect": "clean"
+    },
+    {
+      "id": "g5",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "stepId": "CEE0-S5",
+      "history": [
+        [
+          "CEE0-S2",
+          "normal"
+        ],
+        [
+          "CEE0-S3",
+          "good"
+        ],
+        [
+          "CEE0-S4",
+          "clean"
+        ]
+      ],
+      "note": "found a bird nest in the exhaust termination",
+      "expect": "blocked"
+    },
+    {
+      "id": "r1",
+      "packId": "rheem-r96v-v1",
+      "stepId": "C11-S1",
+      "note": "handle is in line with the pipe, it's open",
+      "expect": "valve on"
+    },
+    {
+      "id": "r2",
+      "packId": "rheem-r96v-v1",
+      "stepId": "C11-S2",
+      "history": [
+        [
+          "C11-S1",
+          "valve on"
+        ]
+      ],
+      "note": "manifold reads right and all burners light across",
+      "expect": "pressure and burners normal"
+    },
+    {
+      "id": "r3",
+      "packId": "rheem-r96v-v1",
+      "stepId": "C11-S3",
+      "history": [
+        [
+          "C11-S1",
+          "valve on"
+        ],
+        [
+          "C11-S2",
+          "pressure and burners normal"
+        ]
+      ],
+      "note": "rod is clean and the wire is tight",
+      "expect": "clean and secure"
+    },
+    {
+      "id": "r4",
+      "packId": "rheem-r96v-v1",
+      "stepId": "C11-S4",
+      "history": [
+        [
+          "C11-S1",
+          "valve on"
+        ],
+        [
+          "C11-S2",
+          "pressure and burners normal"
+        ],
+        [
+          "C11-S3",
+          "clean and secure"
+        ]
+      ],
+      "note": "igniter never glows even with power at the board",
+      "expect": "faulty igniter"
+    },
+    {
+      "id": "c1",
+      "packId": "carrier-59sc5b-v1",
+      "stepId": "C13-S1",
+      "note": "filter is brand new, all registers open",
+      "expect": "clean and open"
+    },
+    {
+      "id": "c2",
+      "packId": "carrier-59sc5b-v1",
+      "stepId": "C13-S2",
+      "history": [
+        [
+          "C13-S1",
+          "clean and open"
+        ]
+      ],
+      "note": "vent pipe is the right size and clear outside",
+      "expect": "vent ok"
+    },
+    {
+      "id": "c3",
+      "packId": "carrier-59sc5b-v1",
+      "stepId": "C13-S3",
+      "history": [
+        [
+          "C13-S1",
+          "clean and open"
+        ],
+        [
+          "C13-S2",
+          "vent ok"
+        ]
+      ],
+      "note": "blower wheel wobbles on the shaft",
+      "expect": "loose or defective"
+    }
+  ]
+}

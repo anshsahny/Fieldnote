@@ -5,14 +5,19 @@ struct DebugView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.dismiss) private var dismiss
     @State private var evalRunning = false
-    @State private var evalSummary: [String: String] = [:]
+    @State private var evalResults: [(name: String, summary: [String: String])] = []
+    private static let evalFiles = ["p3-notes", "p3-walkthrough"]
+    private static let evalKeys = ["correct", "notes", "misses", "hedgedNotesClarified", "clarifyRate",
+                                   "medianOnDeviceMs", "medianAllMs", "onDeviceTurns", "promptVersion", "threshold", "error"]
 
     private func runEval(_ route: InferenceRoute) {
         #if DEBUG
         evalRunning = true
-        evalSummary = [:]
+        evalResults = []
         Task {
-            evalSummary = await NoteEval.run(name: "p3-notes", route: route)
+            for name in Self.evalFiles {
+                evalResults.append((name, await NoteEval.run(name: name, route: route)))
+            }
             evalRunning = false
         }
         #endif
@@ -58,14 +63,18 @@ struct DebugView: View {
                     }
                 }
                 #if DEBUG
-                Section("Note eval (10 notes, eval/scenarios/p3-notes.json)") {
+                Section("Note eval (eval/scenarios: p3-notes, p3-walkthrough)") {
                     Button(evalRunning ? "Running on this iPhone…" : "Run on-device (only_on_device)") { runEval(.onlyOnDevice) }
                         .disabled(evalRunning)
                     Button("Run in cloud (only_in_cloud)") { runEval(.onlyInCloud) }
                         .disabled(evalRunning || !app.network.isOnline)
                     if evalRunning { ProgressView().frame(maxWidth: .infinity) }
-                    ForEach(evalSummary.keys.sorted(), id: \.self) { key in
-                        LabeledContent(key, value: evalSummary[key] ?? "")
+                }
+                ForEach(evalResults, id: \.name) { result in
+                    Section("\(result.name) · \(result.summary["route"] ?? "")") {
+                        ForEach(Self.evalKeys.filter { result.summary[$0] != nil }, id: \.self) { key in
+                            LabeledContent(key, value: result.summary[key] ?? "")
+                        }
                     }
                 }
                 Section("Developer") {
