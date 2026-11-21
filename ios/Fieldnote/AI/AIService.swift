@@ -21,6 +21,8 @@ nonisolated struct AIResult<Content> {
     let latencyMs: Int
 }
 
+extension AIResult: Sendable where Content: Sendable {}
+
 /// Firebase AI Logic hybrid inference (firebase-ios-sdk 12.19.x): Apple's on-device Foundation
 /// Model and a cloud Gemini model behind one session, ordered by the Remote Config route.
 final class AIService {
