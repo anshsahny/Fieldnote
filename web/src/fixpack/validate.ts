@@ -156,7 +156,8 @@ export function validateFixPack(value: unknown, bytes = utf8Bytes(JSON.stringify
   return issues.length ? { ok: false, bytes, issues: sortIssues(issues) } : { ok: true, pack, bytes };
 }
 
-/** Stable JSON text for storage and for committing to content/fixpacks/ (2-space indent). */
+/** Stable JSON text for storage and for committing to content/fixpacks/. Tab-indented: readable in
+ *  diffs while keeping whitespace from eating the 25 KB budget (deeply nested step trees). */
 export function serializeFixPack(pack: FixPack): string {
-  return `${JSON.stringify(pack, null, 2)}\n`;
+  return `${JSON.stringify(pack, null, '\t')}\n`;
 }
