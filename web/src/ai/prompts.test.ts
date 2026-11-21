@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parsePrompt, PromptError, PROMPTS, renderPrompt } from './prompts';
+import { TEMPLATE_DEFAULTS } from './config';
 import { FEATURES } from './routing';
 
 const sample = `---
@@ -57,5 +58,13 @@ describe('shared/prompts', () => {
       expect(routeKeys).toContain(p.meta.route);
     }
     expect(PROMPTS.diagnosis.variables).toEqual(['step_instruction', 'allowed_choices', 'history', 'note']);
+  });
+
+  it('every prompt version matches its Remote Config prompt_version_<name> default', () => {
+    for (const [key, p] of Object.entries(PROMPTS)) {
+      const configured = TEMPLATE_DEFAULTS[`prompt_version_${key}`];
+      if (configured === undefined) continue; // compile_index/compile_code share prompt_version_compile
+      expect(`${key}@${p.meta.version}`).toBe(`${key}@${configured}`);
+    }
   });
 });

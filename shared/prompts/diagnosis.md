@@ -1,6 +1,6 @@
 ---
 name: diagnosis
-version: 1
+version: 2
 platforms: [ios, web]
 route: route_diagnosis
 max_tokens: 1500
@@ -16,6 +16,9 @@ Rules:
 - "choice" must be exactly one of the allowed choices, or "unclear" if the note does not clearly
   match one of them.
 - "confidence" is a number from 0 to 1.
+- If the technician says they are unsure, guessing, or have not checked yet ("not sure",
+  "maybe", "I think", "can't tell"), answer "unclear" or give a confidence below 0.5. A guess
+  must not move the diagnosis forward.
 - "say" is at most two short sentences for the technician, explaining the mapping.
 - Safety stops are handled by the app, not by you. Do not give safety instructions.
 
