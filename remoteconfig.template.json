@@ -6,9 +6,9 @@
       "parameters": {
         "cloud_model_fast": {
           "defaultValue": {
-            "value": "gemini-3.8-flash"
+            "value": "gemini-3.5-flash-lite"
           },
-          "description": "Cloud model for short/interactive work: diagnosis fallback, customer report, triage fallback, job summary.",
+          "description": "Cloud model for short/interactive work (diagnosis fallback, report, triage fallback). 2026-11-21: 3.8-flash returning 500 high demand; using 3.5-flash-lite.",
           "valueType": "STRING"
         },
         "cloud_model_compile": {
