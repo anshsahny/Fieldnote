@@ -28,6 +28,18 @@ service cloud.firestore {
       return inOrg(orgId) && profile().role == 'dispatcher';
     }
 
+    // Published fix pack envelope (orgs/{orgId}/fixpacks/{packId}).
+    function validFixPackDoc(d, packId) {
+      return d.packId == packId
+        && d.status == 'published'
+        && d.version is int && d.version >= 1
+        && d.packJson is string && d.packJson.size() <= 26000
+        && d.brand is string && d.brand.size() <= 200
+        && d.family is string && d.family.size() <= 200
+        && d.modelPatterns is list && d.modelPatterns.size() <= 10
+        && d.publishedBy == request.auth.uid;
+    }
+
     // Ledger rows are metadata only (no prompt/response content), small, and typed.
     // ts is client-set because iOS logs events offline and syncs them later.
     function validInferenceEvent(d) {
@@ -55,10 +67,14 @@ service cloud.firestore {
       allow read: if inOrg(orgId);
       allow write: if false;
 
-      // Fix packs: everyone in the org reads; only dispatchers create/publish.
+      // Fix packs: everyone in the org reads; only dispatchers publish. The pack JSON was validated
+      // in the console; the rules guard the envelope (identity, size, monotonic version).
       match /fixpacks/{packId} {
         allow read: if inOrg(orgId);
-        allow create, update, delete: if isDispatcher(orgId);
+        allow create: if isDispatcher(orgId) && validFixPackDoc(request.resource.data, packId);
+        allow update: if isDispatcher(orgId) && validFixPackDoc(request.resource.data, packId)
+          && request.resource.data.version > resource.data.version;
+        allow delete: if isDispatcher(orgId);
       }
 
       // Jobs: dispatchers create/assign/edit/delete; techs may only touch progress fields
