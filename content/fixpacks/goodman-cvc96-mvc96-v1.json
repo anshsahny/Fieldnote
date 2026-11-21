@@ -1,0 +1,963 @@
+{
+  "schemaVersion": 1,
+  "packId": "goodman-cvc96-mvc96-v1",
+  "brand": "Goodman",
+  "family": "*CVC96 / *MVC96 two-stage gas furnace (e.g. GMVC96)",
+  "equipmentType": "gas_furnace",
+  "displayType": "seven_segment",
+  "modelPatterns": [
+    "^[AG][CM]VC96\\d{4}[A-Z]{2}.*$"
+  ],
+  "version": 1,
+  "sourceRefs": [
+    {
+      "id": "src1",
+      "title": "Goodman IOG-2015E: Installation Instructions for *CVC96*BB & *MVC96*BB Two-Stage Gas Furnace",
+      "url": "https://mobile.goodmanmfg.com/mobileapp/stellent/pdf/infoPdf/Lit/IOG-2015E.pdf",
+      "pages": "46-49"
+    }
+  ],
+  "faultCodes": [
+    {
+      "code": "E11",
+      "display": "E11",
+      "meaning": "Open roll out switch",
+      "likelyCauses": [
+        "Open roll out switch",
+        "Incorrect gas pressure",
+        "Burner misaligned",
+        "Burner restriction"
+      ],
+      "firstStep": "CE11-S1",
+      "sourceRef": "src1",
+      "pages": "47"
+    },
+    {
+      "code": "EE0",
+      "display": "EE0",
+      "meaning": "Ignition lockout, flame failure, or flame loss",
+      "likelyCauses": [
+        "Gas supply interruption",
+        "Pressure switch or drainage issue",
+        "Faulty or misaligned igniter",
+        "Oxidized or coated flame sensor",
+        "Flue piping blockage",
+        "Induced draft blower performance issue"
+      ],
+      "firstStep": "CEE0-S1",
+      "sourceRef": "src1",
+      "pages": "47"
+    },
+    {
+      "code": "EE1",
+      "display": "EE1",
+      "meaning": "Low stage pressure switch closed at start",
+      "likelyCauses": [
+        "low stage pressure switch contacts sticking",
+        "short in pressure switch circuit wiring",
+        "faulty low stage pressure switch"
+      ],
+      "firstStep": "CEE1-S1",
+      "sourceRef": "src1",
+      "pages": "47"
+    },
+    {
+      "code": "EE2",
+      "display": "EE2",
+      "meaning": "Low stage pressure switch not closed",
+      "likelyCauses": [
+        "Blocked or pinched pressure switch hose",
+        "Blocked flue or inlet air pipe",
+        "Blocked drain system",
+        "Weak induced draft blower",
+        "Loose or disconnected wiring",
+        "Malfunctioning pressure switch contacts"
+      ],
+      "firstStep": "CEE2-S1",
+      "sourceRef": "src1",
+      "pages": "47"
+    },
+    {
+      "code": "EE3",
+      "display": "EE3",
+      "meaning": "Primary limit circuit is open",
+      "likelyCauses": [
+        "Blocked filters",
+        "Restrictive ductwork",
+        "Improper circulator blower speed",
+        "Failed circulator blower motor",
+        "Loose or improperly connected wiring in high limit circuit"
+      ],
+      "firstStep": "CEE3-S1",
+      "sourceRef": "src1",
+      "pages": "47"
+    },
+    {
+      "code": "EE5",
+      "display": "EE5",
+      "meaning": "Open fuse or short in low voltage wiring",
+      "likelyCauses": [
+        "blown low voltage fuse",
+        "short in low voltage wiring"
+      ],
+      "firstStep": "CEE5-S1",
+      "sourceRef": "src1",
+      "pages": "48"
+    },
+    {
+      "code": "EE6",
+      "display": "EE6",
+      "meaning": "Low flame sense micro amp signal",
+      "likelyCauses": [
+        "Flame sensor is coated or oxidized",
+        "Flame sensor incorrectly positioned in burner flame",
+        "Lazy burner flame due to improper gas pressure",
+        "Restricted combustion air or inlet air piping"
+      ],
+      "firstStep": "CEE6-S1",
+      "sourceRef": "src1",
+      "pages": "48"
+    },
+    {
+      "code": "EE7",
+      "display": "EE7",
+      "meaning": "Problem with igniter circuit",
+      "likelyCauses": [
+        "improperly connected or shorted igniter",
+        "poor unit ground",
+        "faulty wiring from control module to igniter",
+        "igniter relay fault on integrated control module"
+      ],
+      "firstStep": "CEE7-S1",
+      "sourceRef": "src1",
+      "pages": "48"
+    }
+  ],
+  "steps": {
+    "CE11-S1": {
+      "instruction": "Check for correct gas pressure.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "pressure correct",
+          "pressure incorrect"
+        ]
+      },
+      "next": {
+        "pressure correct": "CE11-S2",
+        "pressure incorrect": "CE11-L1"
+      },
+      "safety": "GAS"
+    },
+    "CE11-S2": {
+      "instruction": "Check for correct burner alignment.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "aligned",
+          "misaligned"
+        ]
+      },
+      "next": {
+        "aligned": "CE11-S3",
+        "misaligned": "CE11-L2"
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "CE11-S3": {
+      "instruction": "Check for burner restrictions.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "clear",
+          "restricted"
+        ]
+      },
+      "next": {
+        "clear": "CE11-L3",
+        "restricted": "CE11-L4"
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "CE11-L1": {
+      "instruction": "Adjust gas pressure",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Adjust the gas pressure to match the rating plate specifications.",
+        "parts": [
+          "gas valve"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "CE11-L2": {
+      "instruction": "Realign burners",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Realign the burners properly to prevent rollout.",
+        "parts": [
+          "burner assembly"
+        ]
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "CE11-L3": {
+      "instruction": "Escalate roll out switch issue",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Inspect switch continuity and heat exchanger integrity for deeper diagnosis.",
+        "parts": [
+          "roll out switch"
+        ]
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "CE11-L4": {
+      "instruction": "Clear burner restriction",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Remove any blockages or debris causing burner restrictions.",
+        "parts": [
+          "burner"
+        ]
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "CEE0-S1": {
+      "instruction": "Check for any gas supply interruption to the furnace.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "CEE0-L1",
+        "no": "CEE0-S2"
+      },
+      "safety": "GAS"
+    },
+    "CEE0-S2": {
+      "instruction": "Inspect the front cover pressure switch operation and drainage.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "faulty",
+          "normal"
+        ]
+      },
+      "next": {
+        "faulty": "CEE0-L2",
+        "normal": "CEE0-S3"
+      },
+      "safety": "WATER_ELECTRICAL"
+    },
+    "CEE0-S3": {
+      "instruction": "Check the igniter condition and alignment.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "damaged",
+          "good"
+        ]
+      },
+      "next": {
+        "damaged": "CEE0-L3",
+        "good": "CEE0-S4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE0-S4": {
+      "instruction": "Inspect the flame sensor for oxidation or coating.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "oxidized",
+          "clean"
+        ]
+      },
+      "next": {
+        "oxidized": "CEE0-L4",
+        "clean": "CEE0-S5"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE0-S5": {
+      "instruction": "Check the flue piping for blockages or termination issues.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "blocked",
+          "clear"
+        ]
+      },
+      "next": {
+        "blocked": "CEE0-L5",
+        "clear": "CEE0-L6"
+      },
+      "safety": "CO"
+    },
+    "CEE0-L1": {
+      "instruction": "Gas supply interruption",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Locate and correct the gas supply interruption.",
+        "parts": [
+          "gas valve",
+          "gas line"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "CEE0-L2": {
+      "instruction": "Pressure switch issue",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair or replace the front cover pressure switch or clear drainage.",
+        "parts": [
+          "pressure switch",
+          "drain hose"
+        ]
+      },
+      "safety": "WATER_ELECTRICAL"
+    },
+    "CEE0-L3": {
+      "instruction": "Igniter failure",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace or realign the igniter.",
+        "parts": [
+          "igniter"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE0-L4": {
+      "instruction": "Flame sensor dirty",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Sand and clean the flame sensor if coated or oxidized.",
+        "parts": [
+          "flame sensor"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE0-L5": {
+      "instruction": "Flue piping blocked",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Remove blockages from the flue piping and verify proper length and elbows.",
+        "parts": [
+          "flue pipe"
+        ]
+      },
+      "safety": "CO"
+    },
+    "CEE0-L6": {
+      "instruction": "Draft blower check",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Verify proper induced draft blower performance and deeper control operation."
+      }
+    },
+    "CEE1-S1": {
+      "instruction": "Inspect low stage pressure switch wiring for any short circuits.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "CEE1-L1",
+        "no": "CEE1-S2"
+      }
+    },
+    "CEE1-S2": {
+      "instruction": "Check if the low stage pressure switch contacts remain closed when open.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "CEE1-L2",
+        "no": "CEE1-L3"
+      }
+    },
+    "CEE1-L1": {
+      "instruction": "Wiring short found",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair short in pressure switch circuit wiring.",
+        "parts": [
+          "pressure switch wiring"
+        ]
+      }
+    },
+    "CEE1-L2": {
+      "instruction": "Contacts sticking",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace low stage pressure switch due to sticking contacts.",
+        "parts": [
+          "low stage pressure switch"
+        ]
+      }
+    },
+    "CEE1-L3": {
+      "instruction": "Further diagnosis needed",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Pressure switch appears normal; escalate to deeper control and system checks."
+      }
+    },
+    "CEE2-S1": {
+      "instruction": "Inspect the low stage pressure switch hose for blockages, pinches, or improper connections.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "hose is clear",
+          "hose is blocked or damaged"
+        ]
+      },
+      "next": {
+        "hose is clear": "CEE2-S2",
+        "hose is blocked or damaged": "CEE2-L1"
+      }
+    },
+    "CEE2-S2": {
+      "instruction": "Check the flue and inlet air piping for blockages, improper length, or blocked terminations.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "piping is clear",
+          "piping is blocked"
+        ]
+      },
+      "next": {
+        "piping is clear": "CEE2-S3",
+        "piping is blocked": "CEE2-L2"
+      },
+      "safety": "CO"
+    },
+    "CEE2-S3": {
+      "instruction": "Inspect the condensate drain system for any clogs or standing water.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "drain is clear",
+          "drain is blocked"
+        ]
+      },
+      "next": {
+        "drain is clear": "CEE2-S4",
+        "drain is blocked": "CEE2-L3"
+      },
+      "safety": "WATER_ELECTRICAL"
+    },
+    "CEE2-S4": {
+      "instruction": "Verify wiring connections at the low stage pressure switch and control board.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "wiring is secure",
+          "wiring is loose"
+        ]
+      },
+      "next": {
+        "wiring is secure": "CEE2-S5",
+        "wiring is loose": "CEE2-L4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE2-S5": {
+      "instruction": "Check induced draft blower performance and operation.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "blower operates normally",
+          "blower is weak or fails"
+        ]
+      },
+      "next": {
+        "blower operates normally": "CEE2-L5",
+        "blower is weak or fails": "CEE2-L6"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE2-L1": {
+      "instruction": "Repair or replace hose",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear, repair, or replace the blocked or pinched pressure switch hose.",
+        "parts": [
+          "pressure switch tubing"
+        ]
+      }
+    },
+    "CEE2-L2": {
+      "instruction": "Clear venting obstruction",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Remove blockages from the flue or inlet air piping and verify proper termination."
+      },
+      "safety": "CO"
+    },
+    "CEE2-L3": {
+      "instruction": "Clear condensate system",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear any blockages in the condensate drain system to allow proper drainage."
+      },
+      "safety": "WATER_ELECTRICAL"
+    },
+    "CEE2-L4": {
+      "instruction": "Secure switch wiring",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Tighten or correctly reconnect any loose wires on the pressure switch circuit."
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE2-L5": {
+      "instruction": "Replace pressure switch",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the malfunctioning low stage pressure switch with a new one.",
+        "parts": [
+          "low stage pressure switch"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE2-L6": {
+      "instruction": "Service draft blower",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair or replace the induced draft blower assembly as necessary.",
+        "parts": [
+          "induced draft blower"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE3-S1": {
+      "instruction": "Check the air filters and ductwork for any blockages or restrictions.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "blocked",
+          "clear"
+        ]
+      },
+      "next": {
+        "blocked": "CEE3-L1",
+        "clear": "CEE3-S2"
+      }
+    },
+    "CEE3-S2": {
+      "instruction": "Check circulator blower speed and performance.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "faulty",
+          "normal"
+        ]
+      },
+      "next": {
+        "faulty": "CEE3-L2",
+        "normal": "CEE3-S3"
+      }
+    },
+    "CEE3-S3": {
+      "instruction": "Inspect high limit circuit wiring for loose or improper connections.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "CEE3-L3",
+        "no": "CEE3-L4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE3-L1": {
+      "instruction": "Clean or remove obstruction",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clean filters or remove obstruction from ductwork.",
+        "parts": [
+          "air filter"
+        ]
+      }
+    },
+    "CEE3-L2": {
+      "instruction": "Replace blower motor",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Correct blower speed or replace circulator blower motor if necessary.",
+        "parts": [
+          "circulator blower motor"
+        ]
+      }
+    },
+    "CEE3-L3": {
+      "instruction": "Tighten limit wiring",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Tighten or correct wiring connections in the high limit circuit.",
+        "parts": [
+          "wiring"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE3-L4": {
+      "instruction": "Escalate diagnosis",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Primary limit circuit remains open with no obvious airflow or wiring faults; perform deeper heat exchanger and limit switch checks."
+      }
+    },
+    "CEE5-S1": {
+      "instruction": "Inspect the control board fuse for an open or blown condition.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "blown",
+          "intact"
+        ]
+      },
+      "next": {
+        "blown": "CEE5-S2",
+        "intact": "CEE5-S3"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE5-S2": {
+      "instruction": "Replace the blown control fuse.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the open low voltage fuse on the control board.",
+        "parts": [
+          "fuse"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE5-S3": {
+      "instruction": "Check for any short circuits in the low voltage wiring harness.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "found",
+          "not found"
+        ]
+      },
+      "next": {
+        "found": "CEE5-S4",
+        "not found": "CEE5-S5"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE5-S4": {
+      "instruction": "Repair or replace the damaged low voltage wiring.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Locate and correct short in low voltage wiring.",
+        "parts": [
+          "low voltage wiring"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE5-S5": {
+      "instruction": "Perform deeper diagnosis of the control system.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Escalate for advanced diagnostics as fuses and low voltage wiring check out."
+      }
+    },
+    "CEE6-S1": {
+      "instruction": "Inspect the flame sensor rod for any coating, oxidation, or soot buildup.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "clean and shiny",
+          "coated or oxidized"
+        ]
+      },
+      "next": {
+        "clean and shiny": "CEE6-S2",
+        "coated or oxidized": "CEE6-L1"
+      }
+    },
+    "CEE6-S2": {
+      "instruction": "Verify proper alignment and positioning of the flame sensor inside the burner flame.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "properly positioned",
+          "misaligned"
+        ]
+      },
+      "next": {
+        "properly positioned": "CEE6-S3",
+        "misaligned": "CEE6-L2"
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "CEE6-S3": {
+      "instruction": "Check the inlet air piping and combustion air path for any blockages, improper length, elbows, or termination issues.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "clear and correct",
+          "blocked or damaged"
+        ]
+      },
+      "next": {
+        "clear and correct": "CEE6-S4",
+        "blocked or damaged": "CEE6-L3"
+      },
+      "safety": "CO"
+    },
+    "CEE6-S4": {
+      "instruction": "Compare the current manifold gas pressure to the rating plate specification.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "matches rating plate",
+          "incorrect pressure"
+        ]
+      },
+      "next": {
+        "matches rating plate": "CEE6-L4",
+        "incorrect pressure": "CEE6-L5"
+      },
+      "safety": "GAS"
+    },
+    "CEE6-L1": {
+      "instruction": "Clean flame sensor",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clean the flame sensor rod to remove oxidation or coating.",
+        "parts": [
+          "flame sensor"
+        ]
+      }
+    },
+    "CEE6-L2": {
+      "instruction": "Realize flame sensor",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Adjust and secure the flame sensor in the correct burner flame alignment.",
+        "parts": [
+          "flame sensor"
+        ]
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "CEE6-L3": {
+      "instruction": "Clear air piping blockage",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Remove blockages from the inlet air piping or correct improper length and termination.",
+        "parts": [
+          "inlet air pipe"
+        ]
+      },
+      "safety": "CO"
+    },
+    "CEE6-L4": {
+      "instruction": "Escalate diagnosis",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Further electrical or control board diagnosis is required as components check out normally."
+      }
+    },
+    "CEE6-L5": {
+      "instruction": "Adjust gas pressure",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Adjust the gas pressure to match the specifications on the unit rating plate.",
+        "parts": [
+          "gas valve"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "CEE7-S1": {
+      "instruction": "Inspect the wiring connections from the integrated control module to the igniter.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "loose or damaged",
+          "secure and intact"
+        ]
+      },
+      "next": {
+        "loose or damaged": "CEE7-L1",
+        "secure and intact": "CEE7-S2"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE7-S2": {
+      "instruction": "Examine the igniter for any visible shorts or damage.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "shorted or damaged",
+          "looks fine"
+        ]
+      },
+      "next": {
+        "shorted or damaged": "CEE7-L2",
+        "looks fine": "CEE7-S3"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE7-S3": {
+      "instruction": "Check the continuity and quality of the unit ground wiring.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "poor ground",
+          "ground is good"
+        ]
+      },
+      "next": {
+        "poor ground": "CEE7-L3",
+        "ground is good": "CEE7-L4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE7-L1": {
+      "instruction": "Wiring issue found",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Tighten or correct the wiring between the control module and the igniter.",
+        "parts": [
+          "wiring harness"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE7-L2": {
+      "instruction": "Shorted igniter",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the shorted or damaged igniter.",
+        "parts": [
+          "igniter"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE7-L3": {
+      "instruction": "Poor grounding",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Verify and correct the unit ground wiring.",
+        "parts": [
+          "ground wire"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "CEE7-L4": {
+      "instruction": "Control module failure",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Check igniter output from control and replace the integrated control module if faulty.",
+        "parts": [
+          "integrated control module"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    }
+  },
+  "safetyStops": [
+    {
+      "id": "GAS",
+      "triggers": [
+        "smell gas",
+        "gas smell",
+        "gas odor",
+        "gas odour",
+        "rotten egg",
+        "sulfur smell",
+        "hissing gas"
+      ],
+      "message": "Stop. Possible gas leak. Don't operate switches or the furnace. Leave the area, then follow your company's gas leak procedure and call the gas utility."
+    },
+    {
+      "id": "CO",
+      "triggers": [
+        "co alarm",
+        "carbon monoxide",
+        "co detector",
+        "co reading",
+        "co is high",
+        "high co"
+      ],
+      "message": "Stop. Possible carbon monoxide. Get everyone outside to fresh air, leave the furnace off, and call 911 from outside."
+    },
+    {
+      "id": "BURNING",
+      "triggers": [
+        "burning smell",
+        "scorch",
+        "smoke",
+        "melted",
+        "melting",
+        "charred"
+      ],
+      "message": "Stop. Possible overheating or fire. Shut off power at the disconnect and don't restart until the cause is found and fixed."
+    },
+    {
+      "id": "WATER_ELECTRICAL",
+      "triggers": [
+        "water on the board",
+        "water near electrical",
+        "wet wiring",
+        "water in the control",
+        "water on the control",
+        "flooded"
+      ],
+      "message": "Stop. Water near live electrical parts. Shut off power at the disconnect before touching anything and dry the area first."
+    },
+    {
+      "id": "EXPOSED_WIRING",
+      "triggers": [
+        "exposed wire",
+        "bare wire",
+        "frayed wire",
+        "sparking",
+        "arcing",
+        "sparks"
+      ],
+      "message": "Stop. Exposed or damaged wiring. Shut off and lock out power before going any further."
+    },
+    {
+      "id": "FLAME_ROLLOUT",
+      "triggers": [
+        "flame rollout",
+        "flames coming out",
+        "rollout switch tripped",
+        "flames outside the burner",
+        "rollout tripped"
+      ],
+      "message": "Stop. Flame rollout is a fire hazard. Shut off gas and power. Don't reset the rollout switch until the heat exchanger and venting are inspected."
+    }
+  ]
+}

@@ -1,0 +1,810 @@
+{
+  "schemaVersion": 1,
+  "packId": "carrier-59sc5b-v1",
+  "brand": "Carrier",
+  "family": "59SC5B single-stage condensing gas furnace",
+  "equipmentType": "gas_furnace",
+  "displayType": "led_flash",
+  "modelPatterns": [
+    "^59SC5B.*$"
+  ],
+  "version": 1,
+  "sourceRefs": [
+    {
+      "id": "src1",
+      "title": "Carrier 59SC5B-05SI: Installation, Start-up, Operating and Service and Maintenance Instructions",
+      "url": "https://www.shareddocs.com/hvac/docs/1009/Public/04/59SC5B-05SI.pdf",
+      "pages": "58-62, 69"
+    }
+  ],
+  "faultCodes": [
+    {
+      "code": "13",
+      "display": "Red LED flashes 1 time, then 3 times",
+      "meaning": "Limit circuit lockout",
+      "likelyCauses": [
+        "Dirty filter or restricted duct system",
+        "Improper vent sizing",
+        "Restricted vent",
+        "Loose blower wheel",
+        "Excessive wind",
+        "Defective blower motor",
+        "Defective switch or connections"
+      ],
+      "firstStep": "C13-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    },
+    {
+      "code": "14",
+      "display": "Red LED flashes 1 time, then 4 times",
+      "meaning": "Ignition lockout",
+      "likelyCauses": [
+        "Mis-wired gas valve",
+        "Defective control valve",
+        "Limit circuit lockout",
+        "Flame rollout switch open"
+      ],
+      "firstStep": "C14-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    },
+    {
+      "code": "22",
+      "display": "Red LED flashes 2 times, then 2 times",
+      "meaning": "Abnormal flame-proving signal",
+      "likelyCauses": [
+        "Flame is proved while gas valve is de-energized",
+        "Leaky gas valve",
+        "Stuck-open gas valve"
+      ],
+      "firstStep": "C22-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    },
+    {
+      "code": "23",
+      "display": "Red LED flashes 2 times, then 3 times",
+      "meaning": "Pressure switch did not open",
+      "likelyCauses": [
+        "pressure switch stuck closed",
+        "defective pressure switch",
+        "shorted wiring"
+      ],
+      "firstStep": "C23-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    },
+    {
+      "code": "24",
+      "display": "Red LED flashes 2 times, then 4 times",
+      "meaning": "Secondary voltage fuse is open",
+      "likelyCauses": [
+        "shorted 24v wiring",
+        "faulty accessory powered by 24v circuit",
+        "blown secondary voltage fuse"
+      ],
+      "firstStep": "C24-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    },
+    {
+      "code": "31",
+      "display": "Red LED flashes 3 times, then 1 time",
+      "meaning": "Pressure switch did not close or reopened",
+      "likelyCauses": [
+        "Excessive wind",
+        "Restricted vent",
+        "Defective inducer motor",
+        "Low inlet gas pressure",
+        "Defective pressure switch",
+        "Low inducer voltage",
+        "Inadequate combustion air supply",
+        "Proper vent sizing"
+      ],
+      "firstStep": "C31-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    },
+    {
+      "code": "33",
+      "display": "Red LED flashes 3 times, then 3 times",
+      "meaning": "Limit circuit fault",
+      "likelyCauses": [
+        "Dirty filter or restricted duct system",
+        "Improper proper vent sizing",
+        "Restricted vent",
+        "Loose blower wheel",
+        "Excessive wind",
+        "Defective blower motor"
+      ],
+      "firstStep": "C33-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    },
+    {
+      "code": "34",
+      "display": "Red LED flashes 3 times, then 4 times",
+      "meaning": "Ignition proving failure",
+      "likelyCauses": [
+        "oxide buildup on flame sensor",
+        "manual valve shut-off",
+        "low inlet gas pressure",
+        "defective control ground",
+        "defective flame sensor or loose connection"
+      ],
+      "firstStep": "C34-S1",
+      "sourceRef": "src1",
+      "pages": "69"
+    }
+  ],
+  "steps": {
+    "C13-S1": {
+      "instruction": "Check for a dirty air filter or restricted duct system.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C13-L1",
+        "no": "C13-S2"
+      }
+    },
+    "C13-S2": {
+      "instruction": "Check if the vent is restricted or improperly sized.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C13-L2",
+        "no": "C13-S3"
+      },
+      "safety": "CO"
+    },
+    "C13-S3": {
+      "instruction": "Check the blower motor and wheel for looseness or defects.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C13-L3",
+        "no": "C13-L4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C13-L1": {
+      "instruction": "Clean or replace filter / clear ducts",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clean or replace dirty air filter and clear any restrictions in the duct system.",
+        "parts": [
+          "air filter"
+        ]
+      }
+    },
+    "C13-L2": {
+      "instruction": "Clear or resize vent",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear restrictions from the vent or correct vent sizing issues.",
+        "parts": [
+          "venting"
+        ]
+      },
+      "safety": "CO"
+    },
+    "C13-L3": {
+      "instruction": "Repair or replace blower motor",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Secure loose blower wheel or replace a defective blower motor.",
+        "parts": [
+          "blower motor",
+          "blower wheel"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C13-L4": {
+      "instruction": "Escalate diagnosis",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Limit lockout cause not found in basic checks; perform advanced electrical and limit switch testing."
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C14-S1": {
+      "instruction": "Check if there is a limit switch lockout or a flame rollout switch open.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C14-S2",
+        "no": "C14-S3"
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "C14-S2": {
+      "instruction": "Inspect limit or rollout switches and reset auto-reset after three hours.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear limit switch or rollout switch trip condition and verify proper airflow.",
+        "parts": [
+          "limit switch",
+          "rollout switch"
+        ]
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "C14-S3": {
+      "instruction": "Check for mis-wired gas valve or a defective control valve.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "miswired",
+          "normal"
+        ]
+      },
+      "next": {
+        "miswired": "C14-S4",
+        "normal": "C14-S5"
+      },
+      "safety": "GAS"
+    },
+    "C14-S4": {
+      "instruction": "Correct the gas valve wiring.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair or correct the gas valve wiring harness.",
+        "parts": [
+          "gas valve wiring"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "C14-S5": {
+      "instruction": "Check the control valve operation.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "defective",
+          "working"
+        ]
+      },
+      "next": {
+        "defective": "C14-S6",
+        "working": "C14-S7"
+      },
+      "safety": "GAS"
+    },
+    "C14-S6": {
+      "instruction": "Replace defective control valve.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the faulty control valve.",
+        "parts": [
+          "gas valve"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "C14-S7": {
+      "instruction": "Escalate for deeper diagnosis of control board or ignition components.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Escalate for further electrical and control board diagnostics."
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C22-S1": {
+      "instruction": "Check if the flame is proved while the gas valve is de-energized.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C22-S2",
+        "no": "C22-S3"
+      },
+      "safety": "GAS"
+    },
+    "C22-S2": {
+      "instruction": "Inspect the gas valve for leaks or failure.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the stuck open or leaky gas valve.",
+        "parts": [
+          "gas valve"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "C22-S3": {
+      "instruction": "Check control board operation and wiring.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Escalate for deeper diagnosis of control board or wiring."
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C23-S1": {
+      "instruction": "Check if the pressure switch contacts are stuck closed.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "contacts closed",
+          "contacts open"
+        ]
+      },
+      "next": {
+        "contacts closed": "C23-S2",
+        "contacts open": "C23-S3"
+      }
+    },
+    "C23-S2": {
+      "instruction": "Replace the stuck pressure switch.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Pressure switch is stuck closed and must be replaced.",
+        "parts": [
+          "pressure switch"
+        ]
+      }
+    },
+    "C23-S3": {
+      "instruction": "Inspect pressure switch wiring and connections.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "wiring damaged",
+          "wiring normal"
+        ]
+      },
+      "next": {
+        "wiring damaged": "C23-S4",
+        "wiring normal": "C23-S5"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C23-S4": {
+      "instruction": "Repair or replace damaged wiring harness.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair or replace damaged wiring connected to the pressure switch.",
+        "parts": [
+          "wiring harness"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C23-S5": {
+      "instruction": "Escalate for deeper control board diagnosis.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Switch and wiring check out; further diagnostic by qualified personnel is needed."
+      }
+    },
+    "C24-S1": {
+      "instruction": "Inspect the 24V fuse on the control board.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "fuse is blown",
+          "fuse is intact"
+        ]
+      },
+      "next": {
+        "fuse is blown": "C24-S2",
+        "fuse is intact": "C24-S5"
+      },
+      "safety": "EXPOSED_WIRING",
+      "pages": "61"
+    },
+    "C24-S2": {
+      "instruction": "Check for shorts in the 24V thermostat or accessory wiring.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "short found",
+          "no short found"
+        ]
+      },
+      "next": {
+        "short found": "C24-S3",
+        "no short found": "C24-S4"
+      },
+      "safety": "EXPOSED_WIRING",
+      "pages": "61"
+    },
+    "C24-S3": {
+      "instruction": "Repair or replace the shorted wiring.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair any damaged 24V wiring or shorted thermostat cables.",
+        "parts": [
+          "thermostat wire"
+        ]
+      },
+      "safety": "EXPOSED_WIRING",
+      "pages": "61"
+    },
+    "C24-S4": {
+      "instruction": "Replace the blown 3A automotive-type fuse with a new 3A fuse.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the open secondary voltage fuse with a new 3A fuse.",
+        "parts": [
+          "3a fuse"
+        ]
+      },
+      "safety": "EXPOSED_WIRING",
+      "pages": "61"
+    },
+    "C24-S5": {
+      "instruction": "Verify control power status and LED operation.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "status code persists",
+          "issue resolved"
+        ]
+      },
+      "next": {
+        "status code persists": "C24-S6",
+        "issue resolved": "C24-S7"
+      },
+      "safety": "EXPOSED_WIRING",
+      "pages": "61"
+    },
+    "C24-S6": {
+      "instruction": "Escalate for deeper control board diagnosis.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "The control board or internal transformer requires deeper electrical diagnosis.",
+        "parts": [
+          "control board"
+        ]
+      },
+      "safety": "EXPOSED_WIRING",
+      "pages": "61"
+    },
+    "C24-S7": {
+      "instruction": "Fault code 24 is cleared and normal operation is restored.",
+      "outcome": {
+        "kind": "resolved",
+        "summary": "Secondary voltage circuit is operating normally."
+      },
+      "pages": "61"
+    },
+    "C31-S1": {
+      "instruction": "Check for excessive wind or restricted vent conditions.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "excessive wind or vent restriction found",
+          "vent and wind clear"
+        ]
+      },
+      "next": {
+        "excessive wind or vent restriction found": "C31-S2",
+        "vent and wind clear": "C31-S3"
+      },
+      "safety": "CO"
+    },
+    "C31-S2": {
+      "instruction": "Clear the vent restriction or protect against excessive wind.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear blocked vent or fix wind issue.",
+        "parts": [
+          "venting"
+        ]
+      },
+      "safety": "CO"
+    },
+    "C31-S3": {
+      "instruction": "Inspect pressure switch tubing and condensate drainage.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "tubing or drainage blocked",
+          "tubing and drainage clear"
+        ]
+      },
+      "next": {
+        "tubing or drainage blocked": "C31-S4",
+        "tubing and drainage clear": "C31-S5"
+      },
+      "safety": "WATER_ELECTRICAL"
+    },
+    "C31-S4": {
+      "instruction": "Clear or reconnect pressure tubing and condensate drainage.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear or secure pressure switch tubing and condensate lines.",
+        "parts": [
+          "pressure switch tubing",
+          "drainage tubing"
+        ]
+      },
+      "safety": "WATER_ELECTRICAL"
+    },
+    "C31-S5": {
+      "instruction": "Check inducer motor operation and voltage.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "inducer or voltage faulty",
+          "inducer runs properly"
+        ]
+      },
+      "next": {
+        "inducer or voltage faulty": "C31-S6",
+        "inducer runs properly": "C31-S7"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C31-S6": {
+      "instruction": "Repair or replace faulty inducer motor or wiring.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace faulty inducer motor or correct voltage supply.",
+        "parts": [
+          "inducer motor"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C31-S7": {
+      "instruction": "Replace defective pressure switch.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace pressure switch that fails to close or stays open.",
+        "parts": [
+          "pressure switch"
+        ]
+      }
+    },
+    "C33-S1": {
+      "instruction": "Check air filter and duct system for restrictions or blockage.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "filter or ducts restricted",
+          "airflow is clear"
+        ]
+      },
+      "next": {
+        "filter or ducts restricted": "C33-L1",
+        "airflow is clear": "C33-S2"
+      },
+      "pages": "58, 69"
+    },
+    "C33-S2": {
+      "instruction": "Check venting system and combustion air supply for restrictions.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "venting or intake restricted",
+          "venting is clear"
+        ]
+      },
+      "next": {
+        "venting or intake restricted": "C33-L2",
+        "venting is clear": "C33-S3"
+      },
+      "safety": "CO",
+      "pages": "58, 69"
+    },
+    "C33-S3": {
+      "instruction": "Inspect blower wheel and motor operation.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "blower issue found",
+          "blower operates normally"
+        ]
+      },
+      "next": {
+        "blower issue found": "C33-L3",
+        "blower operates normally": "C33-L4"
+      },
+      "pages": "58, 69"
+    },
+    "C33-L1": {
+      "instruction": "Clean or replace filter",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clean or replace dirty air filter and clear any restrictions in the duct system.",
+        "parts": [
+          "air filter"
+        ]
+      },
+      "pages": "58, 69"
+    },
+    "C33-L2": {
+      "instruction": "Clear vent or intake blockage",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Remove obstructions from the venting system or combustion air intake.",
+        "parts": [
+          "venting"
+        ]
+      },
+      "safety": "CO",
+      "pages": "58, 69"
+    },
+    "C33-L3": {
+      "instruction": "Service blower assembly",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Secure loose blower wheel or replace a defective blower motor.",
+        "parts": [
+          "blower motor",
+          "blower wheel"
+        ]
+      },
+      "pages": "58, 69"
+    },
+    "C33-L4": {
+      "instruction": "Escalate for limit switch check",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Perform a physical limit switch check per manual instructions or test limit control operation."
+      },
+      "pages": "58, 69"
+    },
+    "C34-S1": {
+      "instruction": "Measure the flame current signal from the flame sensor during burner operation.",
+      "ask": {
+        "type": "reading",
+        "options": [
+          "below 0.5 uA",
+          "0.5 uA or more"
+        ],
+        "unit": "uA"
+      },
+      "next": {
+        "below 0.5 uA": "C34-S2",
+        "0.5 uA or more": "C34-S3"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C34-S2": {
+      "instruction": "Clean the flame sensor with fine steel wool and inspect wiring connections.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clean oxide buildup off the flame sensor with fine steel wool.",
+        "parts": [
+          "flame sensor"
+        ]
+      }
+    },
+    "C34-S3": {
+      "instruction": "Check if gas supply is turned on and gas pressure is adequate.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C34-S4",
+        "no": "C34-S5"
+      },
+      "safety": "GAS"
+    },
+    "C34-S4": {
+      "instruction": "Inspect control ground and wiring harness.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Check control ground continuity and ensure green/yellow wire is connected to furnace sheet metal."
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C34-S5": {
+      "instruction": "Open the manual gas shut-off valve.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Open manual shut-off valve to restore gas supply.",
+        "parts": [
+          "manual gas valve"
+        ]
+      },
+      "safety": "GAS"
+    }
+  },
+  "safetyStops": [
+    {
+      "id": "GAS",
+      "triggers": [
+        "smell gas",
+        "gas smell",
+        "gas odor",
+        "gas odour",
+        "rotten egg",
+        "sulfur smell",
+        "hissing gas"
+      ],
+      "message": "Stop. Possible gas leak. Don't operate switches or the furnace. Leave the area, then follow your company's gas leak procedure and call the gas utility."
+    },
+    {
+      "id": "CO",
+      "triggers": [
+        "co alarm",
+        "carbon monoxide",
+        "co detector",
+        "co reading",
+        "co is high",
+        "high co"
+      ],
+      "message": "Stop. Possible carbon monoxide. Get everyone outside to fresh air, leave the furnace off, and call 911 from outside."
+    },
+    {
+      "id": "BURNING",
+      "triggers": [
+        "burning smell",
+        "scorch",
+        "smoke",
+        "melted",
+        "melting",
+        "charred"
+      ],
+      "message": "Stop. Possible overheating or fire. Shut off power at the disconnect and don't restart until the cause is found and fixed."
+    },
+    {
+      "id": "WATER_ELECTRICAL",
+      "triggers": [
+        "water on the board",
+        "water near electrical",
+        "wet wiring",
+        "water in the control",
+        "water on the control",
+        "flooded"
+      ],
+      "message": "Stop. Water near live electrical parts. Shut off power at the disconnect before touching anything and dry the area first."
+    },
+    {
+      "id": "EXPOSED_WIRING",
+      "triggers": [
+        "exposed wire",
+        "bare wire",
+        "frayed wire",
+        "sparking",
+        "arcing",
+        "sparks"
+      ],
+      "message": "Stop. Exposed or damaged wiring. Shut off and lock out power before going any further."
+    },
+    {
+      "id": "FLAME_ROLLOUT",
+      "triggers": [
+        "flame rollout",
+        "flames coming out",
+        "rollout switch tripped",
+        "flames outside the burner",
+        "rollout tripped"
+      ],
+      "message": "Stop. Flame rollout is a fire hazard. Shut off gas and power. Don't reset the rollout switch until the heat exchanger and venting are inspected."
+    }
+  ]
+}

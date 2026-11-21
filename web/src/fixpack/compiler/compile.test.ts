@@ -110,6 +110,12 @@ describe('compiler: mocked model output', () => {
 });
 
 describe('assembly helpers', () => {
+  it('drops step page refs that repeat the fault code page', () => {
+    const pack = assemblePack({ index, codes: { E3: tree() }, source: { title: 't', url: 'https://example.com/x.pdf', pages: '10-12' } });
+    expect(pack.faultCodes[0]!.pages).toBe('11');
+    expect(pack.steps['CE3-S1']!.pages).toBeUndefined();
+  });
+
   it('prefixes step ids per fault code so trees never collide', () => {
     expect(codePrefix('E3')).toBe('CE3');
     expect(codePrefix('3 flashes')).toBe('C3flashes');

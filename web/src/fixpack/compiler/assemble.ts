@@ -186,6 +186,9 @@ export function assemblePack(input: AssembleInput): FixPack {
     const out = input.codes[fc.code];
     if (!out) continue;
     const built = stepsForCode(fc.code, out);
+    // Steps citing the same page as their fault code drop the duplicate (packs must stay < 25 KB).
+    const codePages = tidy(fc.pages);
+    for (const step of Object.values(built.steps)) if (step.pages === codePages) delete step.pages;
     Object.assign(steps, built.steps);
     faultCodes.push({
       code: tidy(fc.code),

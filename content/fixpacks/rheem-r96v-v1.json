@@ -1,0 +1,812 @@
+{
+  "schemaVersion": 1,
+  "packId": "rheem-r96v-v1",
+  "brand": "Rheem",
+  "family": "R96V two-stage communicating condensing gas furnace",
+  "equipmentType": "gas_furnace",
+  "displayType": "seven_segment",
+  "modelPatterns": [
+    "^[RU]96V[A-Z0-9]+$"
+  ],
+  "version": 1,
+  "sourceRefs": [
+    {
+      "id": "src1",
+      "title": "Rheem 92-24161-124-08: Installation Instructions for (-)96V Series Two-Stage Communicating Gas Furnaces",
+      "url": "https://pts.rheem.com/docstore/webdocs/Public/ServicePublic/Trouble2a/pdfs/Gas_Furnace/IO/92-24161-124-08_R96V_Multi_Reduced.pdf",
+      "pages": "111-118"
+    }
+  ],
+  "faultCodes": [
+    {
+      "code": "11",
+      "display": "Dual seven-segment display shows 11",
+      "meaning": "Failed ignition",
+      "likelyCauses": [
+        "Flame sense rod needs cleaning or is disconnected",
+        "Gas valve is turned off",
+        "Igniter is not working properly or disconnected",
+        "Furnace control is faulty",
+        "Flame is not properly spreading from burner to burner",
+        "Manifold pressure is incorrect"
+      ],
+      "firstStep": "C11-S1",
+      "sourceRef": "src1",
+      "pages": "113"
+    },
+    {
+      "code": "12",
+      "display": "Dual seven-segment display shows 12",
+      "meaning": "Low flame sense",
+      "likelyCauses": [
+        "Flame sense rod needs cleaning",
+        "Loose or shorted wiring between rod and control",
+        "Improperly mounted or poorly grounded flame sensor",
+        "Burner component or flame pattern issues"
+      ],
+      "firstStep": "C12-S1",
+      "sourceRef": "src1",
+      "pages": "114"
+    },
+    {
+      "code": "13",
+      "display": "Dual seven-segment display shows 13",
+      "meaning": "Flame lost after established",
+      "likelyCauses": [
+        "Flame sense rod needs cleaning or has loose wiring",
+        "Improperly mounted or poorly grounded flame sensor",
+        "Unstable flame pattern",
+        "Burner assembly or combustion door gasket not properly sealed"
+      ],
+      "firstStep": "C13-S1",
+      "sourceRef": "src1",
+      "pages": "114"
+    },
+    {
+      "code": "22",
+      "display": "Dual seven-segment display shows 22",
+      "meaning": "Main limit open",
+      "likelyCauses": [
+        "No airflow",
+        "Insufficient airflow",
+        "Faulty limit control",
+        "Loose or faulty wiring",
+        "Dead (non-functional) blower",
+        "Input too high"
+      ],
+      "firstStep": "C22-S1",
+      "sourceRef": "src1",
+      "pages": "115"
+    },
+    {
+      "code": "30",
+      "display": "Dual seven-segment display shows 30",
+      "meaning": "Open fuse",
+      "likelyCauses": [
+        "Electrical short from low voltage to ground",
+        "Electrical short from low voltage to common",
+        "Blown transformer fuse"
+      ],
+      "firstStep": "C30-S1",
+      "sourceRef": "src1",
+      "pages": "116"
+    },
+    {
+      "code": "33",
+      "display": "Dual seven-segment display shows 33",
+      "meaning": "Over-temperature switch (roll-out) open",
+      "likelyCauses": [
+        "insufficient venting",
+        "loose or faulty wiring",
+        "unstable flame pattern",
+        "pressure switch bypassed or welded closed"
+      ],
+      "firstStep": "C33-S1",
+      "sourceRef": "src1",
+      "pages": "116"
+    },
+    {
+      "code": "45",
+      "display": "Dual seven-segment display shows 45",
+      "meaning": "Low pressure switch open, inducer on high speed",
+      "likelyCauses": [
+        "Vent blockage or improper termination",
+        "Excessive vent length or elbows",
+        "Faulty or disconnected inducer",
+        "Loose or faulty wiring",
+        "Disconnected, blocked, or split pressure switch hoses",
+        "Faulty pressure switch"
+      ],
+      "firstStep": "C45-S1",
+      "sourceRef": "src1",
+      "pages": "117"
+    }
+  ],
+  "steps": {
+    "C11-S1": {
+      "instruction": "Verify if the manual gas shut-off valve is turned on.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C11-S2",
+        "no": "C11-L1"
+      },
+      "safety": "GAS"
+    },
+    "C11-S2": {
+      "instruction": "Check manifold pressure during ignition and observe burner flame spreading.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "pressure and burners normal",
+          "poor flame spread",
+          "incorrect pressure"
+        ]
+      },
+      "next": {
+        "pressure and burners normal": "C11-S3",
+        "poor flame spread": "C11-L2",
+        "incorrect pressure": "C11-L3"
+      },
+      "safety": "GAS"
+    },
+    "C11-S3": {
+      "instruction": "Inspect the flame sense rod and its wiring connection.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "dirty or loose",
+          "clean and secure"
+        ]
+      },
+      "next": {
+        "dirty or loose": "C11-L4",
+        "clean and secure": "C11-S4"
+      }
+    },
+    "C11-S4": {
+      "instruction": "Check the igniter operation and its electrical connections.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "faulty igniter",
+          "igniter works"
+        ]
+      },
+      "next": {
+        "faulty igniter": "C11-L5",
+        "igniter works": "C11-L6"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C11-L1": {
+      "instruction": "Turn on gas valve",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Turn the gas valve on.",
+        "parts": [
+          "gas valve"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "C11-L2": {
+      "instruction": "Replace burner assembly",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the burner if flame does not spread properly across all burners.",
+        "parts": [
+          "burner"
+        ]
+      },
+      "safety": "BURNING"
+    },
+    "C11-L3": {
+      "instruction": "Check gas supply or replace valve",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Verify gas supply regulation or escalate for manifold pressure issues."
+      },
+      "safety": "GAS"
+    },
+    "C11-L4": {
+      "instruction": "Clean flame sensor",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clean or replace the flame sense rod and check wire connections and ground.",
+        "parts": [
+          "flame sense rod"
+        ]
+      }
+    },
+    "C11-L5": {
+      "instruction": "Replace igniter",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace or reposition the igniter or repair wiring connections.",
+        "parts": [
+          "igniter"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C11-L6": {
+      "instruction": "Replace furnace control",
+      "outcome": {
+        "kind": "fix",
+        "summary": "The furnace control may be malfunctioning and needs replacement.",
+        "parts": [
+          "furnace control"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C12-S1": {
+      "instruction": "Inspect the flame sense rod and wiring connections.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "dirty or loose",
+          "clean and secure"
+        ]
+      },
+      "next": {
+        "dirty or loose": "C12-S2",
+        "clean and secure": "C12-S3"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C12-S2": {
+      "instruction": "Clean the flame sense rod and secure wiring.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clean or replace the flame sense rod and secure all related wiring connections.",
+        "parts": [
+          "flame sense rod",
+          "wire harness"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C12-S3": {
+      "instruction": "Check the flame sensor mounting and the furnace ground.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "mount and ground good",
+          "mount or ground faulty"
+        ]
+      },
+      "next": {
+        "mount and ground good": "C12-S4",
+        "mount or ground faulty": "C12-S5"
+      }
+    },
+    "C12-S4": {
+      "instruction": "Rod clean, mounted, and grounded",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the flame sense rod, then confirm code 12 clears.",
+        "parts": [
+          "flame sense rod"
+        ]
+      }
+    },
+    "C12-S5": {
+      "instruction": "Reinstall or replace the flame sensor or check ground.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Reinstall or replace flame sensor and ensure proper furnace grounding.",
+        "parts": [
+          "flame sensor"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C13-S1": {
+      "instruction": "Inspect the flame sensor rod for carbon buildup, loose connections, or damaged wiring.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "dirty or loose",
+          "clean and secure"
+        ]
+      },
+      "next": {
+        "dirty or loose": "C13-S2",
+        "clean and secure": "C13-S3"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C13-S2": {
+      "instruction": "Clean the flame sense rod and secure any loose wiring connections.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Cleaned the flame sense rod and secured wiring connections.",
+        "parts": [
+          "flame sense rod"
+        ]
+      }
+    },
+    "C13-S3": {
+      "instruction": "Check the flame sensor and furnace burner compartment for proper grounding and correct mounting.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "poorly grounded",
+          "properly grounded"
+        ]
+      },
+      "next": {
+        "poorly grounded": "C13-S4",
+        "properly grounded": "C13-S5"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C13-S4": {
+      "instruction": "Reinstall or replace the flame sensor and ensure the furnace chassis is correctly grounded.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Reinstalled or replaced the flame sensor and verified ground.",
+        "parts": [
+          "flame sensor"
+        ]
+      }
+    },
+    "C13-S5": {
+      "instruction": "Inspect the burner assembly components, door gaskets, and seals for proper installation and leaks.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "gasket or seal damaged",
+          "seals and gaskets good"
+        ]
+      },
+      "next": {
+        "gasket or seal damaged": "C13-S6",
+        "seals and gaskets good": "C13-S7"
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "C13-S6": {
+      "instruction": "Ensure proper installation and tight seals between burner and blower compartments, replacing damaged gaskets.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repaired and sealed burner compartment gaskets.",
+        "parts": [
+          "door gasket"
+        ]
+      }
+    },
+    "C13-S7": {
+      "instruction": "Verify stable burner flame patterns and escalate if flame loss continues despite correct sensor and seals.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Flame loss persists with proper sensor and seals; further advanced diagnosis required."
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "C22-S1": {
+      "instruction": "Check for proper blower operation during heat mode.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "runs",
+          "does not run"
+        ]
+      },
+      "next": {
+        "runs": "C22-S2",
+        "does not run": "C22-L1"
+      }
+    },
+    "C22-S2": {
+      "instruction": "Check ductwork, filters, and temperature rise against nameplate values.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "normal",
+          "restricted or high"
+        ]
+      },
+      "next": {
+        "normal": "C22-S3",
+        "restricted or high": "C22-L2"
+      }
+    },
+    "C22-S3": {
+      "instruction": "Inspect limit control wiring and connections.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "damaged",
+          "good"
+        ]
+      },
+      "next": {
+        "damaged": "C22-L3",
+        "good": "C22-S4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C22-S4": {
+      "instruction": "Check manifold pressure at high fire.",
+      "ask": {
+        "type": "reading",
+        "options": [
+          "within range",
+          "too high"
+        ],
+        "unit": "in. w.c."
+      },
+      "next": {
+        "within range": "C22-L4",
+        "too high": "C22-L5"
+      },
+      "safety": "GAS"
+    },
+    "C22-L1": {
+      "instruction": "Blower motor failure",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Check blower motor wiring and replace the blower motor if it fails to run.",
+        "parts": [
+          "blower motor"
+        ]
+      }
+    },
+    "C22-L2": {
+      "instruction": "High temperature due to airflow",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear airflow restrictions, replace dirty filters, and ensure proper ductwork design.",
+        "parts": [
+          "air filter",
+          "ductwork"
+        ]
+      }
+    },
+    "C22-L3": {
+      "instruction": "Faulty limit wiring",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair or replace any loose, broken, or faulty wiring connected to the limit control.",
+        "parts": [
+          "wiring harness"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C22-L4": {
+      "instruction": "Faulty limit control",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the faulty main limit control after verifying correct airflow and pressures.",
+        "parts": [
+          "main limit control"
+        ]
+      }
+    },
+    "C22-L5": {
+      "instruction": "High gas input",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Insure properly sized burner orifices are installed and adjust manifold pressure to the nameplate value.",
+        "parts": [
+          "burner orifices",
+          "gas valve"
+        ]
+      },
+      "safety": "GAS"
+    },
+    "C30-S1": {
+      "instruction": "Inspect low-voltage wiring for shorts to ground or common.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "short found",
+          "no short found"
+        ]
+      },
+      "next": {
+        "short found": "C30-S2",
+        "no short found": "C30-S3"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C30-S2": {
+      "instruction": "Repair the short circuit and replace the fuse.",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair the short circuit condition and replace the fuse.",
+        "parts": [
+          "fuse"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C30-S3": {
+      "instruction": "Escalate for further electrical diagnosis.",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Check transformer and secondary wiring integrity."
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C33-S1": {
+      "instruction": "Check for obstructions in combustion venting and verify maximum vent lengths.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "clear",
+          "blocked"
+        ]
+      },
+      "next": {
+        "clear": "C33-S2",
+        "blocked": "C33-L1"
+      },
+      "safety": "CO"
+    },
+    "C33-S2": {
+      "instruction": "Inspect burner assembly components, door seals, and heat exchanger condition.",
+      "ask": {
+        "type": "observation",
+        "options": [
+          "normal",
+          "damaged"
+        ]
+      },
+      "next": {
+        "normal": "C33-S3",
+        "damaged": "C33-L2"
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "C33-S3": {
+      "instruction": "Check pressure switches and wiring connections for bypass or faults.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "faulty",
+          "good"
+        ]
+      },
+      "next": {
+        "faulty": "C33-L3",
+        "good": "C33-L4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C33-L1": {
+      "instruction": "Vent obstruction found",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Remove obstructions in combustion venting and ensure proper terminations.",
+        "parts": [
+          "venting"
+        ]
+      },
+      "safety": "CO"
+    },
+    "C33-L2": {
+      "instruction": "Heat exchanger damage",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace damaged heat exchanger components or burner assembly parts.",
+        "parts": [
+          "heat exchanger",
+          "burner assembly"
+        ]
+      },
+      "safety": "BURNING"
+    },
+    "C33-L3": {
+      "instruction": "Pressure switch or wiring issue",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace faulty pressure switch or repair any bypassed wiring.",
+        "parts": [
+          "pressure switch",
+          "wiring"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C33-L4": {
+      "instruction": "Deeper diagnosis needed",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Escalate for advanced diagnostics on rollout limit and burner stability."
+      },
+      "safety": "FLAME_ROLLOUT"
+    },
+    "C45-S1": {
+      "instruction": "Check the pressure switch hoses for any blocks, splits, cuts, or disconnections.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C45-L1",
+        "no": "C45-S2"
+      }
+    },
+    "C45-S2": {
+      "instruction": "Check the inlet and exhaust vent pipes for any blockage or improper termination.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "yes",
+          "no"
+        ]
+      },
+      "next": {
+        "yes": "C45-L2",
+        "no": "C45-S3"
+      },
+      "safety": "CO"
+    },
+    "C45-S3": {
+      "instruction": "Inspect the wiring and electrical connections between the control board, inducer, and pressure switch.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "issues found",
+          "all good"
+        ]
+      },
+      "next": {
+        "issues found": "C45-L3",
+        "all good": "C45-S4"
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C45-S4": {
+      "instruction": "Verify that the inducer motor operates correctly on high speed during pre-purge.",
+      "ask": {
+        "type": "yesno",
+        "options": [
+          "runs",
+          "does not run"
+        ]
+      },
+      "next": {
+        "runs": "C45-L4",
+        "does not run": "C45-L5"
+      }
+    },
+    "C45-L1": {
+      "instruction": "Damaged pressure switch hoses",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace or reconnect the pressure switch hoses as necessary.",
+        "parts": [
+          "Pressure switch tubing"
+        ]
+      }
+    },
+    "C45-L2": {
+      "instruction": "Blocked or improper venting",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Clear any blockage from the inlet or exhaust vents and repair termination.",
+        "parts": [
+          "Vent piping"
+        ]
+      },
+      "safety": "CO"
+    },
+    "C45-L3": {
+      "instruction": "Wiring or connection issue",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Repair or replace faulty wiring and secure loose electrical connections.",
+        "parts": [
+          "Wiring harness"
+        ]
+      },
+      "safety": "EXPOSED_WIRING"
+    },
+    "C45-L4": {
+      "instruction": "Faulty pressure switch",
+      "outcome": {
+        "kind": "fix",
+        "summary": "Replace the faulty low pressure switch.",
+        "parts": [
+          "Low pressure switch"
+        ]
+      }
+    },
+    "C45-L5": {
+      "instruction": "Faulty inducer or control board",
+      "outcome": {
+        "kind": "escalate",
+        "summary": "Repair or replace the inducer motor, inducer wiring, or control board."
+      },
+      "safety": "EXPOSED_WIRING"
+    }
+  },
+  "safetyStops": [
+    {
+      "id": "GAS",
+      "triggers": [
+        "smell gas",
+        "gas smell",
+        "gas odor",
+        "gas odour",
+        "rotten egg",
+        "sulfur smell",
+        "hissing gas"
+      ],
+      "message": "Stop. Possible gas leak. Don't operate switches or the furnace. Leave the area, then follow your company's gas leak procedure and call the gas utility."
+    },
+    {
+      "id": "CO",
+      "triggers": [
+        "co alarm",
+        "carbon monoxide",
+        "co detector",
+        "co reading",
+        "co is high",
+        "high co"
+      ],
+      "message": "Stop. Possible carbon monoxide. Get everyone outside to fresh air, leave the furnace off, and call 911 from outside."
+    },
+    {
+      "id": "BURNING",
+      "triggers": [
+        "burning smell",
+        "scorch",
+        "smoke",
+        "melted",
+        "melting",
+        "charred"
+      ],
+      "message": "Stop. Possible overheating or fire. Shut off power at the disconnect and don't restart until the cause is found and fixed."
+    },
+    {
+      "id": "WATER_ELECTRICAL",
+      "triggers": [
+        "water on the board",
+        "water near electrical",
+        "wet wiring",
+        "water in the control",
+        "water on the control",
+        "flooded"
+      ],
+      "message": "Stop. Water near live electrical parts. Shut off power at the disconnect before touching anything and dry the area first."
+    },
+    {
+      "id": "EXPOSED_WIRING",
+      "triggers": [
+        "exposed wire",
+        "bare wire",
+        "frayed wire",
+        "sparking",
+        "arcing",
+        "sparks"
+      ],
+      "message": "Stop. Exposed or damaged wiring. Shut off and lock out power before going any further."
+    },
+    {
+      "id": "FLAME_ROLLOUT",
+      "triggers": [
+        "flame rollout",
+        "flames coming out",
+        "rollout switch tripped",
+        "flames outside the burner",
+        "rollout tripped"
+      ],
+      "message": "Stop. Flame rollout is a fire hazard. Shut off gas and power. Don't reset the rollout switch until the heat exchanger and venting are inspected."
+    }
+  ]
+}

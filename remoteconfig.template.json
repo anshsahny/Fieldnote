@@ -13,9 +13,9 @@
         },
         "cloud_model_compile": {
           "defaultValue": {
-            "value": "gemini-3.8-flash"
+            "value": "gemini-3.5-flash-lite"
           },
-          "description": "Cloud model for compiling manual PDFs into fix packs (PDF input, structured output). Switched from gemini-4-hydrogen on 2026-11-21: frequent 500/503/429 on the free tier.",
+          "description": "Cloud model for compiling manual PDFs into fix packs. 2026-11-21: hydrogen hit free-tier quota (429); 3.8-flash timing out (503); using 3.5-flash-lite (healthy).",
           "valueType": "STRING"
         }
       }
