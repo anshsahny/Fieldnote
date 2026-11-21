@@ -13,7 +13,10 @@ struct FieldnoteApp: App {
             if FirebaseBootstrap.isRunningUnitTests {
                 Text("Running unit tests")
             } else {
-                ContentView()
+                RootView()
+                    #if DEBUG
+                    .task { await SpikeAutomation.runIfRequested() }
+                    #endif
             }
         }
     }

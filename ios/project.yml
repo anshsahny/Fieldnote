@@ -57,7 +57,8 @@ targets:
         CFBundleDisplayName: Fieldnote
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIColorName: LaunchBackground
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         UISupportedInterfaceOrientations:
@@ -68,6 +69,7 @@ targets:
         # builds only; empty in Release. See Fieldnote/Firebase/AppCheckDebugToken.swift.
         FNAppCheckDebugTokenSimulator: $(FN_APPCHECK_DEBUG_TOKEN_SIMULATOR)
         FNAppCheckDebugTokenDevice: $(FN_APPCHECK_DEBUG_TOKEN_DEVICE)
+        FNDemoTechPassword: $(FN_DEMO_TECH_PASSWORD)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.anshsahny.fieldnote
