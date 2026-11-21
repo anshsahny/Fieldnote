@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "schema:write": "tsx scripts/write-schema.ts",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "packs:export": "tsx scripts/export-packs.ts"
   },
   "dependencies": {
     "firebase": "^13.4.0",

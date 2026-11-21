@@ -5,13 +5,17 @@
       "description": "Cloud Gemini model names (verified against firebase.google.com/docs/ai-logic/models on 2026-11-19; both are 'billing not required' on the Gemini Developer API).",
       "parameters": {
         "cloud_model_fast": {
-          "defaultValue": { "value": "gemini-3.8-flash" },
+          "defaultValue": {
+            "value": "gemini-3.8-flash"
+          },
           "description": "Cloud model for short/interactive work: diagnosis fallback, customer report, triage fallback, job summary.",
           "valueType": "STRING"
         },
         "cloud_model_compile": {
-          "defaultValue": { "value": "gemini-4-hydrogen" },
-          "description": "Cloud model for compiling manual PDFs into fix packs (PDF input, long structured output).",
+          "defaultValue": {
+            "value": "gemini-3.8-flash"
+          },
+          "description": "Cloud model for compiling manual PDFs into fix packs (PDF input, structured output). Switched from gemini-4-hydrogen on 2026-11-21: frequent 500/503/429 on the free tier.",
           "valueType": "STRING"
         }
       }
@@ -20,37 +24,51 @@
       "description": "Per-feature routing. Values = AI Logic InferenceMode strings: prefer_on_device | only_on_device | prefer_in_cloud | only_in_cloud. iOS: prefer_on_device = HybridModel(system, cloud); prefer_in_cloud = HybridModel(cloud, system).",
       "parameters": {
         "route_compile": {
-          "defaultValue": { "value": "only_in_cloud" },
+          "defaultValue": {
+            "value": "only_in_cloud"
+          },
           "description": "Web: manual PDF -> fix pack. PDF input is cloud-only.",
           "valueType": "STRING"
         },
         "route_triage": {
-          "defaultValue": { "value": "prefer_on_device" },
+          "defaultValue": {
+            "value": "prefer_on_device"
+          },
           "description": "Web: customer photo pre-triage (text + image, Gemini Nano in Chrome).",
           "valueType": "STRING"
         },
         "route_job_summary": {
-          "defaultValue": { "value": "prefer_on_device" },
+          "defaultValue": {
+            "value": "prefer_on_device"
+          },
           "description": "Web: short job summary for the dispatcher.",
           "valueType": "STRING"
         },
         "route_ledger_insights": {
-          "defaultValue": { "value": "prefer_in_cloud" },
+          "defaultValue": {
+            "value": "prefer_in_cloud"
+          },
           "description": "Web (optional): insights paragraph over aggregate ledger metadata.",
           "valueType": "STRING"
         },
         "route_nameplate": {
-          "defaultValue": { "value": "prefer_on_device" },
+          "defaultValue": {
+            "value": "prefer_on_device"
+          },
           "description": "iOS: disambiguate nameplate fields after Vision OCR.",
           "valueType": "STRING"
         },
         "route_diagnosis": {
-          "defaultValue": { "value": "prefer_on_device" },
+          "defaultValue": {
+            "value": "prefer_on_device"
+          },
           "description": "iOS: map the tech's observation to the next step (structured output).",
           "valueType": "STRING"
         },
         "route_report": {
-          "defaultValue": { "value": "prefer_in_cloud" },
+          "defaultValue": {
+            "value": "prefer_in_cloud"
+          },
           "description": "iOS: customer report; cloud first for long-form quality, on-device when offline.",
           "valueType": "STRING"
         }
@@ -59,29 +77,65 @@
     "prompts": {
       "description": "Prompt versions. Prompt text lives in shared/prompts/*.md; bump a version when its file changes.",
       "parameters": {
-        "prompt_version_compile": { "defaultValue": { "value": "1" }, "valueType": "STRING" },
-        "prompt_version_triage": { "defaultValue": { "value": "1" }, "valueType": "STRING" },
-        "prompt_version_job_summary": { "defaultValue": { "value": "1" }, "valueType": "STRING" },
-        "prompt_version_nameplate": { "defaultValue": { "value": "1" }, "valueType": "STRING" },
-        "prompt_version_diagnosis": { "defaultValue": { "value": "1" }, "valueType": "STRING" },
-        "prompt_version_report": { "defaultValue": { "value": "1" }, "valueType": "STRING" }
+        "prompt_version_compile": {
+          "defaultValue": {
+            "value": "2"
+          },
+          "valueType": "STRING"
+        },
+        "prompt_version_triage": {
+          "defaultValue": {
+            "value": "1"
+          },
+          "valueType": "STRING"
+        },
+        "prompt_version_job_summary": {
+          "defaultValue": {
+            "value": "1"
+          },
+          "valueType": "STRING"
+        },
+        "prompt_version_nameplate": {
+          "defaultValue": {
+            "value": "1"
+          },
+          "valueType": "STRING"
+        },
+        "prompt_version_diagnosis": {
+          "defaultValue": {
+            "value": "1"
+          },
+          "valueType": "STRING"
+        },
+        "prompt_version_report": {
+          "defaultValue": {
+            "value": "1"
+          },
+          "valueType": "STRING"
+        }
       }
     },
     "limits": {
       "description": "Guards and thresholds.",
       "parameters": {
         "ondevice_max_tokens": {
-          "defaultValue": { "value": "3000" },
+          "defaultValue": {
+            "value": "3000"
+          },
           "description": "Budget for one on-device request (iOS hard cap 4096; Chrome multimodal 9216).",
           "valueType": "NUMBER"
         },
         "fixpack_min_version": {
-          "defaultValue": { "value": "1" },
+          "defaultValue": {
+            "value": "1"
+          },
           "description": "Oldest fix-pack schema version clients accept.",
           "valueType": "NUMBER"
         },
         "diagnosis_confidence_threshold": {
-          "defaultValue": { "value": "0.6" },
+          "defaultValue": {
+            "value": "0.6"
+          },
           "description": "Below this model confidence, the app asks a clarifying tap-choice question.",
           "valueType": "NUMBER"
         }

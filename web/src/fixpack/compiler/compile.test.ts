@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Part } from 'firebase/ai';
 import { validateFixPack } from '../validate';
 import { assemblePack, codePrefix, CompileError, stepsForCode, type CodeOutput, type IndexOutput } from './assemble';
-import { compileCode, compileIndex, type GenerateFn } from './compile';
+import { compileCode, compileIndex, retryableReason, type GenerateFn } from './compile';
 import { formatPages, parsePageRange } from './pdf';
 
 const pdf = { type: 'inlineData', inlineData: { mimeType: 'application/pdf', data: 'JVBERi0=' } } as Part;
@@ -87,11 +87,25 @@ describe('compiler: mocked model output', () => {
     await expect(compileCode(gen, pdf, index, 'E3', meta)).rejects.toThrow(/likelyCauses|firstStep/);
   });
 
-  it('backs off and retries on rate limits', async () => {
-    const gen = vi.fn<GenerateFn>().mockRejectedValueOnce(new Error('[429 Too Many Requests] RESOURCE_EXHAUSTED')).mockResolvedValueOnce(reply(index));
-    const sleep = vi.fn(async () => {});
-    await expect(compileIndex(gen, pdf, meta, { sleep })).resolves.toMatchObject({ brand: 'Acme' });
-    expect(sleep).toHaveBeenCalledWith(20_000);
+  it('backs off and retries on rate limits and server errors', async () => {
+    const gen = vi
+      .fn<GenerateFn>()
+      .mockRejectedValueOnce(new Error('[429 Too Many Requests] RESOURCE_EXHAUSTED'))
+      .mockRejectedValueOnce(new Error('[503 Service Unavailable] The model is overloaded.'))
+      .mockResolvedValueOnce(reply(index));
+    const sleep = vi.fn(async (_ms: number) => {});
+    const progress: string[] = [];
+    await expect(compileIndex(gen, pdf, meta, { sleep, onProgress: (m) => progress.push(m) })).resolves.toMatchObject({ brand: 'Acme' });
+    expect(sleep.mock.calls.map((c) => c[0])).toEqual([20_000, 40_000]);
+    expect(progress.filter((m) => /retrying/.test(m))).toEqual(['Rate limited; retrying in 20 s…', 'Model service error; retrying in 40 s…']);
+  });
+
+  it('does not retry ordinary errors, and does not mistake "generateContent" for a rate limit', async () => {
+    expect(retryableReason(new Error('Error fetching from .../models/x:generateContent: [400 Bad Request] invalid schema'))).toBeNull();
+    expect(retryableReason(new Error('[500 Internal Server Error] INTERNAL'))).toBe('service error');
+    const gen = vi.fn<GenerateFn>().mockRejectedValue(new Error('[400 Bad Request] invalid argument'));
+    await expect(compileIndex(gen, pdf, meta, { sleep: async () => {} })).rejects.toThrow(/400/);
+    expect(gen).toHaveBeenCalledTimes(1);
   });
 });
 

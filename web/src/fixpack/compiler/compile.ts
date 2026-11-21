@@ -50,7 +50,15 @@ export interface ManualMeta {
   pageList: string;
 }
 
-const isRateLimit = (e: unknown) => /429|RESOURCE_EXHAUSTED|quota|rate/i.test(String((e as Error)?.message ?? e));
+/** Transient service errors worth retrying: rate limits (429) and server-side failures (500/503). */
+export function retryableReason(e: unknown): 'rate limit' | 'service error' | null {
+  const msg = String((e as Error)?.message ?? e);
+  if (/\b429\b|RESOURCE_EXHAUSTED|quota|rate.?limit|too many requests/i.test(msg)) return 'rate limit';
+  if (/\b(500|502|503|504)\b|INTERNAL|UNAVAILABLE|overloaded|deadline/i.test(msg)) return 'service error';
+  return null;
+}
+
+const RETRY_DELAYS_MS = [20_000, 40_000, 60_000];
 
 async function call(gen: GenerateFn, req: GenerateRequest, hooks: CompileHooks): Promise<GenerateResult> {
   const sleep = hooks.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
@@ -58,9 +66,11 @@ async function call(gen: GenerateFn, req: GenerateRequest, hooks: CompileHooks):
     try {
       return await gen(req);
     } catch (e) {
-      if (!isRateLimit(e) || attempt >= 2) throw e;
-      hooks.onProgress?.(`Rate limited; retrying in ${20 * (attempt + 1)} s…`);
-      await sleep(20_000 * (attempt + 1));
+      const reason = retryableReason(e);
+      if (!reason || attempt >= RETRY_DELAYS_MS.length) throw e;
+      const delay = RETRY_DELAYS_MS[attempt]!;
+      hooks.onProgress?.(`${reason === 'rate limit' ? 'Rate limited' : 'Model service error'}; retrying in ${delay / 1000} s…`);
+      await sleep(delay);
     }
   }
 }

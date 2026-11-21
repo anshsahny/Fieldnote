@@ -29,6 +29,8 @@ export function CompilePanel({ config, orgId, onCompiled }: { config: AIConfig; 
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pdfPart = useRef<{ part: Part; pageList: string } | null>(null);
+  // Successful per-code trees accumulate across runs, so retrying failures merges into one pack.
+  const outputs = useRef<Record<string, CodeOutput>>({});
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -50,6 +52,7 @@ export function CompilePanel({ config, orgId, onCompiled }: { config: AIConfig; 
     setCodeStates({});
     setPageCount(null);
     pdfPart.current = null;
+    outputs.current = {};
     setError(null);
   }
 
@@ -94,6 +97,8 @@ export function CompilePanel({ config, orgId, onCompiled }: { config: AIConfig; 
       };
       const idx = await compileIndex(generate, pdfPart.current.part, { title, pageList }, hooks);
       setIndex(idx);
+      outputs.current = {};
+      setCodeStates({});
       setSelected(new Set(idx.faultCodes.slice(0, DEFAULT_SELECTION).map((f) => f.code)));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -102,30 +107,32 @@ export function CompilePanel({ config, orgId, onCompiled }: { config: AIConfig; 
     }
   }
 
-  async function compileSelected() {
+  async function compileCodes(codes: string[]) {
     if (!index || !pdfPart.current) return;
     setError(null);
-    const codes = index.faultCodes.filter((f) => selected.has(f.code)).map((f) => f.code);
-    setCodeStates(Object.fromEntries(codes.map((c) => [c, { state: 'queued' }])));
-    const outputs: Record<string, CodeOutput> = {};
+    setCodeStates((s) => ({ ...s, ...Object.fromEntries(codes.map((c) => [c, { state: 'queued' as const }])) }));
     for (const code of codes) {
       setCodeStates((s) => ({ ...s, [code]: { state: 'running' } }));
       const started = performance.now();
       try {
-        outputs[code] = await compileCode(generate, pdfPart.current.part, index, code, { title, url, pageList: pdfPart.current.pageList }, hooks);
+        outputs.current[code] = await compileCode(generate, pdfPart.current.part, index, code, { title, url, pageList: pdfPart.current.pageList }, hooks);
         setCodeStates((s) => ({ ...s, [code]: { state: 'ok', latencyMs: Math.round(performance.now() - started) } }));
       } catch (e) {
+        delete outputs.current[code];
         setCodeStates((s) => ({ ...s, [code]: { state: 'failed', error: e instanceof Error ? e.message : String(e) } }));
       }
     }
     setBusy(null);
-    if (Object.keys(outputs).length === 0) {
+    if (Object.keys(outputs.current).length === 0) {
       setError('No codes compiled successfully.');
       return;
     }
-    const pack = assemblePack({ index, codes: outputs, source: { title, url, pages: pdfPart.current.pageList } });
+    const pack = assemblePack({ index, codes: { ...outputs.current }, source: { title, url, pages: pdfPart.current.pageList } });
     onCompiled(serializeFixPack(pack));
   }
+
+  const compileSelected = () => compileCodes(index?.faultCodes.filter((f) => selected.has(f.code)).map((f) => f.code) ?? []);
+  const failedCodes = Object.entries(codeStates).filter(([, s]) => s.state === 'failed').map(([c]) => c);
 
   const toggle = (code: string) =>
     setSelected((prev) => {
@@ -234,6 +241,14 @@ export function CompilePanel({ config, orgId, onCompiled }: { config: AIConfig; 
             <button type="button" onClick={compileSelected} disabled={!!busy || selected.size === 0}>
               2. Compile {selected.size} selected code{selected.size === 1 ? '' : 's'}
             </button>
+            {failedCodes.length > 0 && (
+              <button type="button" className="secondary" onClick={() => compileCodes(failedCodes)} disabled={!!busy}>
+                Retry {failedCodes.length} failed
+              </button>
+            )}
+            {Object.keys(outputs.current).length > 0 && (
+              <span className="lede">{Object.keys(outputs.current).length} codes in the pack so far</span>
+            )}
           </div>
         </>
       )}

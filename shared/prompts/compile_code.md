@@ -1,6 +1,6 @@
 ---
 name: compile_code
-version: 1
+version: 2
 platforms: [web]
 route: route_compile
 max_tokens: 30000
@@ -15,15 +15,18 @@ on-device model will later map the technician's answer to one of each step's opt
 Rules:
 - Use only facts and procedures supported by the attached pages. Never invent parts, readings, or
   procedures. Paraphrase in your own short words; do not copy sentences from the manual.
-- 3 to 10 steps. Step ids are "S1", "S2", ... and "firstStep" is the first one.
+- 4 to 7 steps, ordered so the quickest and most likely checks come first. Step ids are "S1",
+  "S2", ... and "firstStep" is the first one. Keep the tree compact: the whole pack must stay small.
 - A decision step has "ask" (type observation, yesno, or reading) with 2 to 4 short options
   (lowercase, at most 4 words each, such as "runs" / "does not run"), and "next" mapping every
   option to another step id. A reading step also gives the "unit" (for example "in. w.c.", "VAC",
   "µA") and uses ranges as options (for example "below 0.5 µA" / "0.5 µA or more").
 - A leaf step has "outcome": kind "fix" (with the part to repair or replace, if any), "escalate"
-  (needs deeper diagnosis), or "resolved".
+  (needs deeper diagnosis), or "resolved". A leaf's "instruction" is only a short title under 40
+  characters (for example "Hose blocked or pinched"); the action goes in "outcome.summary", one
+  sentence under 120 characters. Don't repeat the same text in both.
 - A step is either a decision step or a leaf, never both. Every path ends in a leaf. No loops.
-- Instructions are one imperative sentence, under 160 characters.
+- A decision step's instruction is one imperative sentence under 120 characters.
 - Cite the original manual page for each step in "pages" when you can.
 - Safety is enforced by the app. Do not write warnings into instructions. Instead, set "safety" to
   the matching stop when a step exposes that hazard: GAS (gas valve, gas lines), EXPOSED_WIRING
