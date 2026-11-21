@@ -43,6 +43,14 @@ shiny, no coating" was read as "oxidized". Carrier 13 stalled on "blower wheel w
 Remaining on-device miss: n06 "handle was perpendicular to the pipe" asks instead of answering
 "valve off" (needs trade knowledge; a safe miss, since the tech taps the answer).
 
-## iPhone, on-device, prompt v3 + fixes
+## iPhone, on-device, prompt v3 + fixes (2026-11-21, airplane mode)
 
-_Pending the second P3 human check._
+| Set | Correct | Hedged notes asked | Clarify rate | Median latency |
+|---|---|---|---|---|
+| p3-notes | 9/10 | 3/3 | 4/10 | **0.69 s** |
+| p3-walkthrough | 12/12 | — | 0/12 | **0.74 s** |
+
+All 22 notes ran on-device. Miss: n06 (asks; safe). Walkthrough by hand: Goodman EE0, Rheem 11 and
+Carrier 13 all reached their conclusions. Ledger for both airplane-mode walkthroughs: 24 on-device
+diagnosis turns, median 1.1 s (slowest 15 s, first call after launch), 0 failures; 2 safety stops,
+0 ms, no model call.

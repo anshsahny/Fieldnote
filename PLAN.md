@@ -251,6 +251,13 @@ Code: validate `choice ∈ allowed`; if `unclear` or confidence < threshold (Rem
 | Nov 21 | Canonical pack JSON is tab-indented; packs carry the 7–8 most common gas-heat faults per brand | Whitespace from 2-space indentation of deep step trees was eating the 25 KB budget; packs now 18.9–21.9 KB |
 | Nov 21 | Content review (v2): no bare yes/no questions; options name what the tech observes | The meaning of "yes" flipped between steps; descriptive options are clearer for the tech and the on-device model |
 | Nov 21 | UI/UX: build a console design system at the **start of P5** (all console pages, incl. a redesigned /packs) and do the final polish in P7 | The console must look like a product dispatchers would buy (user); redesigning /packs now would be redone when P5 adds the dashboard, triage, ledger, and status pages |
+| Nov 21 | P3 names: the plan's `interpret_observation.md` / `rc.min_confidence` are `shared/prompts/diagnosis.md` / `diagnosis_confidence_threshold` (set up in P1) | Kept the P1 names; same behavior |
+| Nov 21 | Diagnosis prompt v1 → v3 (hedging rule, then negation + copy-the-option rules); confidence threshold 0.6 → 0.7 (Remote Config) | 10-note eval: a hedged note advanced on-device at exactly 0.60; clear notes score 0.8–1.0 |
+| Nov 21 | Hedge words ("might", "not sure", …) always trigger a tap confirmation, in code (`HedgeDetector`), regardless of model confidence | Prompt-only hedging regressed with v3 ("vent might be ok" advanced). A guess must not move the diagnosis forward: code, not prompt |
+| Nov 21 | Decision validator accepts a shortened answer only when all its words belong to exactly one option (iOS + web, same test table) | On-device model answered "loose" for "loose or defective"; exact match dropped it and stalled the iPhone run |
+| Nov 21 | Undo (toolbar, AI turn, conclusion) and the conclusion shows how the last note was read | One iPhone misread of a negation ("no coating" → "oxidized") ended a diagnosis early; models can misread, so it must be one tap to recover |
+| Nov 21 | Step cautions use "watch for" copy; the pack's stop message appears only on the full-screen stop. Stop confirmation is a full-width checkbox row, not a Toggle | "Stop… shut off power" on a live flame-current check contradicted the step; gloves need a big target |
+| Nov 21 | Eval scenarios live in `eval/scenarios/` and are bundled into Debug builds; runner via launch args or the Diagnostics sheet; P6 grows the same format | Real on-device numbers need the iPhone; one tap there beats a cable and Xcode |
 
 ## 11. Progress log
 _(Claude Code appends: date, phase, what's done, test status, open issues.)_
@@ -273,3 +280,9 @@ _(Claude Code appends: date, phase, what's done, test status, open issues.)_
 - Content: Goodman (8 codes, 21.9 KB), Carrier (8, 18.9 KB), Rheem (7, 19.2 KB), published v2 after a review pass; bundled in the iOS app.
 - Tests: web 77/77, iOS 32/32, rules 13/13; build + dist secret scan OK.
 - Open: Gemini 4 Hydrogen / 3.8 Flash were degraded on Nov 21 (compile now on 3.5 Flash-Lite; `cloud_model_fast` is still 3.8 Flash, so check `node scripts/ai-health.mjs` before P3/P4 cloud work); console UI polish scheduled for P5 (design system) and P7; schedule ~1.5 days behind (P3 was due to start today).
+
+**Nov 21 · P3 iOS core: complete (awaiting approval to start P4)**
+- Done: diagnosis engine (code safety guard before any model call, on-device-first interpretation, code validation, clarification, readings branch in code, Undo, plain-mode fallback); nameplate extraction + fault-code lookup; services (auth session, pack store re-validating Firestore packs, assigned-jobs listener, inference ledger); technician app (Today grouped by day, job, scan, fault code, diagnose, full-screen safety stop, conclusion, hidden Diagnostics with route override and eval runner); dark field theme, 56-pt targets, inference badges, dark launch screen.
+- Results: iPhone in airplane mode ran Goodman EE0, Rheem 11, Carrier 13 to conclusions, all notes on-device (ledger: 24 turns, median 1.1 s, 0 failures; 2 safety stops with no model call). iPhone eval: 9/10 + 12/12 on-device at 0.69–0.74 s; cloud 10/10 + 12/12. Details in `docs/phases/P3-ios-core.md` and `eval/results/p3-notes.md`.
+- Tests: iOS 67/67, web 86/86.
+- Open: prewarm the on-device session at diagnosis start (first call up to 15 s); re-seed jobs before filming; scan → code not yet run on the iPhone in airplane mode (P4 airplane test covers it). Schedule: back on track (P3 done on its first day).
