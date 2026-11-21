@@ -1,4 +1,38 @@
 {
-  "$comment": "Manufacturer manuals used to compile fix packs. Store URLs and page references only; never commit the PDFs.",
-  "sources": []
+  "$comment": "Manufacturer manuals used to compile fix packs. URLs and page references only; the PDFs are never committed (content/manuals/ is gitignored). localFile is the expected filename in content/manuals/ for local development.",
+  "sources": [
+    {
+      "id": "goodman-mvc96",
+      "brand": "Goodman",
+      "family": "*CVC96 / *MVC96 two-stage gas furnace (GMVC96)",
+      "title": "Goodman IOG-2015E: Installation Instructions for *CVC96*BB & *MVC96*BB Two-Stage Gas Furnace",
+      "url": "https://mobile.goodmanmfg.com/mobileapp/stellent/pdf/infoPdf/Lit/IOG-2015E.pdf",
+      "localFile": "IOG-2015E.pdf",
+      "pageCount": 52,
+      "diagnosticPages": "46-49",
+      "retrieved": "2026-11-20"
+    },
+    {
+      "id": "carrier-59sc5b",
+      "brand": "Carrier",
+      "family": "59SC5B single-stage condensing gas furnace",
+      "title": "Carrier 59SC5B-05SI: Installation, Start-up, Operating and Service and Maintenance Instructions",
+      "url": "https://www.shareddocs.com/hvac/docs/1009/Public/04/59SC5B-05SI.pdf",
+      "localFile": "59SC5B-05SI.pdf",
+      "pageCount": 74,
+      "diagnosticPages": "58-62, 69",
+      "retrieved": "2026-11-20"
+    },
+    {
+      "id": "rheem-r96v",
+      "brand": "Rheem",
+      "family": "R96V two-stage communicating condensing gas furnace",
+      "title": "Rheem 92-24161-124-08: Installation Instructions for (-)96V Series Two-Stage Communicating Gas Furnaces",
+      "url": "https://pts.rheem.com/docstore/webdocs/Public/ServicePublic/Trouble2a/pdfs/Gas_Furnace/IO/92-24161-124-08_R96V_Multi_Reduced.pdf",
+      "localFile": "R96V-92-24161-124-08.pdf",
+      "pageCount": 128,
+      "diagnosticPages": "111-118",
+      "retrieved": "2026-11-20"
+    }
+  ]
 }

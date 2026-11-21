@@ -1,6 +1,10 @@
-import { lazy, Suspense } from 'react';
-import { Link, Route, Routes } from 'react-router-dom';
+import { lazy, Suspense, type ReactNode } from 'react';
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { useAuth } from './auth/AuthProvider';
 import { HomePage } from './pages/HomePage';
+import { SignInPage } from './pages/SignInPage';
+
+const PacksPage = lazy(() => import('./pages/packs/PacksPage').then((m) => ({ default: m.PacksPage })));
 
 // Dev-only debug page: in production builds this branch is dropped, so the spike code
 // (and its real AI calls) never ships to Hosting.
@@ -19,6 +23,37 @@ function NotFound() {
   );
 }
 
+function RequireSignIn({ children }: { children: ReactNode }) {
+  const { state } = useAuth();
+  const location = useLocation();
+  if (state.status === 'loading') return <p className="lede">Checking your session…</p>;
+  if (state.status !== 'signed-in') return <Navigate to="/signin" replace state={{ from: location.pathname }} />;
+  return <>{children}</>;
+}
+
+function AccountMenu() {
+  const { state, signOut } = useAuth();
+  if (state.status !== 'signed-in') {
+    return (
+      <NavLink to="/signin" className="nav-link">
+        Sign in
+      </NavLink>
+    );
+  }
+  return (
+    <span className="account">
+      <span className="topbar-tag">
+        {state.profile?.displayName ?? state.user.email} · {state.profile?.role ?? 'no profile'}
+      </span>
+      <button type="button" className="secondary" onClick={() => void signOut()}>
+        Sign out
+      </button>
+    </span>
+  );
+}
+
+const page = (node: ReactNode) => <Suspense fallback={<p className="lede">Loading…</p>}>{node}</Suspense>;
+
 export function App() {
   return (
     <div className="shell">
@@ -32,21 +67,20 @@ export function App() {
           </span>
           Fieldnote
         </Link>
-        <span className="topbar-tag">Dispatcher console</span>
+        <nav aria-label="Main" className="nav">
+          <NavLink to="/packs" className="nav-link">
+            Fix packs
+          </NavLink>
+        </nav>
+        <span className="spacer" />
+        <AccountMenu />
       </header>
       <main id="main" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          {SpikePage && (
-            <Route
-              path="/spike"
-              element={
-                <Suspense fallback={<p>Loading…</p>}>
-                  <SpikePage />
-                </Suspense>
-              }
-            />
-          )}
+          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/packs" element={<RequireSignIn>{page(<PacksPage />)}</RequireSignIn>} />
+          {SpikePage && <Route path="/spike" element={page(<SpikePage />)} />}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

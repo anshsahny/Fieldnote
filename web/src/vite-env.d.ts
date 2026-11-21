@@ -11,6 +11,9 @@ interface ImportMetaEnv {
   readonly VITE_RECAPTCHA_SITE_KEY: string;
   /** Dev server only (web/.env.development.local). Never present in production builds. */
   readonly VITE_APPCHECK_DEBUG_TOKEN?: string;
+  /** Dev server only: demo account passwords for the dev sign-in buttons. */
+  readonly VITE_DEMO_DISPATCHER_PASSWORD?: string;
+  readonly VITE_DEMO_TECH_PASSWORD?: string;
 }
 
 interface ImportMeta {

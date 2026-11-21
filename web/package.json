@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "schema:write": "tsx scripts/write-schema.ts"
+    "schema:write": "tsx scripts/write-schema.ts",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "firebase": "^13.4.0",

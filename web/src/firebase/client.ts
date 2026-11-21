@@ -1,4 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 import {
   getToken,
   initializeAppCheck,
@@ -55,6 +57,10 @@ export function getFirebase(): FirebaseClient {
   };
   return client;
 }
+
+/** Firestore and Auth share the App Check-protected app instance. */
+export const getDb = (): Firestore => getFirestore(getFirebase().app);
+export const getAuthClient = (): Auth => getAuth(getFirebase().app);
 
 export type AppCheckStatus = { ok: true } | { ok: false; error: string };
 

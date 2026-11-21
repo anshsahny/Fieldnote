@@ -201,6 +201,181 @@ h2 {
   max-width: none;
 }
 
+.nav {
+  display: flex;
+  gap: 4px;
+  margin-left: 16px;
+}
+
+.nav-link {
+  color: var(--text);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.nav-link.active {
+  background: var(--neutral-bg);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.account {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stack {
+  display: grid;
+  gap: 20px;
+}
+
+.narrow {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.form input,
+.form select,
+.json-editor textarea {
+  font: inherit;
+  font-weight: 400;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.grid2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+  margin-top: 12px;
+}
+
+h3 {
+  margin: 20px 0 4px;
+  font-size: 1rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+
+.issues {
+  margin: 0 0 12px;
+  padding: 12px 16px 12px 28px;
+  background: var(--err-bg);
+  color: var(--err-text);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.row-flagged td {
+  background: var(--err-bg);
+}
+
+.tree,
+.tree ul {
+  list-style: none;
+  margin: 4px 0;
+  padding-left: 18px;
+  border-left: 2px solid var(--border);
+}
+
+.tree {
+  border-left: none;
+  padding-left: 0;
+}
+
+.tree li {
+  margin: 6px 0;
+}
+
+.tree-id {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.tree-option {
+  font-weight: 600;
+}
+
+.tree-pages {
+  margin-left: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.tree-badge {
+  margin-left: 6px;
+  font-size: 0.75rem;
+}
+
+.tree-outcome {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--neutral-bg);
+  color: var(--neutral-text);
+}
+
+.outcome-fix {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.tree-missing {
+  color: var(--err-text);
+}
+
+.json-editor {
+  margin-top: 12px;
+}
+
+.json-editor textarea {
+  width: 100%;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.8rem;
+  margin: 8px 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .spike-controls {
   display: flex;
   flex-wrap: wrap;
