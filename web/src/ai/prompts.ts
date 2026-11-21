@@ -1,4 +1,6 @@
 // Parser/renderer for shared/prompts/*.md (same rules as ios/Fieldnote/AI/PromptTemplate.swift).
+import compileCodeSource from '../../../shared/prompts/compile_code.md?raw';
+import compileIndexSource from '../../../shared/prompts/compile_index.md?raw';
 import diagnosisSource from '../../../shared/prompts/diagnosis.md?raw';
 import jobSummarySource from '../../../shared/prompts/job_summary.md?raw';
 import nameplateSource from '../../../shared/prompts/nameplate.md?raw';
@@ -104,6 +106,8 @@ export function renderPrompt(template: PromptTemplate, vars: Record<string, stri
 
 /** The bundled prompts, parsed once. Throws at import time if a prompt file is malformed. */
 export const PROMPTS = {
+  compile_index: parsePrompt(compileIndexSource),
+  compile_code: parsePrompt(compileCodeSource),
   diagnosis: parsePrompt(diagnosisSource),
   job_summary: parsePrompt(jobSummarySource),
   nameplate: parsePrompt(nameplateSource),

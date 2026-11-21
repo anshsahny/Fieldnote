@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parsePrompt, PromptError, PROMPTS, renderPrompt } from './prompts';
+import { FEATURES } from './routing';
 
 const sample = `---
 name: demo
@@ -48,10 +49,12 @@ describe('renderPrompt', () => {
 });
 
 describe('shared/prompts', () => {
-  it('every bundled prompt parses and declares a Remote Config route', () => {
-    for (const p of Object.values(PROMPTS)) {
+  it('every bundled prompt parses and declares a known Remote Config route', () => {
+    const routeKeys = FEATURES.map((f) => `route_${f}`);
+    for (const [key, p] of Object.entries(PROMPTS)) {
+      expect(p.meta.name).toBe(key);
       expect(p.meta.version).toBeGreaterThanOrEqual(1);
-      expect(p.meta.route).toBe(`route_${p.meta.name}`);
+      expect(routeKeys).toContain(p.meta.route);
     }
     expect(PROMPTS.diagnosis.variables).toEqual(['step_instruction', 'allowed_choices', 'history', 'note']);
   });
