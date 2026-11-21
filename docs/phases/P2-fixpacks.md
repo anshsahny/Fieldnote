@@ -21,12 +21,36 @@
 - Firestore rules tests with the emulator (`@firebase/rules-unit-testing`): tech can't publish; cross-org read denied.
 
 ## Acceptance checks
-- [ ] 3 published packs in Firestore, each ≥ 6 fault codes with step trees.
-- [ ] Every pack passes the validator on web **and** iOS (shared fixtures).
-- [ ] Sources listed in `content/sources.json`; no PDFs in git.
-- [ ] Demo jobs seeded.
+- [x] 3 published packs in Firestore, each ≥ 6 fault codes with step trees.
+- [x] Every pack passes the validator on web **and** iOS (shared fixtures).
+- [x] Sources listed in `content/sources.json`; no PDFs in git.
+- [x] Demo jobs seeded.
 
-## Checkpoint report
-- Packs: brand / codes / steps / size KB
-- Compiler calls used and any rate-limit issues
-- Demo unit: identified? brand/model
+## Checkpoint report (filled in 2026-11-21)
+**Packs** (published v2 in `orgs/demo/fixpacks`, committed in `content/fixpacks/`, bundled in the iOS app):
+
+| Pack | Codes | Steps | Size | Manual pages |
+|---|---|---|---|---|
+| `goodman-cvc96-mvc96-v1` (*CVC96/*MVC96, e.g. GMVC96) | 8: E11, EE0, EE1, EE2, EE3, EE5, EE6, EE7 | 62 | 21.9 KB | IOG-2015E p. 46–49 |
+| `carrier-59sc5b-v1` (59SC5B) | 8: 13, 14, 22, 23, 24, 31, 33, 34 | 48 | 18.9 KB | 59SC5B-05SI p. 58–62, 69 |
+| `rheem-r96v-v1` (R96V / U96V) | 7: 11, 12, 13, 22, 30, 33, 45 | 50 | 19.2 KB | 92-24161-124-08 p. 111–118 |
+
+**Compiler calls** (Hybrid Ledger, `feature: compile`): 40 logged. 28 OK on `gemini-3.5-flash-lite` (all three packs,
+~4 s/call, ~12 s/call for Carrier), 6 OK on `gemini-4-hydrogen` (~60–120 s/call), 6 failed. About 10 more
+server-side errors were absorbed by the retry/backoff. Issues: Hydrogen returned frequent 500/503 and then **429
+(free-tier quota exhausted)**; `gemini-3.8-flash` returned **503 "Deadline expired"** for every request, even tiny
+text prompts (no published Firebase incident). Switched `cloud_model_compile` via Remote Config (no release), and
+added `scripts/ai-health.mjs` to probe models from the CLI.
+
+**Quality and review.** Index extraction read 7-segment codes correctly from the page image ("Eb1", where the PDF's
+text layer says "E1"). Review edits: model patterns corrected to match real model numbers (e.g. `GMVC960803BN`);
+Rheem code 12 leaf fixed (it ended in "resolved" while the fault would persist; the manual says replace the rod);
+v2 pass turned 13 bare yes/no questions into descriptive options, fixed one safety stop (burner → GAS), and
+shortened labels. Codes chosen per brand: the most common gas-heat faults within the 25 KB budget.
+
+**Demo unit:** none available → Plan B: Goodman pack + printed nameplate. Note for P7: Goodman *MVC96 shows codes
+on a 7-segment display (e.g. "EE2" = low-stage pressure switch not closed), not a blinking LED; a blinking-LED shot
+fits the Carrier pack (code 31 = pressure switch did not close).
+
+**Tests:** web 77/77 (validator on 16 shared fixtures, compiler with mocked model output, published packs
+canonical), iOS 32/32 (same 16 fixtures + bundled packs), Firestore rules 13/13 on the emulator.

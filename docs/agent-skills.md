@@ -46,5 +46,7 @@ Only real uses are listed here; this section feeds the README credit and the Dev
 | 2026-11-20 | P1 | `firebase-ai-logic-basics` (loaded as a skill) | Guided the hybrid spikes: current model names, App Check debug-token handling, limited-use App Check tokens (`useLimitedUseAppCheckTokens: true` on web and iOS), and the web hybrid patterns (`InferenceMode`, `initializeDeviceModel`, inline image parts). Combined with the SDK source, this is how we found that firebase-ios-sdk 13.0.0 removed `HybridModel`, which led to the 12.19.3 pin. |
 | 2026-11-20 | P1 | Firebase MCP server (`firestore_add_document`, `firestore_get_document`) | Seeded the demo `users/{uid}` profile the rules require, and checked server-side that the offline Firestore write really reached the server after the app was killed and relaunched. |
 
+| 2026-11-21 | P2 | Firebase MCP server (`firestore_list_documents`) | Verified that every compile call wrote a metadata-only Hybrid Ledger row under the deployed rules, and tallied compile calls per model for the P2 checkpoint report. |
+
 Note: plugins load when a Claude Code session starts, so in the P0 session these skills were read
 directly from the installed plugin; from P1 on they load automatically.

@@ -7,10 +7,11 @@ The cloud turns manufacturer manuals into compact, validated **fix packs**. The 
 with zero bars in a basement. The web console uses Chrome's on-device Gemini Nano to pre-triage
 customer photos of error displays before dispatch.
 
-> **Status:** Phase 1 (hybrid spikes) passed its GO gate on real hardware. On-device inference works
-> on the iPhone (Apple Foundation Models via Firebase AI Logic, including in airplane mode) and in Chrome
-> (Gemini Nano, text + image), with cloud fallback on both. The product features come next. Plan:
-> [`PLAN.md`](PLAN.md) · P1 results: [`docs/phases/P1-hybrid-spikes.md`](docs/phases/P1-hybrid-spikes.md).
+> **Status:** Phase 2 done. Three validated fix packs (Goodman, Carrier, Rheem), compiled from the
+> manufacturers' manuals by the cloud model in the web console and reviewed, are published to Firestore and
+> bundled in the iPhone app. Phase 1 proved on-device inference on the iPhone (Apple Foundation Models via
+> Firebase AI Logic, including in airplane mode) and in Chrome (Gemini Nano, text + image). Plan:
+> [`PLAN.md`](PLAN.md) · [P1 results](docs/phases/P1-hybrid-spikes.md) · [P2 results](docs/phases/P2-fixpacks.md).
 
 ## Repo layout
 
@@ -113,6 +114,19 @@ firebase deploy --only firestore:rules,firestore:indexes
 firebase deploy --only remoteconfig
 firebase deploy --only hosting     # after npm run build
 ```
+
+Demo data and packs (admin scripts use Application Default Credentials: `gcloud auth application-default login`):
+```bash
+cd web && npm run seed            # demo org, dispatcher + tech accounts, 5 fictional jobs, packs from content/fixpacks
+cd web && npm run packs:export    # published packs → content/fixpacks/ (byte-for-byte)
+cd rules-tests && npm install && npm test   # Firestore rules tests on the local emulator (needs Java)
+node scripts/ai-health.mjs gemini-3.5-flash-lite   # is Firebase AI Logic answering right now?
+```
+
+Fix packs are compiled in the console at `/packs` (dispatcher sign-in): choose a manual and its diagnostics
+pages, read the fault-code index, compile selected codes, review, publish. The format is
+[`shared/fixpack.schema.json`](shared/fixpack.schema.json); sources and page references are in
+[`content/sources.json`](content/sources.json) (manual PDFs are never committed).
 
 ## Built with AI assistance
 Developed with Claude Code and the official **Firebase agent skills** (installed at project scope;
