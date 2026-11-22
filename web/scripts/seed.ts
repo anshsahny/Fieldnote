@@ -2,6 +2,7 @@
 //   cd web && npm run seed                       # everything
 //   cd web && npm run seed -- --only=packs       # users | jobs | packs (comma-separated)
 //   cd web && npm run seed -- --dry-run
+//   cd web && npm run seed -- --only=jobs --reset # also clear demo sessions + reports (fresh demo)
 // Credentials: Application Default Credentials (gcloud auth application-default login).
 // Demo passwords live in the gitignored .local-secrets (generated on first run, never printed).
 import { randomBytes } from 'node:crypto';
@@ -134,6 +135,23 @@ async function seedJobs(techUid: string) {
   }
 }
 
+// ---------- reset (--reset): demo jobs' sessions and the org's reports, before filming/tests ----------
+// Only touches the seeded demo jobs and the demo org. Ledger rows are kept (they're the history).
+async function resetDemoActivity(techUid: string) {
+  for (const { id } of JOBS(techUid)) {
+    const sessions = await db.collection(`orgs/${DEMO_ORG_ID}/jobs/${id}/sessions`).listDocuments();
+    for (const ref of sessions) {
+      log(`delete ${ref.path}`);
+      if (!dryRun) await ref.delete();
+    }
+  }
+  const reports = await db.collection(`orgs/${DEMO_ORG_ID}/reports`).listDocuments();
+  for (const ref of reports) {
+    log(`delete ${ref.path}`);
+    if (!dryRun) await ref.delete();
+  }
+}
+
 // ---------- packs (validated before writing) ----------
 async function seedPacks(publisherUid: string) {
   const dir = join(root, 'content', 'fixpacks');
@@ -156,6 +174,7 @@ async function doc(path: string, data: Record<string, unknown>) {
 }
 
 const uids = only.has('users') ? await seedUsers() : await lookupUids();
+if (args.includes('--reset')) await resetDemoActivity(uids.tech!);
 if (only.has('jobs')) await seedJobs(uids.tech!);
 if (only.has('packs')) await seedPacks(uids.dispatcher!);
 log('done');
