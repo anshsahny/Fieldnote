@@ -9,6 +9,7 @@ struct JobDetailView: View {
     @State private var scanned: (brand: String?, model: String?, serial: String?)?
     @State private var showScan = false
     @State private var showPackPicker = false
+    @State private var resumeFailed = false
 
     private var pack: FixPack? { packId.flatMap { app.packs.pack(id: $0) } }
 
@@ -30,11 +31,13 @@ struct JobDetailView: View {
                 }
                 .card()
 
+                sessionCard
                 equipmentCard
             }
             .padding(Theme.gutter)
             .padding(.bottom, 140)
         }
+        .syncStatus()
         .screenBackground()
         .navigationTitle("Job")
         .navigationBarTitleDisplayMode(.inline)
@@ -52,6 +55,11 @@ struct JobDetailView: View {
         }
         .onAppear {
             if packId == nil { packId = app.packs.pack(forModel: job.model)?.packId }
+        }
+        .alert("Can't resume this diagnosis", isPresented: $resumeFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("The fix pack changed since it was saved. Start again from the fault code; your earlier answers are still in the job record.")
         }
     }
 
@@ -95,15 +103,71 @@ struct JobDetailView: View {
         }
     }
 
+    private var savedSession: SessionState? { app.sessions.latest[job.id] }
+
+    private func open(_ state: SessionState) {
+        if let run = app.resumeRun(state, job: job) {
+            path.append(.diagnose(run))
+        } else {
+            resumeFailed = true
+        }
+    }
+
+    @ViewBuilder
+    private var sessionCard: some View {
+        if let s = savedSession {
+            let concluded = s.status == .concluded
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: concluded ? "checkmark.circle.fill" : "clock.arrow.circlepath")
+                    .font(.title3).foregroundStyle(concluded ? Theme.onDevice : Theme.caution).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(concluded ? "Diagnosis complete · \(s.faultCode)" : "Diagnosis in progress · \(s.faultCode)")
+                        .font(.headline).foregroundStyle(Theme.textPrimary)
+                    Text(concluded
+                         ? "\(s.history.count) steps · saved \(s.updatedAt.formatted(.relative(presentation: .named)))"
+                         : "Step \(s.history.count + 1) · saved on this iPhone \(s.updatedAt.formatted(.relative(presentation: .named)))")
+                        .font(.subheadline).foregroundStyle(Theme.textSecondary)
+                    if concluded, let r = app.reports.report(forSession: s.id) {
+                        Label(r.status == .final ? "Report written in the cloud"
+                              : r.generatedBy == "ON_DEVICE" ? "Report drafted on this iPhone" : "Plain report from the fix pack",
+                              systemImage: "doc.text")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(r.status == .final ? Theme.cloud : Theme.caution)
+                    }
+                }
+                Spacer(minLength: 0)
+                if concluded {
+                    Button("Open") { open(s) }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
+                }
+            }
+            .card()
+        }
+    }
+
     private var actions: some View {
         VStack(spacing: 10) {
-            if let pack {
-                Button {
-                    path.append(.faultCode(packId: pack.packId, job: job))
-                } label: {
-                    Label("Enter fault code", systemImage: "number")
+            if let s = savedSession, s.status == .active {
+                Button { open(s) } label: {
+                    Label("Resume diagnosis · step \(s.history.count + 1)", systemImage: "play.fill")
                 }
                 .buttonStyle(PrimaryButtonStyle())
+            }
+            if let pack {
+                if savedSession?.status == .active {
+                    Button {
+                        path.append(.faultCode(packId: pack.packId, job: job))
+                    } label: {
+                        Label("Start over with a fault code", systemImage: "number")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                } else {
+                    Button {
+                        path.append(.faultCode(packId: pack.packId, job: job))
+                    } label: {
+                        Label("Enter fault code", systemImage: "number")
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                }
             }
             HStack(spacing: 10) {
                 Button { showScan = true } label: { Label("Scan nameplate", systemImage: "camera.viewfinder") }

@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppModel.self) private var app
     @State private var showDebug = false
+    @State private var showPacks = false
 
     var body: some View {
         ScrollView {
@@ -31,9 +32,12 @@ struct TodayView: View {
             }
             .padding(Theme.gutter)
         }
+        .syncStatus()
         .screenBackground()
         .toolbar(.hidden, for: .navigationBar)
+        .refreshable { await app.refresh() }
         .sheet(isPresented: $showDebug) { DebugView() }
+        .sheet(isPresented: $showPacks) { PacksSheet() }
     }
 
     private var header: some View {
@@ -67,7 +71,7 @@ struct TodayView: View {
                 if app.network.isOnline {
                     Chip(text: "Online", systemImage: "wifi", color: Theme.onDevice)
                 } else {
-                    InferenceBadge(kind: .offline(queued: app.ledger.pending))
+                    InferenceBadge(kind: .offline(queued: app.sync.pending))
                 }
                 if app.onDeviceReady && app.diagnosisRoute != .onlyInCloud {
                     Chip(text: "On-device AI ready", systemImage: "cpu", color: Theme.onDevice)
@@ -76,7 +80,11 @@ struct TodayView: View {
                 } else {
                     Chip(text: "Plain mode", systemImage: "list.bullet.rectangle", color: Theme.plain)
                 }
-                Chip(text: "\(app.packs.packs.count) packs offline", systemImage: "checkmark.circle.fill", color: Theme.brand)
+                Button { showPacks = true } label: {
+                    Chip(text: "\(app.packs.packs.count) packs offline", systemImage: "checkmark.circle.fill", color: Theme.brand)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Shows the fix packs stored on this iPhone")
             }
         }
     }
@@ -86,7 +94,7 @@ struct TodayView: View {
             Image(systemName: "wifi.slash").foregroundStyle(Theme.caution).accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("No signal").font(.headline).foregroundStyle(Theme.textPrimary)
-                Text("Diagnosis keeps working on this iPhone. Notes and job updates sync when you're back online.")
+                Text("Diagnosis and reports keep working on this iPhone. Everything syncs when you're back online.")
                     .font(.subheadline).foregroundStyle(Theme.textSecondary)
             }
         }

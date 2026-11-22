@@ -25,13 +25,15 @@ nonisolated enum AIFeature: String, CaseIterable, Sendable {
 }
 
 nonisolated struct AIConfig: Sendable, Equatable {
-    enum Origin: String, Sendable { case remote, defaults }
+    /// remote: fetched this launch; cached: last fetched values (offline); defaults: bundled template.
+    enum Origin: String, Sendable { case remote, cached, defaults }
 
     var routes: [AIFeature: InferenceRoute]
     var cloudModelFast: String
     var cloudModelCompile: String
     var ondeviceMaxTokens: Int
     var confidenceThreshold: Double
+    var autoUpgradeReports: Bool
     var origin: Origin
 
     func route(for feature: AIFeature) -> InferenceRoute { routes[feature] ?? .preferInCloud }
@@ -56,6 +58,7 @@ nonisolated struct AIConfig: Sendable, Equatable {
             cloudModelCompile: str("cloud_model_compile"),
             ondeviceMaxTokens: Int(num("ondevice_max_tokens")),
             confidenceThreshold: num("diagnosis_confidence_threshold"),
+            autoUpgradeReports: str("auto_upgrade_reports").lowercased() != "false",
             origin: origin)
     }
 }
@@ -117,7 +120,9 @@ final class AIConfigLoader {
             _ = try await rc.fetchAndActivate()
             origin = .remote
         } catch {
-            // Offline or fetch throttled: keep the last activated values / bundled defaults.
+            // Offline or fetch throttled: keep the last activated values (persisted by the SDK)
+            // or, before the first successful fetch, the bundled defaults.
+            if rc.lastFetchStatus == .success || rc.lastFetchTime != nil { origin = .cached }
         }
         current = AIConfig.from(lookup: { rc.configValue(forKey: $0).stringValue }, defaults: defaults, origin: origin)
         return current

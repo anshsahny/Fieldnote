@@ -71,6 +71,13 @@
           },
           "description": "iOS: customer report; cloud first for long-form quality, on-device when offline.",
           "valueType": "STRING"
+        },
+        "auto_upgrade_reports": {
+          "defaultValue": {
+            "value": "true"
+          },
+          "description": "iOS: when back online, rewrite an on-device draft report in the cloud automatically (otherwise on tap).",
+          "valueType": "BOOLEAN"
         }
       }
     },

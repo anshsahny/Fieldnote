@@ -5,16 +5,25 @@ enum FlowRoute: Hashable {
     case job(Job)
     case faultCode(packId: String, job: Job)
     case diagnose(DiagnosisRun)
+    case report(DiagnosisRun)
 }
 
 final class DiagnosisRun: Hashable, Identifiable {
     let id = UUID()
     let engine: DiagnosisEngine
     let job: Job
+    /// Firestore session document id; the session is saved after every step.
+    let sessionId: String
+    let startedAt: Date
+    let createdOffline: Bool
 
-    init(engine: DiagnosisEngine, job: Job) {
+    init(engine: DiagnosisEngine, job: Job, sessionId: String = UUID().uuidString,
+         startedAt: Date = Date(), createdOffline: Bool = false) {
         self.engine = engine
         self.job = job
+        self.sessionId = sessionId
+        self.startedAt = startedAt
+        self.createdOffline = createdOffline
     }
 
     nonisolated static func == (a: DiagnosisRun, b: DiagnosisRun) -> Bool { a.id == b.id }
@@ -52,6 +61,7 @@ struct RootView: View {
 }
 
 struct MainView: View {
+    @Environment(AppModel.self) private var app
     @State private var path: [FlowRoute] = []
 
     var body: some View {
@@ -62,9 +72,61 @@ struct MainView: View {
                     case .job(let job): JobDetailView(job: job, path: $path)
                     case .faultCode(let packId, let job): FaultCodeView(packId: packId, job: job, path: $path)
                     case .diagnose(let run): DiagnoseView(run: run, path: $path)
+                    case .report(let run): ReportView(run: run, path: $path)
                     }
                 }
         }
+    }
+}
+
+extension View {
+    /// The sync status bar under the navigation bar (pushes content down rather than covering it).
+    func syncStatus() -> some View { modifier(SyncStatusInset()) }
+}
+
+private struct SyncStatusInset: ViewModifier {
+    @Environment(AppModel.self) private var app
+
+    func body(content: Content) -> some View {
+        content.safeAreaInset(edge: .top, spacing: 0) {
+            SyncPill(network: app.network, sync: app.sync, upgrading: app.reportService.upgrading.count)
+        }
+    }
+}
+
+/// Small status at the top of every screen: work waiting for signal, syncing, then "Synced".
+struct SyncPill: View {
+    let network: NetworkMonitor
+    let sync: SyncMonitor
+    var upgrading = 0
+
+    private var text: (String, String, Color)? {
+        if upgrading > 0 { return ("Rewriting report with cloud AI…", "sparkles", Theme.cloud) }
+        if sync.justSynced { return ("Synced · everything is on the server", "checkmark.icloud.fill", Theme.onDevice) }
+        guard sync.hasQueue else { return nil }
+        let count = sync.pending > 0 ? "\(sync.pending) " : ""
+        return network.isOnline
+            ? ("Syncing \(count)saved changes…", "arrow.triangle.2.circlepath.icloud", Theme.cloud)
+            : ("Offline · \(count)changes saved on this iPhone", "icloud.slash", Theme.caution)
+    }
+
+    var body: some View {
+        Group {
+            if let (label, symbol, color) = text {
+                Label(label, systemImage: symbol)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .overlay(Capsule().stroke(color.opacity(0.4)))
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .accessibilityAddTraits(.updatesFrequently)
+            }
+        }
+        .animation(.snappy, value: text?.0)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, text == nil ? 0 : 4)
+        .allowsHitTesting(false)
     }
 }
 

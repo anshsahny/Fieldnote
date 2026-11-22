@@ -31,9 +31,19 @@ struct DebugView: View {
                     LabeledContent("Availability", value: app.onDeviceAvailability)
                     LabeledContent("Network", value: app.network.isOnline ? "online" : "offline")
                 }
+                Section("Sync") {
+                    LabeledContent("Writes waiting (this launch)", value: "\(app.sync.pending)")
+                    LabeledContent("Writes from before launch", value: app.sync.earlierQueued ? "waiting" : "none")
+                    LabeledContent("Reports", value: "\(app.reports.reports.count) (\(app.reports.drafts.count) drafts)")
+                    #if DEBUG
+                    Toggle("Simulate offline (Simulator)", isOn: Bindable(app.network).simulateOffline)
+                    #endif
+                }
                 Section("Routing (Remote Config: \(app.config.origin.rawValue))") {
                     LabeledContent("route_diagnosis", value: app.config.route(for: .diagnosis).rawValue)
                     LabeledContent("route_nameplate", value: app.config.route(for: .nameplate).rawValue)
+                    LabeledContent("route_report", value: app.config.route(for: .report).rawValue)
+                    LabeledContent("auto_upgrade_reports", value: app.config.autoUpgradeReports ? "true" : "false")
                     LabeledContent("cloud_model_fast", value: app.config.cloudModelFast)
                     LabeledContent("Confidence threshold", value: app.config.confidenceThreshold.formatted())
                     Picker("Override diagnosis route", selection: $app.routeOverride) {
@@ -41,7 +51,7 @@ struct DebugView: View {
                         ForEach(InferenceRoute.allCases) { Text($0.rawValue).tag(InferenceRoute?.some($0)) }
                     }
                 }
-                Section("Hybrid ledger (last 20, \(app.ledger.pending) waiting to sync)") {
+                Section("Hybrid ledger (last 20)") {
                     if app.ledger.recent.isEmpty { Text("No inference yet").foregroundStyle(.secondary) }
                     ForEach(app.ledger.recent) { row in
                         HStack {

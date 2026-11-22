@@ -22,6 +22,7 @@ struct FaultCodeView: View {
                 Text("This fix pack is no longer on the phone.").foregroundStyle(Theme.textSecondary)
             }
         }
+        .syncStatus()
         .screenBackground()
         .navigationTitle("Fault code")
         .navigationBarTitleDisplayMode(.inline)
@@ -119,7 +120,7 @@ struct FaultCodeView: View {
 
     private func startDiagnosis(pack: FixPack, fault: FixPack.FaultCode) {
         app.jobs.setStatus("in_progress", for: job)
-        path.append(.diagnose(DiagnosisRun(engine: app.makeEngine(pack: pack, fault: fault), job: job)))
+        path.append(.diagnose(app.startRun(pack: pack, fault: fault, job: job)))
     }
 
     /// Reads a photo of the control display and picks the first token that is a code in this pack.

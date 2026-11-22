@@ -54,6 +54,7 @@ struct DiagnoseView: View {
                     .disabled(!engine.canUndo)
             }
         }
+        .syncStatus()
         .screenBackground()
         .navigationTitle(engine.phase == .concluded ? "Conclusion" : "Step \(engine.stepNumber)")
         .navigationBarTitleDisplayMode(.inline)
@@ -273,14 +274,18 @@ struct DiagnoseView: View {
     private var bottomBar: some View {
         VStack(spacing: 8) {
             if engine.phase == .concluded {
+                let hasReport = app.reports.report(forSession: run.sessionId) != nil
+                Button {
+                    path.append(.report(run))
+                } label: {
+                    Label(hasReport ? "View customer report" : "Create customer report", systemImage: "doc.text")
+                }
+                .buttonStyle(PrimaryButtonStyle())
                 Button {
                     app.jobs.setStatus("done", for: run.job)
                     path.removeAll()
-                } label: { Label("Finish job", systemImage: "checkmark.circle.fill") }
-                    .buttonStyle(PrimaryButtonStyle())
-                Button { } label: { Label("Create customer report (next update)", systemImage: "doc.text") }
+                } label: { Label("Finish job without report", systemImage: "checkmark.circle") }
                     .buttonStyle(SecondaryButtonStyle())
-                    .disabled(true)
             } else {
                 if engine.phase == .interpreting {
                     HStack(spacing: 8) {
