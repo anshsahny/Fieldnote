@@ -8,7 +8,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { addDoc, collection, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 
 let env: RulesTestEnvironment;
@@ -109,6 +109,21 @@ const report = (overrides: Record<string, unknown> = {}) => ({
 });
 
 const as = (uid: string) => env.authenticatedContext(uid).firestore();
+/** "Try the demo": an anonymous Firebase Auth user with no users/{uid} profile. */
+const guest = () => env.authenticatedContext('guest-1', { firebase: { sign_in_provider: 'anonymous' } }).firestore();
+
+const triage = (overrides: Record<string, unknown> = {}) => ({
+  brand: 'Goodman',
+  errorCode: 'EE2',
+  likelyFault: 'Low-stage pressure switch did not close',
+  partsToBring: ['pressure switch hose'],
+  confidence: 0.8,
+  source: 'ON_DEVICE',
+  latencyMs: 1200,
+  photoStayedOnDevice: true,
+  attachedAt: Timestamp.now(),
+  ...overrides,
+});
 
 describe('fix packs', () => {
   it('a tech cannot publish', async () => {
@@ -223,6 +238,55 @@ describe('customer reports', () => {
     await assertFails(setDoc(doc(as('tech'), path), report({ generatedBy: 'GPT' })));
     await assertFails(setDoc(doc(as('tech'), path), report({ customerPhone: '555-0100' })));
     await assertFails(setDoc(doc(as('tech'), path), report({ versions: [] })));
+  });
+});
+
+describe('demo guests (anonymous "Try the demo")', () => {
+  it('read the demo org, its packs, jobs, sessions, reports and ledger', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'orgs/demo/jobs/j1/sessions/s1'), session());
+      await setDoc(doc(ctx.firestore(), 'orgs/demo/reports/r1'), report());
+      await setDoc(doc(ctx.firestore(), 'orgs/demo/inferenceEvents/e1'), event());
+    });
+    const db = guest();
+    await assertSucceeds(getDoc(doc(db, 'orgs/demo/fixpacks/acme-test-v1')));
+    await assertSucceeds(getDocs(collection(db, 'orgs/demo/jobs')));
+    await assertSucceeds(getDoc(doc(db, 'orgs/demo/jobs/j1/sessions/s1')));
+    await assertSucceeds(getDoc(doc(db, 'orgs/demo/reports/r1')));
+    await assertSucceeds(getDocs(collection(db, 'orgs/demo/inferenceEvents')));
+  });
+
+  it('never see another org', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'orgs/other/jobs/x'), { status: 'new' }));
+    await assertFails(getDoc(doc(guest(), 'orgs/other/jobs/x')));
+  });
+
+  it('log web ledger rows only', async () => {
+    const col = collection(guest(), 'orgs/demo/inferenceEvents');
+    await assertSucceeds(addDoc(col, event({ platform: 'web', feature: 'triage' })));
+    await assertFails(addDoc(col, event({ platform: 'ios' })));
+    await assertFails(addDoc(col, event({ platform: 'web', prompt: 'leaked content' })));
+  });
+
+  it('attach a valid triage to a demo job and nothing else', async () => {
+    const db = guest();
+    await assertSucceeds(updateDoc(doc(db, 'orgs/demo/jobs/j1'), { triage: triage(), updatedAt: Timestamp.now() }));
+    await assertFails(updateDoc(doc(db, 'orgs/demo/jobs/j1'), { triage: triage({ source: 'MAGIC' }) }));
+    await assertFails(updateDoc(doc(db, 'orgs/demo/jobs/j1'), { triage: triage({ notes: 'x' }) }));
+    await assertFails(updateDoc(doc(db, 'orgs/demo/jobs/j1'), { status: 'done' }));
+    await assertFails(updateDoc(doc(db, 'orgs/demo/jobs/j1'), { assignedTo: 'guest-1' }));
+  });
+
+  it('cannot publish, delete, or write sessions and reports', async () => {
+    const db = guest();
+    await assertFails(setDoc(doc(db, 'orgs/demo/fixpacks/new-pack-v1'), pack({ packId: 'new-pack-v1', publishedBy: 'guest-1' })));
+    await assertFails(deleteDoc(doc(db, 'orgs/demo/jobs/j1')));
+    await assertFails(setDoc(doc(db, 'orgs/demo/jobs/j1/sessions/s9'), session({ id: 's9', techUid: 'guest-1' })));
+    await assertFails(setDoc(doc(db, 'orgs/demo/reports/r9'), report({ id: 'r9', techUid: 'guest-1' })));
+  });
+
+  it('a non-anonymous user without a profile gets nothing', async () => {
+    await assertFails(getDoc(doc(as('stranger'), 'orgs/demo/jobs/j1')));
   });
 });
 

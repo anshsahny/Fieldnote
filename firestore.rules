@@ -58,6 +58,40 @@ service cloud.firestore {
         && (!('ok' in d) || d.ok is bool);
     }
 
+    // "Try the demo" (P5): anonymous sign-in, demo org only. Guests read everything in the demo org,
+    // log web ledger rows, and attach a triage result to a demo job. Nothing destructive.
+    function isGuest() {
+      return signedIn() && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function isDemoGuest(orgId) {
+      return isGuest() && orgId == 'demo';
+    }
+
+    function canRead(orgId) {
+      return inOrg(orgId) || isDemoGuest(orgId);
+    }
+
+    // Photo pre-triage attached to a job from the web console (see web/src/triage).
+    function validTriage(t) {
+      return t is map
+        && t.keys().hasAll(['likelyFault', 'source', 'attachedAt'])
+        && t.keys().hasOnly(['brand', 'model', 'errorCode', 'likelyFault', 'partsToBring', 'confidence',
+                             'source', 'latencyMs', 'packId', 'matchedCode', 'photoStayedOnDevice', 'attachedAt'])
+        && t.likelyFault is string && t.likelyFault.size() <= 300
+        && t.source in ['ON_DEVICE', 'IN_CLOUD']
+        && t.attachedAt is timestamp
+        && (!('brand' in t) || (t.brand is string && t.brand.size() <= 80))
+        && (!('model' in t) || (t.model is string && t.model.size() <= 80))
+        && (!('errorCode' in t) || (t.errorCode is string && t.errorCode.size() <= 32))
+        && (!('partsToBring' in t) || (t.partsToBring is list && t.partsToBring.size() <= 10))
+        && (!('confidence' in t) || (t.confidence is number && t.confidence >= 0 && t.confidence <= 1))
+        && (!('latencyMs' in t) || (t.latencyMs is int && t.latencyMs >= 0))
+        && (!('packId' in t) || (t.packId is string && t.packId.size() <= 128))
+        && (!('matchedCode' in t) || (t.matchedCode is string && t.matchedCode.size() <= 32))
+        && (!('photoStayedOnDevice' in t) || t.photoStayedOnDevice is bool);
+    }
+
     // The signed-in tech is the one the job is assigned to.
     function isAssignedTech(orgId, jobId) {
       return inOrg(orgId)
@@ -107,13 +141,13 @@ service cloud.firestore {
     }
 
     match /orgs/{orgId} {
-      allow read: if inOrg(orgId);
+      allow read: if canRead(orgId);
       allow write: if false;
 
       // Fix packs: everyone in the org reads; only dispatchers publish. The pack JSON was validated
       // in the console; the rules guard the envelope (identity, size, monotonic version).
       match /fixpacks/{packId} {
-        allow read: if inOrg(orgId);
+        allow read: if canRead(orgId);
         allow create: if isDispatcher(orgId) && validFixPackDoc(request.resource.data, packId);
         allow update: if isDispatcher(orgId) && validFixPackDoc(request.resource.data, packId)
           && request.resource.data.version > resource.data.version;
@@ -123,18 +157,21 @@ service cloud.firestore {
       // Jobs: dispatchers create/assign/edit/delete; the assigned tech may only touch progress
       // fields (so a tech can't reassign a job or rewrite the customer/address).
       match /jobs/{jobId} {
-        allow read: if inOrg(orgId);
+        allow read: if canRead(orgId);
         allow create, delete: if isDispatcher(orgId);
         allow update: if isDispatcher(orgId)
           || (inOrg(orgId)
               && resource.data.assignedTo == request.auth.uid
               && request.resource.data.diff(resource.data).affectedKeys()
                    .hasOnly(['status', 'equipment', 'updatedAt'])
-              && request.resource.data.status in ['new', 'scheduled', 'assigned', 'in_progress', 'done']);
+              && request.resource.data.status in ['new', 'scheduled', 'assigned', 'in_progress', 'done'])
+          || (isDemoGuest(orgId)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['triage', 'updatedAt'])
+              && validTriage(request.resource.data.triage));
 
         // Diagnosis sessions: the assigned tech writes them (often offline, synced later).
         match /sessions/{sessionId} {
-          allow read: if inOrg(orgId);
+          allow read: if canRead(orgId);
           allow create: if isAssignedTech(orgId, jobId)
             && validSession(request.resource.data, jobId, sessionId);
           allow update: if isAssignedTech(orgId, jobId)
@@ -146,7 +183,7 @@ service cloud.firestore {
 
       // Customer reports written by the assigned tech's app; dispatchers read them in the inbox.
       match /reports/{reportId} {
-        allow read: if inOrg(orgId);
+        allow read: if canRead(orgId);
         allow create: if validReport(request.resource.data, reportId)
           && isAssignedTech(orgId, request.resource.data.jobId);
         allow update: if resource.data.techUid == request.auth.uid
@@ -158,8 +195,9 @@ service cloud.firestore {
 
       // Hybrid Ledger: metadata only. Clients append; only dispatchers can read the ledger.
       match /inferenceEvents/{eventId} {
-        allow create: if inOrg(orgId) && validInferenceEvent(request.resource.data);
-        allow read: if isDispatcher(orgId);
+        allow create: if validInferenceEvent(request.resource.data)
+          && (inOrg(orgId) || (isDemoGuest(orgId) && request.resource.data.platform == 'web'));
+        allow read: if isDispatcher(orgId) || isDemoGuest(orgId);
         allow update, delete: if false;
       }
     }
