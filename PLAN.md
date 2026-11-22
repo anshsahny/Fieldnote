@@ -258,6 +258,13 @@ Code: validate `choice ∈ allowed`; if `unclear` or confidence < threshold (Rem
 | Nov 21 | Undo (toolbar, AI turn, conclusion) and the conclusion shows how the last note was read | One iPhone misread of a negation ("no coating" → "oxidized") ended a diagnosis early; models can misread, so it must be one tap to recover |
 | Nov 21 | Step cautions use "watch for" copy; the pack's stop message appears only on the full-screen stop. Stop confirmation is a full-width checkbox row, not a Toggle | "Stop… shut off power" on a live flame-current check contradicted the step; gloves need a big target |
 | Nov 21 | Eval scenarios live in `eval/scenarios/` and are bundled into Debug builds; runner via launch args or the Diagnostics sheet; P6 grows the same format | Real on-device numbers need the iPhone; one tap there beats a cable and Xcode |
+| Nov 22 | Report prompt is `shared/prompts/report.md` (plan said `customer_report.md`), route `route_report` = `prefer_in_cloud` (the plan's "cloudFirst") | Matches the P1 Remote Config keys (`route_report`, `prompt_version_report`) |
+| Nov 22 | Reports are written from PII-free facts only (equipment, fault, checks, pack outcome, repair done, safety stops); the app prints the customer header itself | Customer details and free-text notes never reach a model; a test checks the prompt and stored facts |
+| Nov 22 | Offline report = on-device draft; with no model at all, a plain report assembled from the pack. Back online, drafts are rewritten in the cloud automatically (`auto_upgrade_reports`, Remote Config) with retries; every version is kept with its model | The tech always leaves with a report; the dispatcher sees who wrote each version |
+| Nov 22 | Reports only describe a repair as done when the tech ticks "I completed this repair" | The cloud model wrote "removed the blockages" from a pack recommendation; customer documents must not claim unconfirmed work |
+| Nov 22 | Firestore rules: only the assigned tech writes a job's progress, sessions and reports; sessions and reports are validated field by field | Previously any org member could update any job's status |
+| Nov 22 | Debug "Simulate offline" switch (pauses Firestore, pins diagnosis on-device, persists across launches) | The Simulator shares the Mac's network; this makes kill-while-offline testable without a device |
+| Nov 22 | **Quota: skip the Sprint 3 request** | 3.5 Flash-Lite never returned 429 and meets quality/latency; 3.8 Flash and Gemini 4 Hydrogen fail on capacity (timeouts/503), which quota doesn't fix; hybrid design degrades to on-device/plain. Revisit only on Flash-Lite 429s before Nov 25 10 AM PT |
 
 ## 11. Progress log
 _(Claude Code appends: date, phase, what's done, test status, open issues.)_
@@ -286,3 +293,9 @@ _(Claude Code appends: date, phase, what's done, test status, open issues.)_
 - Results: iPhone in airplane mode ran Goodman EE0, Rheem 11, Carrier 13 to conclusions, all notes on-device (ledger: 24 turns, median 1.1 s, 0 failures; 2 safety stops with no model call). iPhone eval: 9/10 + 12/12 on-device at 0.69–0.74 s; cloud 10/10 + 12/12. Details in `docs/phases/P3-ios-core.md` and `eval/results/p3-notes.md`.
 - Tests: iOS 67/67, web 86/86.
 - Open: prewarm the on-device session at diagnosis start (first call up to 15 s); re-seed jobs before filming; scan → code not yet run on the iPhone in airplane mode (P4 airplane test covers it). Schedule: back on track (P3 done on its first day).
+
+**Nov 22 · P4 Offline, sync, reports: complete (awaiting approval to start P5)**
+- Done: diagnosis sessions saved after every step (queued offline) and resumable after a kill; customer report (cloud first online, on-device draft offline, plain fallback) with automatic cloud upgrade on reconnect (retries), every version credited to its model; "I completed this repair" fact; sync status pill (queued / syncing / synced, including writes queued before a relaunch); pull to refresh; packs-on-this-iPhone sheet; Remote Config `cached` origin; tighter Firestore rules for jobs, sessions, reports; seed `--reset`.
+- Results: iPhone airplane-mode script passed (3 runs; the one manual tap led to the retry fix). Reconnect → cloud report 2–3 s automatic; on-device drafts 3.3–8.2 s offline; no data lost across two kills. Details in `docs/phases/P4-offline-sync-reports.md`.
+- Tests: iOS 88/88, web 86/86, rules 19/19.
+- Open: prewarm the on-device model (P7); `seed --reset` before filming; quota: skipped (see Decision log). Schedule: ~2 days ahead (P4 was due Tue Nov 24).
