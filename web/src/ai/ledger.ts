@@ -3,7 +3,8 @@ import { getDb } from '../firebase/client';
 import type { Feature, Route } from './routing';
 
 export interface InferenceEvent {
-  feature: Feature;
+  /** status_check: the "Test the on-device model" button on /status. */
+  feature: Feature | 'status_check';
   source: 'ON_DEVICE' | 'IN_CLOUD' | 'NONE';
   latencyMs: number;
   ok: boolean;

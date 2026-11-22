@@ -34,6 +34,8 @@ export interface AIConfig {
   ondeviceMaxTokens: number;
   confidenceThreshold: number;
   promptVersions: Record<string, string>;
+  /** Cloud price (USD per 1M tokens) for the ledger's cost-avoided estimate, with its source. */
+  pricing: { inputPerMTok: number; outputPerMTok: number; source: string };
   /** Where the values came from on this load. */
   origin: 'remote' | 'defaults';
 }
@@ -70,6 +72,11 @@ export function aiConfigFrom(
     ondeviceMaxTokens: num('ondevice_max_tokens'),
     confidenceThreshold: num('diagnosis_confidence_threshold'),
     promptVersions,
+    pricing: {
+      inputPerMTok: num('cloud_price_input_per_mtok'),
+      outputPerMTok: num('cloud_price_output_per_mtok'),
+      source: str('cloud_price_source'),
+    },
     origin,
   };
 }

@@ -147,6 +147,32 @@
           "valueType": "NUMBER"
         }
       }
+    },
+    "pricing": {
+      "description": "Cloud price used for the Hybrid Ledger's cost-avoided estimate (USD per 1M tokens, standard paid tier).",
+      "parameters": {
+        "cloud_price_input_per_mtok": {
+          "defaultValue": {
+            "value": "0.30"
+          },
+          "description": "Input price, USD per 1M tokens, for cloud_model_fast.",
+          "valueType": "NUMBER"
+        },
+        "cloud_price_output_per_mtok": {
+          "defaultValue": {
+            "value": "2.50"
+          },
+          "description": "Output price, USD per 1M tokens, for cloud_model_fast.",
+          "valueType": "NUMBER"
+        },
+        "cloud_price_source": {
+          "defaultValue": {
+            "value": "Gemini 3.5 Flash-Lite, standard paid tier, https://aistudio.google.com/docs/pricing (checked 2026-11-22)"
+          },
+          "description": "Where the prices come from (shown on /about and /ledger).",
+          "valueType": "STRING"
+        }
+      }
     }
   }
 }

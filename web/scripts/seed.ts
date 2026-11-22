@@ -71,8 +71,12 @@ async function seedUsers(): Promise<Record<string, string>> {
 }
 
 // ---------- jobs (fictional customers, 555-01xx numbers) ----------
-function at(hoursFromNow: number) {
-  return Timestamp.fromMillis(Date.now() + hoursFromNow * 3_600_000);
+/** A working-hours time on today (dayOffset 0) or a later day, in the machine's local time zone. */
+function at(dayOffset: number, hour: number, minute = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(hour, minute, 0, 0);
+  return Timestamp.fromDate(d);
 }
 
 const JOBS = (techUid: string) => [
@@ -84,7 +88,7 @@ const JOBS = (techUid: string) => [
     priority: 'urgent',
     status: 'assigned',
     assignedTo: techUid,
-    scheduledFor: at(1),
+    scheduledFor: at(0, 9, 0),
   },
   {
     id: 'job-1002',
@@ -94,7 +98,7 @@ const JOBS = (techUid: string) => [
     priority: 'normal',
     status: 'assigned',
     assignedTo: techUid,
-    scheduledFor: at(3),
+    scheduledFor: at(0, 11, 30),
   },
   {
     id: 'job-1003',
@@ -104,7 +108,7 @@ const JOBS = (techUid: string) => [
     priority: 'normal',
     status: 'scheduled',
     assignedTo: techUid,
-    scheduledFor: at(5),
+    scheduledFor: at(0, 14, 0),
   },
   {
     id: 'job-1004',
@@ -114,7 +118,7 @@ const JOBS = (techUid: string) => [
     priority: 'low',
     status: 'scheduled',
     assignedTo: techUid,
-    scheduledFor: at(26),
+    scheduledFor: at(1, 9, 30),
   },
   {
     id: 'job-1005',
@@ -124,14 +128,16 @@ const JOBS = (techUid: string) => [
     priority: 'normal',
     status: 'new',
     assignedTo: null,
-    scheduledFor: at(28),
+    scheduledFor: at(1, 13, 0),
   },
 ];
 
 async function seedJobs(techUid: string) {
   for (const job of JOBS(techUid)) {
     const { id, ...fields } = job;
-    await doc(`orgs/${DEMO_ORG_ID}/jobs/${id}`, { ...fields, seededBy: 'seed', updatedAt: FieldValue.serverTimestamp() });
+    // assignedName: dispatchers can't read other users' profiles, so the job carries the display name.
+    const assignedName = fields.assignedTo ? USERS.find((u) => u.role === 'tech')!.displayName : null;
+    await doc(`orgs/${DEMO_ORG_ID}/jobs/${id}`, { ...fields, assignedName, seededBy: 'seed', updatedAt: FieldValue.serverTimestamp() });
   }
 }
 
