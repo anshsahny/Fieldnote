@@ -126,7 +126,7 @@ struct ReportView: View {
                     Text("Rewriting with cloud AI…").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
                 } else if app.reportService.autoRetrying.contains(r.id) && app.network.isOnline {
                     ProgressView().tint(Theme.cloud)
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 14) {
                         Text("Connecting to cloud AI…").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
                         Button {
                             Task { await app.reportService.upgrade(r) }
@@ -135,7 +135,7 @@ struct ReportView: View {
                     }
                 } else if app.network.isOnline {
                     Image(systemName: "cloud").foregroundStyle(Theme.cloud).accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 14) {
                         Text(app.reportService.upgradeFailed.contains(r.id)
                              ? "Cloud AI couldn't rewrite it just now. The draft is saved."
                              : "Back online. The cloud model can write a fuller report.")
