@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { AuthProvider } from './auth/AuthProvider';
 import './index.css';
+import { applyTheme, readTheme } from './ui/theme';
+
+// Before first paint, so a pinned theme doesn't flash.
+applyTheme(readTheme());
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root element missing from index.html');

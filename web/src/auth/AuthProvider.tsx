@@ -1,11 +1,19 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  signInAnonymously,
+  signInWithEmailAndPassword,
+  signOut,
+  type User,
+} from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { getAuthClient, getDb } from '../firebase/client';
+import { DEMO_ORG_ID } from '../fixpack/firestore';
 
 export interface Profile {
   orgId: string;
-  role: 'tech' | 'dispatcher';
+  /** guest = "Try the demo": anonymous, read-mostly access to the demo org (see firestore.rules). */
+  role: 'tech' | 'dispatcher' | 'guest';
   displayName?: string;
 }
 
@@ -17,12 +25,17 @@ export type AuthState =
 interface AuthApi {
   state: AuthState;
   signIn: (email: string, password: string) => Promise<void>;
+  /** One click for judges: no account, no password, demo org only, nothing destructive. */
+  signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
 }
+
+export const GUEST_PROFILE: Profile = { orgId: DEMO_ORG_ID, role: 'guest', displayName: 'Demo guest' };
 
 const AuthContext = createContext<AuthApi>({
   state: { status: 'signed-out' },
   signIn: async () => {},
+  signInAsGuest: async () => {},
   signOut: async () => {},
 });
 
@@ -33,6 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return onAuthStateChanged(getAuthClient(), async (user) => {
       if (!user) {
         setState({ status: 'signed-out' });
+        return;
+      }
+      if (user.isAnonymous) {
+        setState({ status: 'signed-in', user, profile: GUEST_PROFILE });
         return;
       }
       try {
@@ -59,6 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw e;
         }
       },
+      signInAsGuest: async () => {
+        try {
+          await signInAnonymously(getAuthClient());
+        } catch {
+          setState({ status: 'signed-out', error: 'The demo is unavailable right now. Try again in a minute.' });
+        }
+      },
       signOut: () => signOut(getAuthClient()),
     }),
     [state],
@@ -68,3 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+/** The signed-in profile, or null while loading / signed out. */
+export function useProfile(): (Profile & { uid: string }) | null {
+  const { state } = useAuth();
+  if (state.status !== 'signed-in' || !state.profile) return null;
+  return { ...state.profile, uid: state.user.uid };
+}

@@ -1,40 +1,29 @@
-import { useEffect, useState } from 'react';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { loadAIConfig, type AIConfig } from '../../ai/config';
+import { useState } from 'react';
+import { BookOpen, ShieldCheck, Smartphone } from 'lucide-react';
+import { useAIConfig } from '../../ai/useAIConfig';
 import { useAuth } from '../../auth/AuthProvider';
-import { getDb, getFirebase } from '../../firebase/client';
-import type { FixPackDocFields } from '../../fixpack/firestore';
+import { usePacks } from '../../data/hooks';
+import { Callout, Card, EmptyState, PageHeader, SkeletonRows } from '../../ui/components';
 import { CompilePanel } from './CompilePanel';
 import { PackReview } from './PackReview';
 import { publishPack } from './publish';
 
-type PublishedPack = FixPackDocFields & { id: string };
-
 export function PacksPage() {
   const { state } = useAuth();
-  const [config, setConfig] = useState<AIConfig>();
-  const [published, setPublished] = useState<PublishedPack[]>([]);
-  const [reviewJson, setReviewJson] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const config = useAIConfig();
   const profile = state.status === 'signed-in' ? state.profile : null;
   const orgId = profile?.orgId;
-
-  useEffect(() => {
-    void loadAIConfig(getFirebase().app).then(setConfig);
-  }, []);
-
-  useEffect(() => {
-    if (!orgId) return;
-    const q = query(collection(getDb(), 'orgs', orgId, 'fixpacks'), orderBy('brand'));
-    return onSnapshot(q, (snap) => setPublished(snap.docs.map((d) => ({ id: d.id, ...(d.data() as FixPackDocFields) }))));
-  }, [orgId]);
+  const packs = usePacks(orgId);
+  const [reviewJson, setReviewJson] = useState<string | null>(null);
+  const [reviewing, setReviewing] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   if (state.status !== 'signed-in' || !profile || !orgId) {
     return (
-      <section className="card">
-        <h1>Fix packs</h1>
-        <p className="lede">Your account has no organization profile yet.</p>
-      </section>
+      <div className="stack">
+        <PageHeader title="Fix packs" />
+        <Callout tone="caution">Your account has no organization profile yet.</Callout>
+      </div>
     );
   }
 
@@ -42,38 +31,69 @@ export function PacksPage() {
 
   return (
     <div className="stack">
-      <section className="card" aria-labelledby="packs-title">
-        <h1 id="packs-title">Fix packs</h1>
-        <p className="lede">
-          Compiled from manufacturer manuals by the cloud model, checked by the validator, reviewed here, then published to
-          technicians' phones for offline use.
-        </p>
-        {published.length === 0 ? (
-          <p className="lede">No packs published yet.</p>
+      <PageHeader
+        eyebrow="Knowledge"
+        title="Fix packs"
+        description="Manufacturer manuals compiled by Gemini into step-by-step trees, checked by Fieldnote's validator, reviewed here, then published to technicians' phones for offline use."
+      />
+
+      <div className="grid grid-3">
+        <Callout tone="cloud" icon={BookOpen} title="Compiled in the cloud">
+          Only the manual's troubleshooting pages go to the model, one fault code at a time.
+        </Callout>
+        <Callout tone="info" icon={ShieldCheck} title="Validated in code">
+          Every step must lead somewhere, every pack carries the safety stops, and size stays under 25 KB.
+        </Callout>
+        <Callout tone="ondevice" icon={Smartphone} title="Used offline">
+          Phones keep the latest version and re-validate it before use.
+        </Callout>
+      </div>
+
+      <Card flush title="Published" icon={BookOpen} labelledBy="published-title" hint={notice ?? undefined}>
+        {packs.loading ? (
+          <div style={{ padding: 22 }}>
+            <SkeletonRows rows={3} />
+          </div>
+        ) : packs.data.length === 0 ? (
+          <EmptyState icon={BookOpen} title="No packs published yet">
+            Compile a manual below to create the first one.
+          </EmptyState>
         ) : (
           <div className="table-wrap">
             <table data-testid="published-packs">
               <thead>
                 <tr>
-                  <th scope="col">Brand</th>
-                  <th scope="col">Family</th>
+                  <th scope="col">Equipment</th>
                   <th scope="col">Version</th>
-                  <th scope="col">Codes</th>
+                  <th scope="col">Fault codes</th>
                   <th scope="col">Steps</th>
                   <th scope="col" aria-label="Actions"></th>
                 </tr>
               </thead>
               <tbody>
-                {published.map((p) => (
+                {packs.data.map((p) => (
                   <tr key={p.id}>
-                    <td>{p.brand}</td>
-                    <td>{p.family}</td>
-                    <td>v{p.version}</td>
-                    <td>{p.faultCodeCount}</td>
-                    <td>{p.stepCount}</td>
                     <td>
-                      <button type="button" className="secondary" onClick={() => setReviewJson(p.packJson)}>
-                        Review
+                      <div className="list-title">{p.brand}</div>
+                      <div className="list-sub">{p.family}</div>
+                    </td>
+                    <td>
+                      <span className="badge badge-brand">v{p.version}</span>
+                    </td>
+                    <td className="num">{p.faultCodeCount}</td>
+                    <td className="num">{p.stepCount}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button
+                        type="button"
+                        className="secondary"
+                        aria-pressed={reviewing === p.id}
+                        onClick={() => {
+                          setReviewing(p.id);
+                          setReviewJson(p.packJson);
+                          requestAnimationFrame(() => document.getElementById('review-title')?.scrollIntoView({ behavior: 'smooth' }));
+                        }}
+                      >
+                        {reviewing === p.id ? 'Reviewing' : 'Review'}
                       </button>
                     </td>
                   </tr>
@@ -82,14 +102,16 @@ export function PacksPage() {
             </table>
           </div>
         )}
-        {notice && (
-          <p className="pill pill-ok" role="status">
-            {notice}
-          </p>
-        )}
-      </section>
+      </Card>
 
-      {isDispatcher && config && <CompilePanel config={config} orgId={orgId} onCompiled={setReviewJson} />}
+      {isDispatcher ? (
+        <CompilePanel config={config} orgId={orgId} onCompiled={(json) => (setReviewing(null), setReviewJson(json))} />
+      ) : (
+        <Callout tone="info" title="Compiling and publishing need a dispatcher account">
+          Open a published pack with Review to see how a manual became a decision tree: each step's question, answers, safety stops
+          and the manual pages it came from.
+        </Callout>
+      )}
 
       {reviewJson && (
         <PackReview
@@ -99,7 +121,7 @@ export function PacksPage() {
           onPublish={async (pack) => {
             const { version, json } = await publishPack(orgId, state.user.uid, pack);
             setReviewJson(json);
-            setNotice(`Published ${pack.packId} v${version}.`);
+            setNotice(`Published ${pack.packId} v${version}`);
           }}
         />
       )}
