@@ -58,6 +58,49 @@ service cloud.firestore {
         && (!('ok' in d) || d.ok is bool);
     }
 
+    // The signed-in tech is the one the job is assigned to.
+    function isAssignedTech(orgId, jobId) {
+      return inOrg(orgId)
+        && get(/databases/$(database)/documents/orgs/$(orgId)/jobs/$(jobId)).data.assignedTo == request.auth.uid;
+    }
+
+    // Diagnosis session (iOS SessionState, P4). Written on every step, often offline.
+    function validSession(d, jobId, sessionId) {
+      return d.keys().hasAll(['schemaVersion', 'id', 'jobId', 'techUid', 'packId', 'packVersion', 'faultCode',
+                              'status', 'stepId', 'history', 'acknowledgedStops', 'createdOffline',
+                              'startedAt', 'updatedAt'])
+        && d.keys().hasOnly(['schemaVersion', 'id', 'jobId', 'techUid', 'packId', 'packVersion', 'faultCode',
+                             'status', 'stepId', 'history', 'acknowledgedStops', 'createdOffline',
+                             'startedAt', 'updatedAt'])
+        && d.id == sessionId && d.jobId == jobId && d.techUid == request.auth.uid
+        && d.status in ['active', 'concluded', 'abandoned']
+        && d.packId is string && d.packId.size() <= 128
+        && d.packVersion is int
+        && d.faultCode is string && d.faultCode.size() <= 32
+        && d.stepId is string && d.stepId.size() <= 64
+        && d.history is list && d.history.size() <= 60
+        && d.acknowledgedStops is list && d.acknowledgedStops.size() <= 30
+        && d.createdOffline is bool
+        && d.startedAt is timestamp && d.updatedAt is timestamp;
+    }
+
+    // Customer report (iOS ServiceReport, P4): PII-free facts + up to 4 model-written versions.
+    function validReport(d, reportId) {
+      return d.keys().hasAll(['schemaVersion', 'id', 'jobId', 'sessionId', 'techUid', 'facts', 'versions',
+                              'status', 'generatedBy', 'createdOffline', 'createdAt', 'updatedAt'])
+        && d.keys().hasOnly(['schemaVersion', 'id', 'jobId', 'sessionId', 'techUid', 'facts', 'versions',
+                             'status', 'generatedBy', 'createdOffline', 'createdAt', 'updatedAt', 'upgradedAt'])
+        && d.id == reportId && d.techUid == request.auth.uid
+        && d.jobId is string && d.sessionId is string
+        && d.status in ['draft', 'final']
+        && d.generatedBy in ['ON_DEVICE', 'IN_CLOUD', 'PLAIN']
+        && d.facts is map
+        && d.versions is list && d.versions.size() >= 1 && d.versions.size() <= 4
+        && d.createdOffline is bool
+        && d.createdAt is timestamp && d.updatedAt is timestamp
+        && (!('upgradedAt' in d) || d.upgradedAt is timestamp);
+    }
+
     match /users/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow write: if false;
@@ -77,26 +120,39 @@ service cloud.firestore {
         allow delete: if isDispatcher(orgId);
       }
 
-      // Jobs: dispatchers create/assign/edit/delete; techs may only touch progress fields
-      // (so a tech can't reassign a job or rewrite the customer/address).
+      // Jobs: dispatchers create/assign/edit/delete; the assigned tech may only touch progress
+      // fields (so a tech can't reassign a job or rewrite the customer/address).
       match /jobs/{jobId} {
         allow read: if inOrg(orgId);
         allow create, delete: if isDispatcher(orgId);
         allow update: if isDispatcher(orgId)
           || (inOrg(orgId)
+              && resource.data.assignedTo == request.auth.uid
               && request.resource.data.diff(resource.data).affectedKeys()
-                   .hasOnly(['status', 'equipment', 'updatedAt']));
+                   .hasOnly(['status', 'equipment', 'updatedAt'])
+              && request.resource.data.status in ['new', 'scheduled', 'assigned', 'in_progress', 'done']);
 
-        // Diagnosis sessions (may be created offline and synced later).
+        // Diagnosis sessions: the assigned tech writes them (often offline, synced later).
         match /sessions/{sessionId} {
-          allow read, create, update: if inOrg(orgId);
+          allow read: if inOrg(orgId);
+          allow create: if isAssignedTech(orgId, jobId)
+            && validSession(request.resource.data, jobId, sessionId);
+          allow update: if isAssignedTech(orgId, jobId)
+            && resource.data.techUid == request.auth.uid
+            && validSession(request.resource.data, jobId, sessionId);
           allow delete: if isDispatcher(orgId);
         }
       }
 
-      // Customer reports written by the field app; dispatchers read them in the inbox.
+      // Customer reports written by the assigned tech's app; dispatchers read them in the inbox.
       match /reports/{reportId} {
-        allow read, create, update: if inOrg(orgId);
+        allow read: if inOrg(orgId);
+        allow create: if validReport(request.resource.data, reportId)
+          && isAssignedTech(orgId, request.resource.data.jobId);
+        allow update: if resource.data.techUid == request.auth.uid
+          && request.resource.data.jobId == resource.data.jobId
+          && validReport(request.resource.data, reportId)
+          && isAssignedTech(orgId, request.resource.data.jobId);
         allow delete: if isDispatcher(orgId);
       }
 

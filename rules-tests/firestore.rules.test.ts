@@ -65,7 +65,47 @@ beforeEach(async () => {
       assignedTo: 'tech',
       customer: { name: 'Demo', address: '1 Example St' },
     });
+    await setDoc(doc(db, 'users/tech2'), { orgId: 'demo', role: 'tech' });
+    await setDoc(doc(db, 'orgs/demo/jobs/j2'), {
+      status: 'assigned',
+      assignedTo: 'tech2',
+      customer: { name: 'Other', address: '2 Example St' },
+    });
   });
+});
+
+const session = (overrides: Record<string, unknown> = {}) => ({
+  schemaVersion: 1,
+  id: 's1',
+  jobId: 'j1',
+  techUid: 'tech',
+  packId: 'goodman-cvc96-mvc96-v1',
+  packVersion: 2,
+  faultCode: 'EE0',
+  status: 'active',
+  stepId: 'CEE0-S2',
+  history: [{ stepId: 'CEE0-S1', instruction: 'Check gas supply.', answer: 'gas supply ok', via: 'note', input: 'meter on' }],
+  acknowledgedStops: [],
+  createdOffline: true,
+  startedAt: Timestamp.now(),
+  updatedAt: Timestamp.now(),
+  ...overrides,
+});
+
+const report = (overrides: Record<string, unknown> = {}) => ({
+  schemaVersion: 1,
+  id: 'r1',
+  jobId: 'j1',
+  sessionId: 's1',
+  techUid: 'tech',
+  facts: { equipment: 'Goodman GMVC96', fault: 'EE0', steps: ['Check gas supply: gas supply ok'] },
+  versions: [{ generatedBy: 'ON_DEVICE', kind: 'draft', summary: 'Flue was blocked; cleared it.' }],
+  status: 'draft',
+  generatedBy: 'ON_DEVICE',
+  createdOffline: true,
+  createdAt: Timestamp.now(),
+  updatedAt: Timestamp.now(),
+  ...overrides,
 });
 
 const as = (uid: string) => env.authenticatedContext(uid).firestore();
@@ -125,6 +165,64 @@ describe('jobs', () => {
 
   it('a dispatcher can reassign', async () => {
     await assertSucceeds(updateDoc(doc(as('disp'), 'orgs/demo/jobs/j1'), { assignedTo: 'disp' }));
+  });
+
+  it("a tech cannot update someone else's job or set an unknown status", async () => {
+    await assertFails(updateDoc(doc(as('tech'), 'orgs/demo/jobs/j2'), { status: 'done' }));
+    await assertFails(updateDoc(doc(as('tech'), 'orgs/demo/jobs/j1'), { status: 'paid' }));
+  });
+});
+
+describe('diagnosis sessions', () => {
+  const path = 'orgs/demo/jobs/j1/sessions/s1';
+
+  it('the assigned tech writes and updates a valid session; the org reads it', async () => {
+    await assertSucceeds(setDoc(doc(as('tech'), path), session()));
+    await assertSucceeds(setDoc(doc(as('tech'), path), session({ status: 'concluded', stepId: 'CEE0-L5' })));
+    await assertSucceeds(getDoc(doc(as('disp'), path)));
+  });
+
+  it("rejects other techs, spoofed owners, extra fields, and someone else's job", async () => {
+    await assertFails(setDoc(doc(as('tech2'), path), session({ techUid: 'tech2' })));
+    await assertFails(setDoc(doc(as('tech'), path), session({ techUid: 'tech2' })));
+    await assertFails(setDoc(doc(as('tech'), path), session({ customerAddress: '1 Example St' })));
+    await assertFails(setDoc(doc(as('tech'), 'orgs/demo/jobs/j2/sessions/s1'), session({ jobId: 'j2' })));
+    await assertFails(setDoc(doc(as('tech'), path), session({ id: 'different' })));
+  });
+
+  it('rejects bad status and oversized history', async () => {
+    await assertFails(setDoc(doc(as('tech'), path), session({ status: 'paused' })));
+    await assertFails(setDoc(doc(as('tech'), path), session({ history: Array(61).fill({ answer: 'x' }) })));
+  });
+});
+
+describe('customer reports', () => {
+  const path = 'orgs/demo/reports/r1';
+
+  it('the assigned tech writes a draft, then upgrades it; dispatchers read it', async () => {
+    await assertSucceeds(setDoc(doc(as('tech'), path), report()));
+    const upgraded = report({
+      status: 'final',
+      generatedBy: 'IN_CLOUD',
+      upgradedAt: Timestamp.now(),
+      versions: [
+        { generatedBy: 'ON_DEVICE', kind: 'draft', summary: 'Draft.' },
+        { generatedBy: 'IN_CLOUD', kind: 'full', summary: 'Full report.' },
+      ],
+    });
+    await assertSucceeds(setDoc(doc(as('tech'), path), upgraded));
+    await assertSucceeds(getDoc(doc(as('disp'), path)));
+  });
+
+  it("rejects unassigned jobs, other techs' edits, moving jobs, and bad fields", async () => {
+    await assertFails(setDoc(doc(as('tech'), path), report({ jobId: 'j2' })));
+    await assertSucceeds(setDoc(doc(as('tech'), path), report()));
+    await assertFails(setDoc(doc(as('tech2'), path), report({ techUid: 'tech2' })));
+    await assertFails(setDoc(doc(as('tech'), path), report({ jobId: 'j2' })));
+    await assertFails(setDoc(doc(as('tech'), path), report({ status: 'sent' })));
+    await assertFails(setDoc(doc(as('tech'), path), report({ generatedBy: 'GPT' })));
+    await assertFails(setDoc(doc(as('tech'), path), report({ customerPhone: '555-0100' })));
+    await assertFails(setDoc(doc(as('tech'), path), report({ versions: [] })));
   });
 });
 
