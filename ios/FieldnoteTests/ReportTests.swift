@@ -10,16 +10,25 @@ final class MockReportWriter: ReportWriting, @unchecked Sendable {
     var routes: [InferenceRoute] { lock.withLock { _routes } }
     let results: [InferenceRoute: InferenceSource]
     let delay: Duration
+    /// Calls on a route that fail before it starts answering (a connection that isn't ready yet).
+    private var failuresLeft: [InferenceRoute: Int]
 
-    init(_ results: [InferenceRoute: InferenceSource], delay: Duration = .zero) {
+    init(_ results: [InferenceRoute: InferenceSource], delay: Duration = .zero, failFirst: [InferenceRoute: Int] = [:]) {
         self.results = results
         self.delay = delay
+        self.failuresLeft = failFirst
     }
 
     struct Down: Error {}
 
     func write(_ prompt: ReportPrompt.Built, route: InferenceRoute) async throws -> AIResult<ReportContent> {
-        lock.withLock { _routes.append(route) }
+        let fail: Bool = lock.withLock {
+            _routes.append(route)
+            guard let n = failuresLeft[route], n > 0 else { return false }
+            failuresLeft[route] = n - 1
+            return true
+        }
+        if fail { throw Down() }
         if delay > .zero { try? await Task.sleep(for: delay) }
         guard let source = results[route] else { throw Down() }
         let content = ReportContent(summary: "\(source.rawValue) report.", workPerformed: ["Checked the flue."],
@@ -166,9 +175,56 @@ struct ReportTests {
         let saved = Box<[ServiceReport]>([])
         let isOnline = Box(online)
         let service = ReportService(writer: { writer }, save: { saved.value.append($0) },
+                                    lookup: { id in saved.value.last { $0.id == id } },
                                     isOnline: { isOnline.value }, autoUpgradeEnabled: { auto },
-                                    route: { .preferInCloud }, template: template)
+                                    route: { .preferInCloud }, retryDelays: [.zero, .zero, .zero, .zero],
+                                    template: template)
         return (service, saved, isOnline)
+    }
+
+    /// The iPhone case: the first cloud call right after Airplane Mode goes off fails; a retry works.
+    @Test func autoUpgradeRetriesWhenTheConnectionIsNotReadyYet() async {
+        let writer = MockReportWriter([.onlyOnDevice: .onDevice, .onlyInCloud: .inCloud], failFirst: [.onlyInCloud: 2])
+        let (service, saved, online) = makeService(writer, online: false)
+        let draft = await service.generate(facts: await facts(), jobId: "j1", sessionId: "s1", techUid: "tech")
+        online.value = true
+        await service.autoUpgrade([draft])
+        #expect(writer.routes == [.onlyOnDevice, .onlyInCloud, .onlyInCloud, .onlyInCloud])
+        #expect(saved.value.last?.status == .final)
+        #expect(service.autoRetrying.isEmpty && !service.upgradeFailed.contains(draft.id))
+    }
+
+    @Test func autoUpgradeGivesUpAfterTheLastRetryAndKeepsTheDraft() async {
+        let writer = MockReportWriter([.onlyOnDevice: .onDevice])
+        let (service, saved, online) = makeService(writer, online: false)
+        let draft = await service.generate(facts: await facts(), jobId: "j1", sessionId: "s1", techUid: "tech")
+        online.value = true
+        await service.autoUpgrade([draft])
+        await service.autoUpgrade([draft])   // same connection: no more automatic attempts
+        #expect(writer.routes.filter { $0 == .onlyInCloud }.count == 4)
+        #expect(saved.value == [draft] && service.upgradeFailed.contains(draft.id))
+        // A new reconnect gets a fresh set of attempts.
+        service.resetAutoAttempts()
+        await service.autoUpgrade([draft])
+        #expect(writer.routes.filter { $0 == .onlyInCloud }.count == 8)
+    }
+
+    @Test func autoUpgradeStopsWhenTheSignalDropsAgain() async {
+        let writer = MockReportWriter([.onlyOnDevice: .onDevice, .onlyInCloud: .inCloud], failFirst: [.onlyInCloud: 1])
+        let saved = Box<[ServiceReport]>([])
+        let online = Box(false)
+        let service = ReportService(writer: { writer }, save: { saved.value.append($0) },
+                                    lookup: { id in saved.value.last { $0.id == id } },
+                                    isOnline: { online.value }, autoUpgradeEnabled: { true }, route: { .preferInCloud },
+                                    retryDelays: [.zero, .milliseconds(30)], template: template)
+        let draft = await service.generate(facts: await facts(), jobId: "j1", sessionId: "s1", techUid: "tech")
+        online.value = true
+        async let run: Void = service.autoUpgrade([draft])
+        try? await Task.sleep(for: .milliseconds(10))
+        online.value = false    // back in the basement before the retry
+        await run
+        #expect(writer.routes.filter { $0 == .onlyInCloud }.count == 1)
+        #expect(saved.value.last?.status == .draft)
     }
 
     func facts() async -> ReportFacts { ReportFacts.from(engine: await concluded(), equipmentModel: job.model) }

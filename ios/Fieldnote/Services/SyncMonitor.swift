@@ -16,6 +16,8 @@ final class SyncMonitor {
     private(set) var justSynced = false
     private var hadQueue = false
     private var hideTask: Task<Void, Never>?
+    /// Called when writes that had to wait have all reached the server.
+    var onDrained: (() -> Void)?
 
     var hasQueue: Bool { pending > 0 || earlierQueued }
 
@@ -56,6 +58,7 @@ final class SyncMonitor {
         guard !hasQueue, hadQueue else { return }
         hadQueue = false
         justSynced = true
+        onDrained?()
         hideTask?.cancel()
         hideTask = Task { @MainActor [weak self] in
             try? await Task.sleep(for: .seconds(3))

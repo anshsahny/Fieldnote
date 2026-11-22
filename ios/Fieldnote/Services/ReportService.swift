@@ -48,27 +48,43 @@ final class ReportService {
     private(set) var writing: Set<String> = []
     private(set) var upgrading: Set<String> = []
     private(set) var upgradeFailed: Set<String> = []
+    /// Drafts whose automatic upgrade is between retries (waiting for a usable connection).
+    private(set) var autoRetrying: Set<String> = []
+
+    /// Waits before each automatic attempt. Right after Airplane Mode goes off, iOS reports the
+    /// network as up before requests get through (iPhone run: the first cloud call failed in 0 ms,
+    /// a tap 13 s later worked), so the first attempt waits a moment and failures are retried.
+    static let defaultRetryDelays: [Duration] = [.seconds(2), .seconds(5), .seconds(15), .seconds(30)]
 
     private let writer: () -> any ReportWriting
     private let save: (ServiceReport) -> Void
+    private let lookup: (String) -> ServiceReport?
     private let isOnline: () -> Bool
     private let autoUpgradeEnabled: () -> Bool
     private let route: () -> InferenceRoute
     private let template: PromptTemplate?
-    private var autoAttempted: Set<String> = []
+    private let retryDelays: [Duration]
+    private var autoAttempts: [String: Int] = [:]
     var onEvent: ((Event) -> Void)?
 
     init(writer: @escaping () -> any ReportWriting, save: @escaping (ServiceReport) -> Void,
+         lookup: @escaping (String) -> ServiceReport? = { _ in nil },
          isOnline: @escaping () -> Bool, autoUpgradeEnabled: @escaping () -> Bool,
          route: @escaping () -> InferenceRoute,
+         retryDelays: [Duration] = ReportService.defaultRetryDelays,
          template: PromptTemplate? = try? PromptTemplate.load(named: "report")) {
         self.writer = writer
         self.save = save
+        self.lookup = lookup
         self.isOnline = isOnline
         self.autoUpgradeEnabled = autoUpgradeEnabled
         self.route = route
+        self.retryDelays = retryDelays
         self.template = template
     }
+
+    /// Any cloud rewrite in progress or pending a retry (for the status pill).
+    var busy: Set<String> { upgrading.union(autoRetrying) }
 
     /// Writes the first version of the report for a session (or a new version of an existing one).
     @discardableResult
@@ -118,13 +134,29 @@ final class ReportService {
         return upgraded
     }
 
-    /// After reconnecting (or relaunching online): one automatic attempt per draft per launch.
+    /// After reconnecting (or relaunching online): rewrite each draft in the cloud, retrying on the
+    /// `retryDelays` schedule while still online. Overlapping triggers (reconnect, cache refresh,
+    /// sync) share one run per draft, and a draft that became final meanwhile is left alone.
     func autoUpgrade(_ drafts: [ServiceReport]) async {
         guard autoUpgradeEnabled(), isOnline() else { return }
-        for r in drafts where needsUpgrade(r) && !autoAttempted.contains(r.id) {
-            autoAttempted.insert(r.id)
-            await upgrade(r)
+        for r in drafts where needsUpgrade(r) && !autoRetrying.contains(r.id)
+            && autoAttempts[r.id, default: 0] < retryDelays.count {
+            autoRetrying.insert(r.id)
+            while autoAttempts[r.id, default: 0] < retryDelays.count {
+                let n = autoAttempts[r.id, default: 0]
+                autoAttempts[r.id] = n + 1
+                if retryDelays[n] > .zero { try? await Task.sleep(for: retryDelays[n]) }
+                let latest = lookup(r.id) ?? r
+                guard isOnline(), autoUpgradeEnabled(), needsUpgrade(latest) else { break }
+                if await upgrade(latest) != nil { break }
+            }
+            autoRetrying.remove(r.id)
         }
+    }
+
+    /// A new reconnect earns a fresh set of automatic attempts.
+    func resetAutoAttempts() {
+        autoAttempts = autoAttempts.filter { autoRetrying.contains($0.key) }
     }
 
     private func attempt(_ facts: ReportFacts, route: InferenceRoute, words: Int, kind: String, now: Date) async -> ReportVersion? {

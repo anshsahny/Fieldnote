@@ -91,7 +91,8 @@ private struct SyncStatusInset: ViewModifier {
 
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .top, spacing: 0) {
-            SyncPill(network: app.network, sync: app.sync, upgrading: app.reportService.upgrading.count)
+            SyncPill(network: app.network, sync: app.sync,
+                     upgrading: app.network.isOnline ? app.reportService.busy.count : 0)
         }
     }
 }

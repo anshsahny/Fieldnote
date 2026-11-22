@@ -41,6 +41,7 @@ final class AppModel {
         reportService = ReportService(
             writer: { [unowned self] in HybridReportWriter(ai: ai, cloudModel: self.config.cloudModel(for: .report)) },
             save: { [unowned self] in self.reports.save($0) },
+            lookup: { [unowned self] in self.reports.reports[$0] },
             isOnline: { [unowned self] in self.network.isOnline },
             autoUpgradeEnabled: { [unowned self] in self.config.autoUpgradeReports },
             route: { [unowned self] in self.config.route(for: .report) })
@@ -49,8 +50,14 @@ final class AppModel {
                                tokenEstimate: e.tokenEstimate, model: e.model, mode: e.route)
         }
         // Back in signal, or drafts loaded from the cache after a relaunch: upgrade drafts once.
-        network.onChange = { [unowned self] online in if online { self.upgradeDrafts() } }
+        network.onChange = { [unowned self] online in
+            guard online else { return }
+            self.reportService.resetAutoAttempts()
+            self.upgradeDrafts()
+        }
         reports.onChange = { [unowned self] in self.upgradeDrafts() }
+        // Queued writes reaching the server proves requests get through: a good moment to retry.
+        sync.onDrained = { [unowned self] in self.upgradeDrafts() }
     }
 
     private func upgradeDrafts() {

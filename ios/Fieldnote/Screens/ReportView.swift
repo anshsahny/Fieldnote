@@ -124,6 +124,15 @@ struct ReportView: View {
                 if isUpgrading {
                     ProgressView().tint(Theme.cloud)
                     Text("Rewriting with cloud AI…").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                } else if app.reportService.autoRetrying.contains(r.id) && app.network.isOnline {
+                    ProgressView().tint(Theme.cloud)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Connecting to cloud AI…").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                        Button {
+                            Task { await app.reportService.upgrade(r) }
+                        } label: { Label("Try now", systemImage: "sparkles") }
+                            .buttonStyle(SecondaryButtonStyle())
+                    }
                 } else if app.network.isOnline {
                     Image(systemName: "cloud").foregroundStyle(Theme.cloud).accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 8) {
