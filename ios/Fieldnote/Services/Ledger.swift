@@ -3,7 +3,7 @@ import Foundation
 import Observation
 
 /// Hybrid Ledger rows (metadata only: never prompt or response text). Written to Firestore, which
-/// queues them while offline; `pending` drives the "Offline · n queued" badge.
+/// queues them while offline (counted by SyncMonitor for the "n queued" badge).
 @Observable
 final class Ledger {
     struct Row: Identifiable, Equatable {
@@ -18,7 +18,9 @@ final class Ledger {
 
     var orgId: String?
     private(set) var recent: [Row] = []
-    private(set) var pending = 0
+    private let sync: SyncMonitor
+
+    init(sync: SyncMonitor) { self.sync = sync }
 
     func record(feature: String, event: EngineEvent, mode: InferenceRoute?) {
         switch event {
@@ -41,9 +43,7 @@ final class Ledger {
         if let tokenEstimate { data["promptTokensEst"] = tokenEstimate }
         if let model { data["model"] = String(model.prefix(128)) }
         if let mode { data["mode"] = mode.rawValue }
-        pending += 1
-        Firestore.firestore().collection("orgs/\(orgId)/inferenceEvents").addDocument(data: data) { [weak self] _ in
-            Task { @MainActor in self?.pending = max(0, (self?.pending ?? 1) - 1) }
-        }
+        let events = Firestore.firestore().collection("orgs/\(orgId)/inferenceEvents")
+        sync.track { done in events.addDocument(data: data) { done($0) } }
     }
 }

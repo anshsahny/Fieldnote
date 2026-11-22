@@ -68,6 +68,8 @@ final class DiagnosisEngine {
     private(set) var lastNoteInterpretation: Interpretation?
 
     var onEvent: ((EngineEvent) -> Void)?
+    /// Called after every change worth saving (answer, undo, safety acknowledgement).
+    var onChange: (() -> Void)?
 
     private let interpreter: (any ObservationInterpreter)?
     private let safety: SafetyGuard
@@ -172,6 +174,39 @@ final class DiagnosisEngine {
         guard case .safetyStop(let stop) = phase else { return }
         acknowledgedStops.append(stop.id)
         phase = .answering
+        onChange?()
+    }
+
+    /// Rebuilds progress from a saved session. Every saved answer must still be an allowed answer
+    /// that leads to the next saved step in this pack; otherwise nothing changes and it returns false
+    /// (the pack changed underneath the session, so the tech starts the code again).
+    @discardableResult
+    func restore(_ state: SessionState) -> Bool {
+        guard history.isEmpty, state.packId == pack.packId, state.faultCode == fault.code else { return false }
+        var cursor = fault.firstStep
+        var rebuilt: [Entry] = []
+        for s in state.history {
+            guard s.stepId == cursor, let step = pack.steps[cursor], let next = step.next?[s.answer] else { return false }
+            let via: Via = switch s.via {
+            case "reading": .reading(s.input ?? s.answer)
+            case "note": .note(s.input ?? "")
+            default: .tap
+            }
+            var interpretation: Interpretation?
+            if let source = s.source.flatMap(InferenceSource.init(rawValue:)) {
+                interpretation = Interpretation(
+                    decision: ValidatedDecision(choice: s.answer, confidence: s.confidence ?? 1, say: s.say ?? ""),
+                    source: source, modelVersion: s.model ?? "", latencyMs: s.latencyMs ?? 0)
+            }
+            rebuilt.append(Entry(stepId: cursor, instruction: step.instruction, answer: s.answer, via: via, interpretation: interpretation))
+            cursor = next
+        }
+        guard cursor == state.stepId, pack.steps[cursor] != nil else { return false }
+        history = rebuilt
+        stepId = cursor
+        acknowledgedStops = state.acknowledgedStops
+        phase = pack.steps[cursor]?.outcome != nil ? .concluded : .answering
+        return true
     }
 
     /// The rule for when a model answer may advance the diagnosis. Shared with the eval runner so
@@ -193,6 +228,7 @@ final class DiagnosisEngine {
         stepId = last.stepId
         phase = .answering
         lastNoteInterpretation = nil
+        onChange?()
         return last
     }
 
@@ -208,5 +244,6 @@ final class DiagnosisEngine {
         history.append(Entry(stepId: stepId, instruction: step.instruction, answer: option, via: via, interpretation: interpretation))
         stepId = next
         phase = pack.steps[next]?.outcome != nil ? .concluded : .answering
+        onChange?()
     }
 }

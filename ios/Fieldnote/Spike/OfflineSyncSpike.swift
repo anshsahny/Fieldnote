@@ -16,18 +16,22 @@ final class OfflineSyncSpike {
         return try await Auth.auth().signInAnonymously().user.uid
     }
 
-    func writeOffline() async throws -> String {
-        let uid = try await signIn()
-        try await db.disableNetwork()
-        let ref = db.collection("orgs/demo/jobs/spike-job/sessions").document()
-        // Callback form on purpose: the async overload would wait for a server acknowledgement,
-        // which never comes while offline. The write lands in the local cache immediately.
+    /// Callback form on purpose: the async overload would wait for a server acknowledgement, which
+    /// never comes while offline. The write lands in the local cache immediately.
+    private static func queueWrite(_ ref: DocumentReference, uid: String) {
         ref.setData([
             "createdOffline": true,
             "createdBy": uid,
             "note": "P1 offline sanity write",
             "createdAt": Timestamp(date: Date()),
         ]) { _ in }
+    }
+
+    func writeOffline() async throws -> String {
+        let uid = try await signIn()
+        try await db.disableNetwork()
+        let ref = db.collection("orgs/demo/jobs/spike-job/sessions").document()
+        Self.queueWrite(ref, uid: uid)
         let cached = try await ref.getDocument(source: .cache)
         UserDefaults.standard.set(ref.path, forKey: Self.pathKey)
         return "uid=\(uid) wrote \(ref.path) while offline; in local cache: \(cached.exists), "

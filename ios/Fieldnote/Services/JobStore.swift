@@ -42,6 +42,11 @@ final class JobStore {
     private(set) var fromCache = false
     private var listener: ListenerRegistration?
     private var orgId: String?
+    private let sync: SyncMonitor
+    /// Called with the job ids whenever the list changes (SessionStore follows their sessions).
+    var onJobIds: (([String]) -> Void)?
+
+    init(sync: SyncMonitor) { self.sync = sync }
 
     func listen(orgId: String, uid: String) {
         listener?.remove()
@@ -54,9 +59,12 @@ final class JobStore {
                     .sorted { ($0.scheduledFor ?? .distantFuture) < ($1.scheduledFor ?? .distantFuture) }
                 let cached = snap.metadata.isFromCache
                 Task { @MainActor in
-                    self?.jobs = jobs
-                    self?.fromCache = cached
-                    self?.loaded = true
+                    guard let self else { return }
+                    let changed = self.jobs.map(\.id) != jobs.map(\.id)
+                    self.jobs = jobs
+                    self.fromCache = cached
+                    self.loaded = true
+                    if changed { self.onJobIds?(jobs.map(\.id)) }
                 }
             }
     }
@@ -64,7 +72,7 @@ final class JobStore {
     /// Techs may only touch progress fields (Firestore rules); queued while offline.
     func setStatus(_ status: String, for job: Job) {
         guard let orgId else { return }
-        Firestore.firestore().document("orgs/\(orgId)/jobs/\(job.id)")
-            .updateData(["status": status, "updatedAt": Timestamp(date: Date())]) { _ in }
+        let ref = Firestore.firestore().document("orgs/\(orgId)/jobs/\(job.id)")
+        sync.track { done in ref.updateData(["status": status, "updatedAt": Timestamp(date: Date())]) { done($0) } }
     }
 }
