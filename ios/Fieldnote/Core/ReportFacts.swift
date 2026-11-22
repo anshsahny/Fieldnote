@@ -21,11 +21,23 @@ nonisolated struct ReportFacts: Codable, Equatable, Sendable {
     var outcome: String
     var parts: [String]
     var safety: [String]
+    /// For fix outcomes: did the tech complete the repair on this visit? nil for other outcomes
+    /// (and for reports written before this field existed).
+    var repairDone: Bool?
+
+    /// The value the prompt sees.
+    var repairDoneText: String {
+        switch repairDone {
+        case true?: "yes"
+        case false?: "no"
+        case nil: "not applicable"
+        }
+    }
 }
 
 extension ReportFacts {
     /// Facts from a concluded (or in-progress) diagnosis. `safetyTitles` maps stop ids to plain words.
-    static func from(engine e: DiagnosisEngine, equipmentModel: String,
+    static func from(engine e: DiagnosisEngine, equipmentModel: String, repairDone: Bool = false,
                      safetyTitles: (String) -> String = { $0 }) -> ReportFacts {
         let checks = e.history.map { entry -> Check in
             var result = entry.answer
@@ -44,7 +56,8 @@ extension ReportFacts {
             outcomeTitle: outcome == nil ? "Diagnosis not finished." : e.step.instruction,
             outcome: outcome?.summary ?? "The technician did not reach a conclusion on this visit.",
             parts: outcome?.parts ?? [],
-            safety: e.acknowledgedStops.map { "\(safetyTitles($0)): reported, checked by the technician before continuing" })
+            safety: e.acknowledgedStops.map { "\(safetyTitles($0)): reported, checked by the technician before continuing" },
+            repairDone: outcome?.kind == .fix ? repairDone : nil)
     }
 }
 
@@ -75,6 +88,7 @@ nonisolated enum ReportPrompt {
             "outcome": "\(f.outcomeTitle) \(f.outcome)",
             "parts": f.parts.isEmpty ? "none" : f.parts.joined(separator: ", "),
             "safety": f.safety.isEmpty ? "none" : f.safety.joined(separator: "; "),
+            "repair_done": f.repairDoneText,
         ])
         let output = Int(Double(maxWords) * 1.4) + 80
         let tokens = DiagnosisPrompt.estimateTokens(rendered.system) + DiagnosisPrompt.estimateTokens(rendered.user)

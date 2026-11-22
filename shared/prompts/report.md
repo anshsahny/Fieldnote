@@ -1,6 +1,6 @@
 ---
 name: report
-version: 1
+version: 2
 platforms: [ios]
 route: route_report
 max_tokens: 2500
@@ -21,6 +21,9 @@ Rules:
 - "findings": what the technician found, one short item each.
 - "recommendations": next steps for the homeowner, if any; otherwise an empty list.
 - "safetyNotes": only if safety stops are listed below; otherwise an empty list.
+- Only describe work as done if it is listed as done. If "Repair completed on this visit" is
+  "no", present the outcome as the recommended repair, not as work that was carried out.
+- Do not mention the fix pack, the app, or AI. Capitalize each list item.
 - Stay within the word limit given with the facts.
 
 ## User
@@ -31,6 +34,7 @@ Checks and findings, in order:
 {{steps}}
 Outcome ({{outcome_kind}}): {{outcome}}
 Parts named in the fix pack: {{parts}}
+Repair completed on this visit: {{repair_done}}
 Safety stops during the visit: {{safety}}
 Word limit: keep the whole report under {{max_words}} words.
 

@@ -16,6 +16,8 @@ final class DiagnosisRun: Hashable, Identifiable {
     let sessionId: String
     let startedAt: Date
     let createdOffline: Bool
+    /// Ticked on the conclusion when the tech did the fix on this visit (goes into the report facts).
+    var repairDone = false
 
     init(engine: DiagnosisEngine, job: Job, sessionId: String = UUID().uuidString,
          startedAt: Date = Date(), createdOffline: Bool = false) {

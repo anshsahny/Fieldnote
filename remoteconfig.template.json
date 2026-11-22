@@ -116,7 +116,7 @@
         },
         "prompt_version_report": {
           "defaultValue": {
-            "value": "1"
+            "value": "2"
           },
           "valueType": "STRING"
         }

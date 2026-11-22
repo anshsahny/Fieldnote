@@ -191,7 +191,7 @@ struct ReportView: View {
             VStack(alignment: .leading, spacing: 6) {
                 SectionLabel(text: title)
                 ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                    Label(item, systemImage: symbol)
+                    Label(item.prefix(1).uppercased() + item.dropFirst(), systemImage: symbol)
                         .font(.subheadline).foregroundStyle(Theme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }

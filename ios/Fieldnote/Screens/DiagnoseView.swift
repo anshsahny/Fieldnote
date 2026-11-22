@@ -8,6 +8,7 @@ struct DiagnoseView: View {
     @State private var note = ""
     @State private var reading = ""
     @State private var readingRejected = false
+    @State private var repairDone = false
     @FocusState private var noteFocused: Bool
 
     private var engine: DiagnosisEngine { run.engine }
@@ -29,7 +30,9 @@ struct DiagnoseView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     faultHeader
                     if engine.phase == .concluded, let outcome = engine.outcome {
-                        ConclusionCard(engine: engine, outcome: outcome, onUndo: undo)
+                        ConclusionCard(engine: engine, outcome: outcome, onUndo: undo,
+                                       repairDone: Binding(get: { repairDone }, set: { repairDone = $0; run.repairDone = $0 }),
+                                       askRepairDone: app.reports.report(forSession: run.sessionId) == nil)
                     } else {
                         stepCard
                     }
@@ -343,6 +346,10 @@ struct ConclusionCard: View {
     let engine: DiagnosisEngine
     let outcome: FixPack.Outcome
     let onUndo: () -> Void
+    /// Whether the tech did the fix on this visit; the report only says it was done when ticked.
+    @Binding var repairDone: Bool
+    /// Hidden once the report exists (it was written from the answer given then).
+    var askRepairDone = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -351,6 +358,26 @@ struct ConclusionCard: View {
                 .foregroundStyle(color)
             Text(engine.step.instruction).font(.headline).foregroundStyle(Theme.textPrimary)
             Text(outcome.summary).font(.body).foregroundStyle(Theme.textPrimary)
+            if outcome.kind == .fix && askRepairDone {
+                Button { repairDone.toggle() } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: repairDone ? "checkmark.square.fill" : "square")
+                            .font(.title3).foregroundStyle(repairDone ? Theme.brand : Theme.textSecondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("I completed this repair").font(.headline).foregroundStyle(Theme.textPrimary)
+                            Text(repairDone ? "The report will say it was done." : "Leave unticked to list it as the recommended repair.")
+                                .font(.footnote).foregroundStyle(Theme.textSecondary)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(12)
+                    .frame(minHeight: Theme.minTarget)
+                    .background(Theme.surfaceRaised, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(repairDone ? .isSelected : [])
+            }
             // When a note decided the last step, show how it was read so a misread is easy to catch.
             if let last = engine.history.last, case .note(let text) = last.via {
                 VStack(alignment: .leading, spacing: 6) {

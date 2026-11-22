@@ -68,14 +68,17 @@ nonisolated enum ReportContentValidator {
     /// No model at all: a plain report assembled from the facts, so the tech always has something
     /// to leave with the customer.
     static func plain(from f: ReportFacts) -> ReportContent {
+        let repaired = f.outcomeKind == "fix" && f.repairDone == true
         let next: String = switch f.outcomeKind {
-        case "fix": "Recommended repair: \(f.outcomeTitle)"
+        case "fix": repaired ? "No further action needed unless the fault returns." : "Recommended repair: \(f.outcome)"
         case "resolved": "No further action needed."
         default: "A follow-up visit is needed: \(f.outcome)"
         }
+        var work = f.checks.map(\.check)
+        if repaired { work.append("Repair completed: \(f.outcome)") }
         return ReportContent(
-            summary: "Your \(f.brand) furnace showed fault code \(f.faultCode) (\(f.fault)). \(f.outcomeTitle) \(f.outcome)",
-            workPerformed: Array(f.checks.map(\.check).prefix(maxItems)),
+            summary: "Your \(f.brand) furnace showed fault code \(f.faultCode) (\(f.fault)). Finding: \(f.outcomeTitle).",
+            workPerformed: Array(work.prefix(maxItems)),
             findings: Array(f.checks.map { "\($0.check) Result: \($0.result)." }.prefix(maxItems)),
             recommendations: [next],
             safetyNotes: f.safety)

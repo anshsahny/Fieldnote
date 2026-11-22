@@ -110,6 +110,36 @@ struct ReportTests {
         #expect(ReportContentValidator.parse(text: "no json") == .failure(.noJSON))
     }
 
+    /// The report may only say the repair was done when the tech ticked it; otherwise it's recommended.
+    @Test func repairIsOnlyDoneWhenTheTechSaysSo() async throws {
+        let e = await concluded()
+        let notDone = ReportFacts.from(engine: e, equipmentModel: job.model)
+        let done = ReportFacts.from(engine: e, equipmentModel: job.model, repairDone: true)
+        #expect(notDone.repairDone == false && done.repairDone == true)
+        #expect(try ReportPrompt.build(notDone, maxWords: 120, template: template).user.contains("Repair completed on this visit: no"))
+        #expect(try ReportPrompt.build(done, maxWords: 120, template: template).user.contains("Repair completed on this visit: yes"))
+
+        let plainNotDone = ReportContentValidator.plain(from: notDone)
+        let plainDone = ReportContentValidator.plain(from: done)
+        #expect(plainNotDone.recommendations.first?.hasPrefix("Recommended repair:") == true)
+        #expect(!plainNotDone.workPerformed.contains { $0.hasPrefix("Repair completed") })
+        #expect(plainDone.workPerformed.last?.hasPrefix("Repair completed:") == true)
+
+        // Escalations have nothing to complete.
+        let escalate = DiagnosisEngine(pack: goodman, fault: goodman.faultCodes.first { $0.code == "EE0" }!,
+                                       interpreter: nil, confidenceThreshold: 0.7)
+        for option in ["gas supply ok", "normal", "good", "clean", "clear"] { escalate.tap(option) }
+        let facts = ReportFacts.from(engine: escalate, equipmentModel: job.model, repairDone: true)
+        #expect(facts.outcomeKind == "escalate" && facts.repairDone == nil)
+        #expect(try ReportPrompt.build(facts, maxWords: 120, template: template).user.contains("on this visit: not applicable"))
+    }
+
+    @Test func reportsWithoutTheRepairFieldStillDecode() throws {
+        let legacy = #"{"equipment":"Goodman X gas furnace","brand":"Goodman","faultCode":"EE0","fault":"f","checks":[],"outcomeKind":"fix","outcomeTitle":"t","outcome":"o","parts":[],"safety":[]}"#
+        let facts = try JSONDecoder().decode(ReportFacts.self, from: Data(legacy.utf8))
+        #expect(facts.repairDone == nil)
+    }
+
     @Test func plainReportNeedsNoModel() async {
         let facts = ReportFacts.from(engine: await concluded(), equipmentModel: job.model)
         let plain = ReportContentValidator.plain(from: facts)

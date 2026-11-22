@@ -105,42 +105,55 @@ struct JobDetailView: View {
 
     private var savedSession: SessionState? { app.sessions.latest[job.id] }
 
-    private func open(_ state: SessionState) {
-        if let run = app.resumeRun(state, job: job) {
-            path.append(.diagnose(run))
-        } else {
+    /// Opens the saved diagnosis. With a report, goes straight to it (Back shows the conclusion).
+    private func open(_ state: SessionState, showReport: Bool = false) {
+        guard let run = app.resumeRun(state, job: job) else {
             resumeFailed = true
+            return
         }
+        path.append(contentsOf: showReport ? [.diagnose(run), .report(run)] : [.diagnose(run)])
     }
 
+    /// The whole card is the tap target (gloves): resume, open the conclusion, or open the report.
     @ViewBuilder
     private var sessionCard: some View {
         if let s = savedSession {
             let concluded = s.status == .concluded
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: concluded ? "checkmark.circle.fill" : "clock.arrow.circlepath")
-                    .font(.title3).foregroundStyle(concluded ? Theme.onDevice : Theme.caution).accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(concluded ? "Diagnosis complete · \(s.faultCode)" : "Diagnosis in progress · \(s.faultCode)")
-                        .font(.headline).foregroundStyle(Theme.textPrimary)
-                    Text(concluded
-                         ? "\(s.history.count) steps · saved \(s.updatedAt.formatted(.relative(presentation: .named)))"
-                         : "Step \(s.history.count + 1) · saved on this iPhone \(s.updatedAt.formatted(.relative(presentation: .named)))")
-                        .font(.subheadline).foregroundStyle(Theme.textSecondary)
-                    if concluded, let r = app.reports.report(forSession: s.id) {
-                        Label(r.status == .final ? "Report written in the cloud"
-                              : r.generatedBy == "ON_DEVICE" ? "Report drafted on this iPhone" : "Plain report from the fix pack",
-                              systemImage: "doc.text")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(r.status == .final ? Theme.cloud : Theme.caution)
+            let report = concluded ? app.reports.report(forSession: s.id) : nil
+            Button { open(s, showReport: report != nil) } label: {
+                HStack(alignment: .center, spacing: 12) {
+                    Image(systemName: concluded ? "checkmark.circle.fill" : "clock.arrow.circlepath")
+                        .font(.title3).foregroundStyle(concluded ? Theme.onDevice : Theme.caution).accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(concluded ? "Diagnosis complete · \(s.faultCode)" : "Diagnosis in progress · \(s.faultCode)")
+                            .font(.headline).foregroundStyle(Theme.textPrimary)
+                        Text(concluded
+                             ? "\(s.history.count) steps · saved \(s.updatedAt.formatted(.relative(presentation: .named)))"
+                             : "Step \(s.history.count + 1) · saved on this iPhone \(s.updatedAt.formatted(.relative(presentation: .named)))")
+                            .font(.subheadline).foregroundStyle(Theme.textSecondary)
+                        if let r = report {
+                            Label(r.status == .final ? "Report written in the cloud"
+                                  : r.generatedBy == "ON_DEVICE" ? "Report drafted on this iPhone" : "Plain report from the fix pack",
+                                  systemImage: "doc.text")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(r.status == .final ? Theme.cloud : Theme.caution)
+                        } else if concluded {
+                            Label("No customer report yet", systemImage: "doc.badge.plus")
+                                .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textSecondary)
+                        }
                     }
+                    .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textSecondary)
+                        .accessibilityHidden(true)
                 }
-                Spacer(minLength: 0)
-                if concluded {
-                    Button("Open") { open(s) }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
-                }
+                .card()
+                .contentShape(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
             }
-            .card()
+            .buttonStyle(.plain)
+            .accessibilityHint(report != nil ? "Opens the customer report"
+                               : concluded ? "Opens the diagnosis" : "Resumes the diagnosis")
         }
     }
 

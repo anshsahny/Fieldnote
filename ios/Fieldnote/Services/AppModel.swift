@@ -62,7 +62,8 @@ final class AppModel {
     /// Writes (or rewrites) the customer report for a finished diagnosis.
     func writeReport(for run: DiagnosisRun) async {
         guard let uid = session.uid else { return }
-        let facts = ReportFacts.from(engine: run.engine, equipmentModel: run.job.model, safetyTitles: SafetyCopy.headline)
+        let facts = ReportFacts.from(engine: run.engine, equipmentModel: run.job.model, repairDone: run.repairDone,
+                                     safetyTitles: SafetyCopy.headline)
         await reportService.generate(facts: facts, jobId: run.job.id, sessionId: run.sessionId, techUid: uid,
                                      existing: reports.report(forSession: run.sessionId))
     }
