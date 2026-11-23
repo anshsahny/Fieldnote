@@ -44,9 +44,13 @@ export function getFirebase(): FirebaseClient {
     globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
   }
 
+  // Auto-refresh off: with it on, the SDK exchanges a reCAPTCHA token the moment the page loads,
+  // before any interaction. A brand-new browser then scores low, App Check rejects it, and the SDK
+  // pauses cloud AI in that browser for a day. On demand, the first token is requested when
+  // something needs it (an AI call, or data after "Try the demo") and is reused until it expires.
   const appCheck = initializeAppCheck(app, {
     provider: new ReCaptchaEnterpriseProvider(env.VITE_RECAPTCHA_SITE_KEY),
-    isTokenAutoRefreshEnabled: true,
+    isTokenAutoRefreshEnabled: false,
   });
 
   client = {

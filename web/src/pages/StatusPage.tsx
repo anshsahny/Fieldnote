@@ -7,11 +7,13 @@ import { AVAILABILITY_TEXT, browserAvailability, chromeVersion, type Availabilit
 import { FEATURES } from '../ai/routing';
 import { useAIConfig } from '../ai/useAIConfig';
 import { useProfile } from '../auth/AuthProvider';
+import { APP_CHECK_BLOCKED, isAppCheckFailure } from '../firebase/appCheckErrors';
 import { checkAppCheck, getFirebase } from '../firebase/client';
 import { Callout, Card, PageHeader, SourceBadge } from '../ui/components';
 import { featureLabel } from '../ledger/aggregate';
 
 type Check<T> = { kind: 'checking' } | { kind: 'done'; value: T };
+type AppCheckState = { kind: 'idle' } | Check<{ ok: boolean; detail: string }>;
 
 const MODE_LABEL: Record<string, string> = {
   debug: 'debug provider (localhost)',
@@ -28,7 +30,9 @@ export function StatusPage() {
   const config = useAIConfig();
   const [text, setText] = useState<Check<Availability>>({ kind: 'checking' });
   const [image, setImage] = useState<Check<Availability>>({ kind: 'checking' });
-  const [appCheck, setAppCheck] = useState<Check<{ ok: boolean; detail: string }>>({ kind: 'checking' });
+  // Not requested on page load: a token asked for before any interaction scores low with
+  // reCAPTCHA, and a rejection pauses cloud AI in this browser for a day.
+  const [appCheck, setAppCheck] = useState<AppCheckState>({ kind: 'idle' });
   const [test, setTest] = useState<{ state: 'idle' | 'running' } | { state: 'done'; result: RunResult } | { state: 'error'; message: string }>({
     state: 'idle',
   });
@@ -37,14 +41,17 @@ export function StatusPage() {
   useEffect(() => {
     void browserAvailability(false).then((v) => setText({ kind: 'done', value: v }));
     void browserAvailability(true).then((v) => setImage({ kind: 'done', value: v }));
-    const fb = getFirebase();
-    void checkAppCheck(fb.appCheck).then((r) =>
-      setAppCheck({
-        kind: 'done',
-        value: r.ok ? { ok: true, detail: MODE_LABEL[fb.appCheckMode] ?? fb.appCheckMode } : { ok: false, detail: r.error },
-      }),
-    );
   }, []);
+
+  async function verifyAppCheck() {
+    setAppCheck({ kind: 'checking' });
+    const fb = getFirebase();
+    const r = await checkAppCheck(fb.appCheck);
+    setAppCheck({
+      kind: 'done',
+      value: r.ok ? { ok: true, detail: MODE_LABEL[fb.appCheckMode] ?? fb.appCheckMode } : { ok: false, detail: r.error },
+    });
+  }
 
   async function runTest() {
     setTest({ state: 'running' });
@@ -150,14 +157,21 @@ export function StatusPage() {
             <dd data-testid="project-id">{getFirebase().projectId}</dd>
             <dt>App Check</dt>
             <dd data-testid="appcheck-status">
-              {appCheck.kind === 'checking' ? (
+              {appCheck.kind === 'idle' ? (
+                <span className="row">
+                  <span className="muted">Checked on the first AI call</span>
+                  <button type="button" className="secondary" style={{ minHeight: 30, padding: '4px 10px' }} onClick={() => void verifyAppCheck()}>
+                    Check now
+                  </button>
+                </span>
+              ) : appCheck.kind === 'checking' ? (
                 <span className="badge">Checking…</span>
               ) : appCheck.value.ok ? (
                 <span className="badge badge-ondevice">Token acquired · {appCheck.value.detail}</span>
               ) : (
                 <span className="row">
                   <span className="badge badge-danger">Not ready</span>
-                  <span className="error-detail">{appCheck.value.detail}</span>
+                  <span className="error-detail">{isAppCheckFailure(appCheck.value.detail) ? APP_CHECK_BLOCKED : appCheck.value.detail}</span>
                 </span>
               )}
             </dd>

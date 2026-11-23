@@ -12,6 +12,7 @@ import type { Route } from '../../ai/routing';
 import { useAIConfig } from '../../ai/useAIConfig';
 import { useProfile } from '../../auth/AuthProvider';
 import { useJobs, usePacks } from '../../data/hooks';
+import { APP_CHECK_BLOCKED, isAppCheckFailure } from '../../firebase/appCheckErrors';
 import { getDb, getFirebase } from '../../firebase/client';
 import { validateFixPackJson } from '../../fixpack/validate';
 import type { FixPack } from '../../fixpack/schema';
@@ -171,7 +172,9 @@ export function TriagePage() {
       const msg = e instanceof Error ? e.message : String(e);
       setRun({
         state: 'error',
-        message: /quota|429/i.test(msg)
+        message: isAppCheckFailure(msg)
+          ? APP_CHECK_BLOCKED
+          : /quota|429/i.test(msg)
           ? 'The cloud model is busy right now. Try again in a minute.'
           : `The model couldn't analyze this photo (${msg.slice(0, 160)}).`,
       });

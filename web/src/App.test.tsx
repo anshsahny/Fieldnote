@@ -38,6 +38,10 @@ describe('App shell', () => {
   it('hybrid status reports App Check and this browser’s on-device model', async () => {
     checkAppCheck.mockResolvedValue({ ok: true });
     renderAt('/status');
+    // No token request on page load (reCAPTCHA scores early, interaction-free requests low).
+    expect(await screen.findByText('Checked on the first AI call')).toBeInTheDocument();
+    expect(checkAppCheck).not.toHaveBeenCalled();
+    (await screen.findByRole('button', { name: 'Check now' })).click();
     expect(await screen.findByText(/Token acquired · debug provider/)).toBeInTheDocument();
     expect(screen.getByTestId('project-id')).toHaveTextContent('demo-project');
     // jsdom has no Prompt API, like a browser without Chrome's built-in AI.
@@ -46,10 +50,11 @@ describe('App shell', () => {
   });
 
   it('surfaces App Check failures instead of hiding them', async () => {
-    checkAppCheck.mockResolvedValue({ ok: false, error: 'appCheck/fetch-status-error' });
+    checkAppCheck.mockResolvedValue({ ok: false, error: 'AppCheck: 403 error. Attempts allowed again after 01d:00m:00s (appCheck/initial-throttle).' });
     renderAt('/status');
+    (await screen.findByRole('button', { name: 'Check now' })).click();
     expect(await screen.findByText('Not ready')).toBeInTheDocument();
-    expect(screen.getByText('appCheck/fetch-status-error')).toBeInTheDocument();
+    expect(screen.getByText(/didn't pass Google's bot check/)).toBeInTheDocument();
   });
 
   it('shows a not-found page for unknown routes', async () => {
