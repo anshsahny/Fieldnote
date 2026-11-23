@@ -92,7 +92,7 @@
         },
         "prompt_version_triage": {
           "defaultValue": {
-            "value": "1"
+            "value": "2"
           },
           "valueType": "STRING"
         },

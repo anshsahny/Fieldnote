@@ -87,7 +87,7 @@ func sevenSegment(_ s: String, at origin: CGPoint, height h: CGFloat, on: NSColo
         ]
         for (seg, rect) in rects {
             if lit.contains(seg) {
-                fill(rect.insetBy(dx: -6, dy: -6), on.withAlphaComponent(0.18), radius: t)   // glow
+                fill(rect.insetBy(dx: -4, dy: -4), on.withAlphaComponent(0.12), radius: t)   // glow
                 fill(rect, on, radius: t / 2)
             } else {
                 fill(rect, off, radius: t / 2)
@@ -120,7 +120,8 @@ func save(_ rep: NSBitmapImageRep, _ name: String) throws {
 
 let cabinet = NSColor(calibratedRed: 0.19, green: 0.20, blue: 0.21, alpha: 1)
 let red = NSColor(calibratedRed: 1, green: 0.18, blue: 0.12, alpha: 1)
-let offSeg = NSColor(calibratedRed: 0.22, green: 0.05, blue: 0.05, alpha: 1)
+// Unlit segments almost black: a faint red "8" behind every digit made Gemini Nano read EE2 as 888.
+let offSeg = NSColor(calibratedRed: 0.075, green: 0.04, blue: 0.04, alpha: 1)
 
 // 1. Goodman, EE2 on the board display
 try save(render(width: 1280, height: 960) { r in

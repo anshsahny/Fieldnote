@@ -1,6 +1,6 @@
 ---
 name: triage
-version: 1
+version: 2
 platforms: [web]
 route: route_triage
 max_tokens: 2500
@@ -14,6 +14,9 @@ a sticker, or a nameplate). Identify what is visible: brand, model number, any e
 flash pattern. Then give the most likely fault and the parts the technician should bring.
 Be concise. Write "unknown" for anything you cannot see or infer with reasonable confidence.
 Never guess a model number that is not visible in the photo.
+Error codes: copy the code exactly as shown (for example EE2 or 45). On seven-segment displays,
+read only the brightly lit segments; dim or unlit segments are not part of the code. For a
+blinking status LED, use the blink pattern the customer describes.
 
 ## User
 
