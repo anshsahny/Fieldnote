@@ -265,6 +265,13 @@ Code: validate `choice ∈ allowed`; if `unclear` or confidence < threshold (Rem
 | Nov 22 | Firestore rules: only the assigned tech writes a job's progress, sessions and reports; sessions and reports are validated field by field | Previously any org member could update any job's status |
 | Nov 22 | Debug "Simulate offline" switch (pauses Firestore, pins diagnosis on-device, persists across launches) | The Simulator shares the Mac's network; this makes kill-while-offline testable without a device |
 | Nov 22 | **Quota: skip the Sprint 3 request** | 3.5 Flash-Lite never returned 429 and meets quality/latency; 3.8 Flash and Gemini 4 Hydrogen fail on capacity (timeouts/503), which quota doesn't fix; hybrid design degrades to on-device/plain. Revisit only on Flash-Lite 429s before Nov 25 10 AM PT |
+| Nov 22 | Judges' "Try the demo" = anonymous Firebase Auth guest with read-mostly rules on the demo org (read all; web ledger rows; attach a validated triage) | No public password, nothing destructive, one click. Route is `/signin` (plan said `/login`) |
+| Nov 22 | Console design system: sidebar shell, tokens shared with the iOS theme, light/dark/system; chart colors validated with the dataviz palette validator (dark mode needed darker mark colors than badge text) | Product-grade look the user asked for; accessible in both themes |
+| Nov 22 | Triage: the model reads the photo, code verifies the code against published packs; meaning, causes and parts come from the pack when it matches; cloud only after the dispatcher confirms | Small models misread and guess; facts must come from the manual. Photos are customers' homes |
+| Nov 22 | App Check web: `isTokenAutoRefreshEnabled: false`, tokens on demand; `/status` checks on click | Load-time exchanges from new browsers failed reCAPTCHA (score < 0.5) and the SDK paused cloud AI for a day |
+| Nov 22 | Hosting: `index.html` and SPA routes `no-cache` | Default 1 h cache kept returning visitors on an old build after deploys |
+| Nov 22 | Cost avoided = on-device calls priced at Remote Config prices (Gemini 3.5 Flash-Lite $0.30 / $2.50 per 1M tokens, aistudio.google.com/docs/pricing) with stated output-token assumptions | Honest, auditable estimate; prices change without a release |
+| Nov 22 | Seeded jobs scheduled in working hours on the seed day; jobs carry `assignedName` | Demo reads like a real day; dispatchers can't read other users' profiles |
 
 ## 11. Progress log
 _(Claude Code appends: date, phase, what's done, test status, open issues.)_
@@ -299,3 +306,9 @@ _(Claude Code appends: date, phase, what's done, test status, open issues.)_
 - Results: iPhone airplane-mode script passed (3 runs; the one manual tap led to the retry fix). Reconnect → cloud report 2–3 s automatic; on-device drafts 3.3–8.2 s offline; no data lost across two kills. Details in `docs/phases/P4-offline-sync-reports.md`.
 - Tests: iOS 88/88, web 86/86, rules 19/19.
 - Open: prewarm the on-device model (P7); `seed --reset` before filming; quota: skipped (see Decision log). Schedule: ~2 days ahead (P4 was due Tue Nov 24).
+
+**Nov 22 · P5 Web console: complete (awaiting approval to start P6)**
+- Done: console design system and shell; one-click guest demo (rules + 6 tests); dashboard, jobs (field session timeline with the model per step, report versions, triage), photo pre-triage (on-device first, cloud with consent, pack verification, attach to job, 4 synthetic samples), hybrid ledger (charts + table views, latency, cost avoided), hybrid status, how it works (live routing table, cost formula); packs page rebuilt; hosted at https://fieldnote-c28dc.web.app.
+- Results: on-device triage in Chrome 6.8 s / $0 (photo stayed local); cloud triage 1.0–5.5 s; Lighthouse accessibility 100 on all audited pages; hosted smoke 3/3 green.
+- Tests: web 106/106, rules 25/25, Playwright smoke + axe (local and hosted) green; iOS unchanged (88/88).
+- Open: on-device retest of the new Goodman sample; HEIC conversion (P7, optional); bundle code-split (P7). Schedule: ~3 days ahead (P5 was due Wed–Thu).
