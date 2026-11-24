@@ -42,9 +42,13 @@ nonisolated struct SafetyGuard: Sendable {
 
     // MARK: Matching
 
-    /// Lowercased words with light stemming ("smells" → "smell", "sparking" → "spark").
+    /// Lowercased words with light stemming ("smells" → "smell", "sparking" → "spark"). Apostrophes
+    /// are dropped first so contractions stay one word: "something's burning" must not push
+    /// "burning" out of the matching window (found by the P6 scenarios).
     static func tokens(_ text: String) -> [String] {
         text.lowercased()
+            .replacingOccurrences(of: "'", with: "")
+            .replacingOccurrences(of: "\u{2019}", with: "")
             .split(whereSeparator: { !$0.isLetter && !$0.isNumber })
             .map { stem(String($0)) }
     }

@@ -45,6 +45,7 @@
 		60BBE93B3FE615A0321C71DF /* NameplateExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD46ABC8D2BA28F322371F6 /* NameplateExtractor.swift */; };
 		66BF24DD43E9BE92F229282D /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92DE506E8958AD54C6825F7 /* DebugView.swift */; };
 		67ED89AE0B142AE4FFAB77EE /* DiagnosisPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A61D7B530BFC2EE006F41B /* DiagnosisPrompt.swift */; };
+		6844F6A4581F15DDD2A970B9 /* SharedRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F9D8B06398C3A7C1D3A3104 /* SharedRulesTests.swift */; };
 		69908FE9C74240E917D82094 /* AIConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514D9D553E193CD91C25CF2B /* AIConfigTests.swift */; };
 		6D50277DE36CBE6A409BB0AD /* AppCheckDebugTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56E125BE429DE34912FD6A /* AppCheckDebugTokenTests.swift */; };
 		6DA320D0B3E7F9C1CEBEDC39 /* DiagnosisDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67A13B48C7C3ACFADE133B88 /* DiagnosisDecision.swift */; };
@@ -149,6 +150,7 @@
 		9A7B8272473FD3386B5C2FD1 /* SessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionState.swift; sourceTree = "<group>"; };
 		9CD46ABC8D2BA28F322371F6 /* NameplateExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameplateExtractor.swift; sourceTree = "<group>"; };
 		9E40C764206CB0B775DDA9EC /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		9F9D8B06398C3A7C1D3A3104 /* SharedRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedRulesTests.swift; sourceTree = "<group>"; };
 		A7E321373590E6D68E74B2D8 /* prompts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = prompts; path = ../shared/prompts; sourceTree = SOURCE_ROOT; };
 		A8D7498A38F25123DDAC52A1 /* NameplateOCRTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameplateOCRTests.swift; sourceTree = "<group>"; };
 		AC56E125BE429DE34912FD6A /* AppCheckDebugTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCheckDebugTokenTests.swift; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 				97FBAD49691BC61D2C84AC6F /* ReportTests.swift */,
 				06E3B1CD614AAF4DAC53E971 /* SafetyAndLookupTests.swift */,
 				924011D721D7999AB329D281 /* SessionStateTests.swift */,
+				9F9D8B06398C3A7C1D3A3104 /* SharedRulesTests.swift */,
 			);
 			path = FieldnoteTests;
 			sourceTree = "<group>";
@@ -609,6 +612,7 @@
 				A01963817702BF1137965678 /* ReportTests.swift in Sources */,
 				05A92F9F7E1D358A03B1EB57 /* SafetyAndLookupTests.swift in Sources */,
 				2ECDDBFA443C63F1930F8253 /* SessionStateTests.swift in Sources */,
+				6844F6A4581F15DDD2A970B9 /* SharedRulesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

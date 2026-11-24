@@ -1,0 +1,187 @@
+{
+  "$comment": "Shared test cases for the diagnosis rules that are code, not model: the safety guard, the hedge detector and the clarification rule. Run by both ios/FieldnoteTests/SharedRulesTests.swift and web/src/diagnosis/rules.test.ts, so the two implementations can't drift. Safety uses the six universal stops from shared/safety-stops.json.",
+  "safety": [
+    {
+      "text": "I smell gas near the burners",
+      "stop": "GAS"
+    },
+    {
+      "text": "it smells like gas in here",
+      "stop": "GAS"
+    },
+    {
+      "text": "customer says there's a rotten egg smell",
+      "stop": "GAS"
+    },
+    {
+      "text": "no gas smell at all",
+      "stop": "GAS",
+      "why": "errs on stopping: negation is not parsed"
+    },
+    {
+      "text": "the CO alarm went off this morning",
+      "stop": "CO"
+    },
+    {
+      "text": "carbon monoxide detector beeping",
+      "stop": "CO"
+    },
+    {
+      "text": "burning smell from the blower motor",
+      "stop": "BURNING"
+    },
+    {
+      "text": "wires look melted at the terminal",
+      "stop": "BURNING"
+    },
+    {
+      "text": "there's water dripping on the control board",
+      "stop": "WATER_ELECTRICAL"
+    },
+    {
+      "text": "the wire is sparking at the board",
+      "stop": "EXPOSED_WIRING"
+    },
+    {
+      "text": "got a shock off the cabinet",
+      "stop": "EXPOSED_WIRING"
+    },
+    {
+      "text": "flames coming out of the burner box",
+      "stop": "FLAME_ROLLOUT"
+    },
+    {
+      "text": "rollout switch tripped again",
+      "stop": "FLAME_ROLLOUT"
+    },
+    {
+      "text": "smells like something's burning near the motor",
+      "stop": "BURNING",
+      "why": "contraction must not widen the gap (P6)"
+    },
+    {
+      "text": "it’s sparking at the terminal block",
+      "stop": "EXPOSED_WIRING"
+    },
+    {
+      "text": "there's a gas leak at the union",
+      "stop": "GAS"
+    },
+    {
+      "text": "the inducer's fine and it's not sparking",
+      "stop": "EXPOSED_WIRING",
+      "why": "errs on stopping: negation is not parsed"
+    },
+    {
+      "text": "gas valve is on and manifold reads 3.5",
+      "stop": null
+    },
+    {
+      "text": "control board fuse looks intact",
+      "stop": null
+    },
+    {
+      "text": "hose is clean, no kinks",
+      "stop": null
+    },
+    {
+      "text": "blower runs fine",
+      "stop": null
+    },
+    {
+      "text": "",
+      "stop": null
+    }
+  ],
+  "hedge": [
+    {
+      "text": "not sure if it leaks",
+      "hedged": true
+    },
+    {
+      "text": "vent might be ok",
+      "hedged": true
+    },
+    {
+      "text": "rod looks maybe a little dark",
+      "hedged": true
+    },
+    {
+      "text": "I think the switch is stuck",
+      "hedged": true
+    },
+    {
+      "text": "I haven’t checked the wiring yet",
+      "hedged": true
+    },
+    {
+      "text": "probably the hose",
+      "hedged": true
+    },
+    {
+      "text": "hard to tell with this light",
+      "hedged": true
+    },
+    {
+      "text": "blower wheel wobbles on the shaft",
+      "hedged": false
+    },
+    {
+      "text": "make sure the filter is new",
+      "hedged": false
+    },
+    {
+      "text": "mighty clean in there",
+      "hedged": false
+    },
+    {
+      "text": "sensor rod is shiny, no coating",
+      "hedged": false
+    }
+  ],
+  "clarify": [
+    {
+      "choice": "hose clear",
+      "confidence": 0.9,
+      "note": "hose is clean",
+      "expect": "advance"
+    },
+    {
+      "choice": "hose clear",
+      "confidence": 0.7,
+      "note": "hose is clean",
+      "expect": "advance"
+    },
+    {
+      "choice": "hose clear",
+      "confidence": 0.69,
+      "note": "hose is clean",
+      "expect": "lowConfidence"
+    },
+    {
+      "choice": "unclear",
+      "confidence": 0.2,
+      "note": "dunno",
+      "expect": "unclear"
+    },
+    {
+      "choice": "unclear",
+      "confidence": 0.95,
+      "note": "hose is clean",
+      "expect": "unclear"
+    },
+    {
+      "choice": "vent ok",
+      "confidence": 0.95,
+      "note": "vent might be ok",
+      "expect": "hedged"
+    },
+    {
+      "choice": "vent ok",
+      "confidence": 0.4,
+      "note": "vent might be ok",
+      "expect": "lowConfidence"
+    }
+  ],
+  "threshold": 0.7
+}
