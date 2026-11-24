@@ -16,7 +16,8 @@
     "test:e2e": "playwright test",
     "schema:write": "tsx scripts/write-schema.ts",
     "seed": "tsx scripts/seed.ts",
-    "packs:export": "tsx scripts/export-packs.ts"
+    "packs:export": "tsx scripts/export-packs.ts",
+    "eval:report": "tsx scripts/eval-report.ts"
   },
   "dependencies": {
     "firebase": "^13.4.0",

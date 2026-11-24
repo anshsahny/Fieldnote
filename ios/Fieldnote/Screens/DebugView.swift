@@ -6,6 +6,10 @@ struct DebugView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var evalRunning = false
     @State private var evalResults: [(name: String, summary: [String: String])] = []
+    #if DEBUG
+    @State private var scenarioProgress: (done: Int, total: Int)?
+    @State private var scenarioRuns: [(summary: String, route: String, file: URL?)] = []
+    #endif
     private static let evalFiles = ["p3-notes", "p3-walkthrough"]
     private static let evalKeys = ["correct", "notes", "misses", "hedgedNotesClarified", "clarifyRate",
                                    "medianOnDeviceMs", "medianAllMs", "onDeviceTurns", "promptVersion", "threshold", "error"]
@@ -22,6 +26,21 @@ struct DebugView: View {
         }
         #endif
     }
+
+    #if DEBUG
+    private func runScenarios(_ routes: [InferenceRoute]) {
+        scenarioRuns = []
+        scenarioProgress = (0, 0)
+        Task {
+            for route in routes {
+                if let run = await ScenarioEval.run(route: route, progress: { scenarioProgress = ($0, $1) }) {
+                    scenarioRuns.append((ScenarioEval.summary(run), route.rawValue, ScenarioEval.export(run)))
+                }
+            }
+            scenarioProgress = nil
+        }
+    }
+    #endif
 
     var body: some View {
         @Bindable var app = app
@@ -79,6 +98,27 @@ struct DebugView: View {
                     Button("Run in cloud (only_in_cloud)") { runEval(.onlyInCloud) }
                         .disabled(evalRunning || !app.network.isOnline)
                     if evalRunning { ProgressView().frame(maxWidth: .infinity) }
+                }
+                Section("P6 scenarios (24, eval/scenarios/p6-scenarios)") {
+                    if let p = scenarioProgress {
+                        ProgressView(value: Double(p.done), total: Double(max(p.total, 1))) {
+                            Text("Running turn \(p.done) of \(p.total)…")
+                        }
+                    } else {
+                        Button("Run on-device, then cloud") { runScenarios([.onlyOnDevice, .onlyInCloud]) }
+                            .disabled(evalRunning || !app.network.isOnline)
+                        Button("Run on-device only") { runScenarios([.onlyOnDevice]) }
+                            .disabled(evalRunning)
+                    }
+                    ForEach(scenarioRuns, id: \.route) { run in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(run.route).font(.headline)
+                            Text(run.summary).font(.footnote).foregroundStyle(.secondary)
+                            if let file = run.file {
+                                ShareLink(item: file) { Label("Share results (JSON)", systemImage: "square.and.arrow.up") }
+                            }
+                        }
+                    }
                 }
                 ForEach(evalResults, id: \.name) { result in
                     Section("\(result.name) · \(result.summary["route"] ?? "")") {

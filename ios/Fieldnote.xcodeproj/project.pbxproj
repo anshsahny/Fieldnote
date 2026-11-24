@@ -81,6 +81,7 @@
 		E298CCCE08C11CFDC3C7E1F9 /* FieldnoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859EC61F119C9E71CB4006FA /* FieldnoteApp.swift */; };
 		E8321110E5FDCEC8D501605C /* PacksSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3907C36B25403861BDD1658 /* PacksSheet.swift */; };
 		E98DE6761F82546BCF8BE002 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ADB75057DBDAC6A618A8BF8 /* AIService.swift */; };
+		EBFF6434F2826320A68AB1AB /* ScenarioEval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A3A321A08DC3C616E76336 /* ScenarioEval.swift */; };
 		F1B692022047683FF99C106A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA4F6558FB7E7975F7891EF /* ContentView.swift */; };
 		F6849FCE824820604B74BD9D /* DiagnoseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2126DE0A270F6A94057319 /* DiagnoseView.swift */; };
 		F806789AEA57E449FEB1C002 /* SpikeRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = EED7D57EC1E99C5F72FCA9BE /* SpikeRunner.swift */; };
@@ -119,6 +120,7 @@
 		3F91566BBE62569A68FF0DEA /* PromptTemplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTemplate.swift; sourceTree = "<group>"; };
 		4101D3CCDD342CAFEB4F9B41 /* safety-stops.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "safety-stops.json"; sourceTree = "<group>"; };
 		457D1D727A69443A802CAE3C /* ReportStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportStore.swift; sourceTree = "<group>"; };
+		47A3A321A08DC3C616E76336 /* ScenarioEval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenarioEval.swift; sourceTree = "<group>"; };
 		4AA24FECFFCDC0AD2328FF59 /* ReportFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportFacts.swift; sourceTree = "<group>"; };
 		514D9D553E193CD91C25CF2B /* AIConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIConfigTests.swift; sourceTree = "<group>"; };
 		5854775C4E8F1BDCC7E0F119 /* ReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportView.swift; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 			children = (
 				73F7750A51925C2083642C81 /* NoteEval.swift */,
 				2FDE40284CE1336905FF9272 /* OfflineSyncSpike.swift */,
+				47A3A321A08DC3C616E76336 /* ScenarioEval.swift */,
 				25A30193D2A66B671A6F2343 /* SpikeAutomation.swift */,
 				EED7D57EC1E99C5F72FCA9BE /* SpikeRunner.swift */,
 				7A0AA3E1A529203D73636A2A /* SpikeView.swift */,
@@ -585,6 +588,7 @@
 				3CEF4DFE88B5135C0BBD63C8 /* SafetyGuard.swift in Sources */,
 				257DE4BA44335234BF1D878A /* SafetyStopView.swift in Sources */,
 				4E0E17C1DFF4DB877D8D0FEE /* ScanView.swift in Sources */,
+				EBFF6434F2826320A68AB1AB /* ScenarioEval.swift in Sources */,
 				C1AA118C30FCFD255E07AE28 /* Session.swift in Sources */,
 				A9C29475447B27814D54104E /* SessionState.swift in Sources */,
 				0C9BE2F13F5DCD823916ED2F /* SessionStore.swift in Sources */,

@@ -14,6 +14,18 @@ enum SpikeAutomation {
         let defaults = UserDefaults.standard
         let spikes = defaults.string(forKey: "FNRunSpikes")
         let offlineStep = defaults.string(forKey: "FNOfflineStep")
+        if let which = defaults.string(forKey: "FNRunScenarios") {
+            let routes: [InferenceRoute] = which == "both"
+                ? [.onlyOnDevice, .onlyInCloud]
+                : [InferenceRoute(rawValue: which) ?? .onlyOnDevice]
+            for route in routes { _ = await ScenarioEval.run(route: route) }
+            print("FNSPIKE_DONE")
+            if defaults.bool(forKey: "FNExitWhenDone") {
+                try? await Task.sleep(for: .milliseconds(500))
+                exit(0)
+            }
+            return
+        }
         if let evalName = defaults.string(forKey: "FNRunEval") {
             let route = InferenceRoute(rawValue: defaults.string(forKey: "FNEvalRoute") ?? "") ?? .preferOnDevice
             await NoteEval.run(name: evalName, route: route)

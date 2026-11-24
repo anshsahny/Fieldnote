@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { validateFixPackJson } from '../fixpack/validate';
 import type { FixPack } from '../fixpack/schema';
 import { SafetyGuard } from '../diagnosis/rules';
-import { endOf, runScenarios, summarize, walk, type Interpret, type Scenario } from './runner';
+import { endOf, isRateLimit, paced, runScenarios, summarize, walk, type Interpret, type Scenario } from './runner';
 
 const root = join(process.cwd(), '..');
 const file = JSON.parse(readFileSync(join(root, 'eval/scenarios/p6-scenarios.json'), 'utf8')) as { scenarios: Scenario[] };
@@ -80,5 +80,37 @@ describe('runScenarios', () => {
     const s = summarize(await runScenarios(scenarios, packs, down, 0.7));
     expect(s.errors).toBe(s.turns - 4);
     expect(s.safety.correct).toBe(4);
+  });
+});
+
+describe('paced', () => {
+  const prompt = { system: 's', user: 'u', allowed: ['a'], tokenEstimate: 1 };
+  const ok = { text: '{}', source: 'IN_CLOUD' as const, latencyMs: 1 };
+
+  it('spaces calls and waits out a 429 before retrying', async () => {
+    let clock = 0;
+    const sleeps: number[] = [];
+    const sleep = async (ms: number) => {
+      sleeps.push(ms);
+      clock += ms;
+    };
+    let calls = 0;
+    const flaky: Interpret = async () => {
+      calls++;
+      if (calls === 2) throw new Error('[429] You exceeded your current quota');
+      return ok;
+    };
+    const run = paced(flaky, { minIntervalMs: 5_000, retryDelayMs: 20_000 }, sleep, () => clock);
+    await run(prompt);
+    await run(prompt);
+    expect(calls).toBe(3);
+    expect(sleeps).toEqual([5_000, 20_000]);
+  });
+
+  it('does not retry other errors', async () => {
+    const run = paced(async () => { throw new Error('App Check token is invalid'); }, {}, async () => {}, () => 0);
+    await expect(run(prompt)).rejects.toThrow('App Check');
+    expect(isRateLimit(new Error('RESOURCE_EXHAUSTED'))).toBe(true);
+    expect(isRateLimit(new Error('401 unauthorized'))).toBe(false);
   });
 });

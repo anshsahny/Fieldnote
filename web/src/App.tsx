@@ -35,6 +35,9 @@ const AboutPage = lazy(() => import('./pages/AboutPage').then((m) => ({ default:
 const SpikePage = import.meta.env.DEV
   ? lazy(() => import('./pages/spike/SpikePage').then((m) => ({ default: m.SpikePage })))
   : null;
+const EvalPage = import.meta.env.DEV
+  ? lazy(() => import('./pages/eval/EvalPage').then((m) => ({ default: m.EvalPage })))
+  : null;
 
 interface NavEntry {
   to: string;
@@ -221,6 +224,7 @@ function Shell() {
             <Route path="/status" element={page(<StatusPage />)} />
             <Route path="/about" element={page(<AboutPage />)} />
             {SpikePage && <Route path="/spike" element={page(<SpikePage />)} />}
+            {EvalPage && <Route path="/eval" element={page(<EvalPage />)} />}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

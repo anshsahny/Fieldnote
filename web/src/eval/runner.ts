@@ -1,6 +1,9 @@
 import { validateDecision } from '../ai/diagnosis';
 import type { FixPack, Step } from '../fixpack/schema';
 import { buildDiagnosisPrompt, clarificationFor, SafetyGuard, type BuiltPrompt } from '../diagnosis/rules';
+import type { Scenario, Turn, TurnResult } from './summary';
+
+export { summarize, type EvalRun, type EvalSummary, type Scenario, type Turn, type TurnResult } from './summary';
 
 /**
  * P6 evaluation runner (platform-neutral). Scores a model on the scenarios in
@@ -8,53 +11,37 @@ import { buildDiagnosisPrompt, clarificationFor, SafetyGuard, type BuiltPrompt }
  * ios/Fieldnote/Spike/ScenarioEval.swift writes the same result format.
  */
 
-export interface Turn {
-  note: string;
-  /** an allowed answer, "clarify", or "safety:<ID>" */
-  expect: string;
-  /** what the tech taps after a clarify or safety turn */
-  tap?: string;
-}
-
-export interface Scenario {
-  id: string;
-  packId: string;
-  code: string;
-  kind: 'flow' | 'messy' | 'ambiguous' | 'safety' | 'knowledge';
-  conclusion: string;
-  turns: Turn[];
-}
-
-export interface TurnResult {
-  scenario: string;
-  kind: Scenario['kind'];
-  turn: number;
-  expect: string;
-  /** choice, "clarify", "safety:<ID>", or "error" */
-  outcome: string;
-  ok: boolean;
-  modelCalled: boolean;
-  source?: 'ON_DEVICE' | 'IN_CLOUD' | 'UNKNOWN';
-  latencyMs?: number;
-  tokens?: number;
-  confidence?: number;
-  choice?: string;
-  error?: string;
-}
-
-export interface EvalRun {
-  platform: 'ios' | 'web';
-  route: string;
-  device: string;
-  startedAt: string;
-  promptVersion: number;
-  threshold: number;
-  cloudModel: string;
-  turns: TurnResult[];
-}
-
 /** One model call: text in, raw text out (the runner validates it like the app does). */
 export type Interpret = (prompt: BuiltPrompt) => Promise<{ text: string; source: 'ON_DEVICE' | 'IN_CLOUD' | 'UNKNOWN'; latencyMs: number }>;
+
+export const isRateLimit = (e: unknown) => /\b429\b|resource.?exhausted|quota/i.test(e instanceof Error ? e.message : String(e));
+
+/**
+ * Wraps an Interpret so calls start at least `minIntervalMs` apart and a rate-limit error is waited
+ * out (up to `retries` times) instead of being scored as a model miss. The Gemini Developer API
+ * free tier allows 15 requests a minute, so cloud eval runs use about 13.
+ */
+export function paced(
+  interpret: Interpret,
+  { minIntervalMs = 4_600, retries = 3, retryDelayMs = 20_000 } = {},
+  sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+  now: () => number = () => Date.now(),
+): Interpret {
+  let last = -Infinity;
+  return async (prompt) => {
+    for (let attempt = 0; ; attempt++) {
+      const wait = last + minIntervalMs - now();
+      if (wait > 0) await sleep(wait);
+      last = now();
+      try {
+        return await interpret(prompt);
+      } catch (e) {
+        if (attempt >= retries || !isRateLimit(e)) throw e;
+        await sleep(retryDelayMs);
+      }
+    }
+  };
+}
 
 export function stepAt(pack: FixPack, code: string): { firstStep: string } {
   const fault = pack.faultCodes.find((f) => f.code === code);
@@ -137,51 +124,4 @@ export async function runScenarios(
     }
   }
   return results;
-}
-
-export interface EvalSummary {
-  turns: number;
-  /** clear notes (flow, messy, knowledge): picked the right answer */
-  choice: { correct: number; total: number };
-  /** clear notes where the app asked instead of answering */
-  falseClarify: number;
-  /** hedged notes where the app asked (the right outcome) */
-  clarify: { correct: number; total: number };
-  safety: { correct: number; total: number; modelCalls: number };
-  /** every turn of the scenario correct */
-  scenarios: { correct: number; total: number };
-  errors: number;
-  medianLatencyMs?: number;
-  sources: Record<string, number>;
-  promptTokens: number;
-}
-
-export function summarize(turns: TurnResult[]): EvalSummary {
-  const isChoice = (t: TurnResult) => t.expect !== 'clarify' && !t.expect.startsWith('safety:');
-  const choiceTurns = turns.filter(isChoice);
-  const clarifyTurns = turns.filter((t) => t.expect === 'clarify');
-  const safetyTurns = turns.filter((t) => t.expect.startsWith('safety:'));
-  const latencies = turns.filter((t) => t.modelCalled && t.latencyMs !== undefined && t.outcome !== 'error').map((t) => t.latencyMs!);
-  const sorted = [...latencies].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  const byScenario = new Map<string, boolean>();
-  for (const t of turns) byScenario.set(t.scenario, (byScenario.get(t.scenario) ?? true) && t.ok);
-  const sources: Record<string, number> = {};
-  for (const t of turns) if (t.source) sources[t.source] = (sources[t.source] ?? 0) + 1;
-  return {
-    turns: turns.length,
-    choice: { correct: choiceTurns.filter((t) => t.ok).length, total: choiceTurns.length },
-    falseClarify: choiceTurns.filter((t) => t.outcome === 'clarify').length,
-    clarify: { correct: clarifyTurns.filter((t) => t.ok).length, total: clarifyTurns.length },
-    safety: {
-      correct: safetyTurns.filter((t) => t.ok).length,
-      total: safetyTurns.length,
-      modelCalls: safetyTurns.filter((t) => t.modelCalled).length,
-    },
-    scenarios: { correct: [...byScenario.values()].filter(Boolean).length, total: byScenario.size },
-    errors: turns.filter((t) => t.outcome === 'error').length,
-    medianLatencyMs: sorted.length ? (sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1]! + sorted[mid]!) / 2)) : undefined,
-    sources,
-    promptTokens: turns.reduce((a, t) => a + (t.tokens ?? 0), 0),
-  };
 }
