@@ -92,7 +92,7 @@ enum ScenarioEval {
                             do {
                                 interp = try await interpreter.interpret(prompt)
                                 break
-                            } catch where attempt < 3 && Self.isRateLimit(error) {
+                            } catch where attempt < 3 && DiagnosisEngine.isRateLimit(error) {
                                 attempt += 1
                                 try? await Task.sleep(for: .seconds(20))
                             }
@@ -149,11 +149,6 @@ enum ScenarioEval {
         let latencies = t.compactMap { $0.outcome == "error" ? nil : $0.latencyMs }.sorted()
         let median = latencies.isEmpty ? 0 : latencies[latencies.count / 2]
         return "choice \(choice.filter(\.ok).count)/\(choice.count) · asked \(clarify.filter(\.ok).count)/\(clarify.count) · safety \(safety.filter(\.ok).count)/\(safety.count) · median \(median) ms"
-    }
-
-    private static func isRateLimit(_ error: Error) -> Bool {
-        let text = String(describing: error)
-        return text.contains("429") || text.contains("resourceExhausted")
     }
 
     private static func emit<T: Encodable>(_ tag: String, _ value: T) {

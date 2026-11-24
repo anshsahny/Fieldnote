@@ -66,6 +66,10 @@ final class DiagnosisEngine {
     private(set) var history: [Entry] = []
     private(set) var acknowledgedStops: [String] = []
     private(set) var lastNoteInterpretation: Interpretation?
+    /// After a rate limit (cloud HTTP 429, or the on-device model's own limit) the model is skipped
+    /// for a minute and the tech taps instead, rather than every note failing slowly.
+    private(set) var aiPausedUntil: Date?
+    static let rateLimitPause: TimeInterval = 60
 
     var onEvent: ((EngineEvent) -> Void)?
     /// Called after every change worth saving (answer, undo, safety acknowledgement).
@@ -75,10 +79,11 @@ final class DiagnosisEngine {
     private let safety: SafetyGuard
     private let template: PromptTemplate?
     private let confidenceThreshold: Double
+    private let clock: () -> Date
 
     init(pack: FixPack, fault: FixPack.FaultCode, interpreter: (any ObservationInterpreter)?,
          confidenceThreshold: Double, template: PromptTemplate? = try? PromptTemplate.load(named: "diagnosis"),
-         safety: SafetyGuard? = nil, now: Date = Date()) {
+         safety: SafetyGuard? = nil, now: Date = Date(), clock: @escaping () -> Date = Date.init) {
         self.pack = pack
         self.fault = fault
         self.interpreter = interpreter
@@ -87,6 +92,7 @@ final class DiagnosisEngine {
         self.safety = safety ?? SafetyGuard(packStops: pack.safetyStops)
         self.stepId = fault.firstStep
         self.startedAt = now
+        self.clock = clock
         if pack.steps[fault.firstStep]?.outcome != nil { phase = .concluded }
     }
 
@@ -133,8 +139,8 @@ final class DiagnosisEngine {
             onEvent?(.safetyStop(id: stop.id))
             return
         }
-        // 2. Plain mode: no model; ask the tech to tap.
-        guard let interpreter, let template else {
+        // 2. Plain mode (no model, or paused after a rate limit): ask the tech to tap.
+        guard let interpreter, let template, (aiPausedUntil ?? .distantPast) <= clock() else {
             phase = .clarifying(.aiUnavailable)
             return
         }
@@ -164,9 +170,16 @@ final class DiagnosisEngine {
             }
         } catch {
             onEvent?(.inference(ok: false, source: nil, latencyMs: 0, tokenEstimate: prompt.tokenEstimate, model: nil))
+            if Self.isRateLimit(error) { aiPausedUntil = clock().addingTimeInterval(Self.rateLimitPause) }
             guard stepId == askedStep else { return }
             phase = .clarifying(.aiUnavailable)
         }
+    }
+
+    /// Cloud quota (HTTP 429 / RESOURCE_EXHAUSTED) or the on-device model's rate limit.
+    nonisolated static func isRateLimit(_ error: Error) -> Bool {
+        let text = String(describing: error)
+        return ["429", "resourceExhausted", "RESOURCE_EXHAUSTED", "rateLimited"].contains { text.contains($0) }
     }
 
     /// The tech confirms the hazard is handled (or was a false alarm) and continues on this step.

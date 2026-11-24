@@ -84,6 +84,15 @@ struct ReadingRangeTests {
 struct NameplateExtractorTests {
     let extractor = NameplateExtractor(packs: BundledPacks.load())
 
+    @Test func serialIsWithheldFromModelPrompts() {
+        let lines = ["GOODMAN", "MODEL NO. GMVC960804CN", "SERIAL NO. 2104567890", "MFG DATE 03/2021"]
+        let safe = NameplateExtractor.redactingSerial(lines)
+        #expect(safe == ["GOODMAN", "MODEL NO. GMVC960804CN", "SERIAL [withheld]", "MFG DATE 03/2021"])
+        let split = NameplateExtractor.redactingSerial(["Model 59SC5B080", "S/N", "4521A12345"])
+        #expect(split == ["Model 59SC5B080", "S/N [withheld]", "[withheld]"])
+        #expect(!safe.joined().contains("2104567890"))
+    }
+
     @Test func goodmanNameplateFromOCR() {
         let r = extractor.extract(lines: ["GOODMAN", "GAS-FIRED FORCED AIR FURNACE", "MODEL NO.", "GMVC960803BN", "SERIAL NO.", "1609123456"])
         #expect(r.brand == "Goodman")

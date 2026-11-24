@@ -94,6 +94,7 @@ final class AppModel {
     func refresh() async {
         config = await configLoader.load()
         onDeviceAvailability = AIService.onDeviceAvailability
+        jobs.retryIfFailed()
         upgradeDrafts()
     }
 

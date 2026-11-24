@@ -19,6 +19,14 @@ nonisolated struct HybridInterpreter: ObservationInterpreter {
             #endif
             return interpretation(DiagnosisDecisionValidator.validate(r.content, allowed: prompt.allowed),
                                   source: r.source, model: r.modelVersion, latency: r.latencyMs)
+        } catch where route == .preferOnDevice && Self.isGuardrail(error) {
+            // Apple's on-device guardrail can trip on ordinary trade words (P6: "termination looks
+            // right"). On prefer_on_device the cloud model takes a second look when online; offline
+            // this throws and the tech taps the answer.
+            let r = try await ai.respond(prompt.user, generating: DiagnosisDecision.self, instructions: prompt.system,
+                                         route: .onlyInCloud, cloudModel: cloudModel)
+            return interpretation(DiagnosisDecisionValidator.validate(r.content, allowed: prompt.allowed),
+                                  source: r.source, model: r.modelVersion, latency: r.latencyMs)
         } catch {
             #if DEBUG
             print("FNDEBUG structured diagnosis failed: \(error)")
@@ -30,6 +38,12 @@ nonisolated struct HybridInterpreter: ObservationInterpreter {
             return interpretation(DiagnosisDecisionValidator.parse(text: r.content, allowed: prompt.allowed),
                                   source: r.source, model: r.modelVersion, latency: r.latencyMs)
         }
+    }
+
+    /// FoundationModels' guardrail violation (surfaced through Firebase AI Logic).
+    static func isGuardrail(_ error: Error) -> Bool {
+        let text = String(describing: error)
+        return text.contains("guardrail") || text.contains("unsafe content")
     }
 
     private func interpretation(_ result: Result<ValidatedDecision, DiagnosisDecisionValidator.Failure>,
@@ -50,9 +64,11 @@ nonisolated struct NameplateDisambiguator {
 
     func resolve(lines: [String]) async throws -> (brand: String?, model: String?, serial: String?, result: AIResult<String>) {
         let template = try PromptTemplate.load(named: "nameplate")
-        let p = try template.render(["ocr_lines": lines.prefix(40).joined(separator: "\n")])
+        // The serial number never goes to a model (on-device or cloud): code reads it from the OCR.
+        let safeLines = NameplateExtractor.redactingSerial(Array(lines.prefix(40)))
+        let p = try template.render(["ocr_lines": safeLines.joined(separator: "\n")])
         let r = try await ai.respondText(p.user, instructions: p.system, route: route, cloudModel: cloudModel)
         let parsed = NameplateReply.parse(r.content)
-        return (parsed.brand, parsed.model, parsed.serial, r)
+        return (parsed.brand, parsed.model, nil, r)
     }
 }

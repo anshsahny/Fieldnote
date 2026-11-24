@@ -15,6 +15,9 @@ struct TodayView: View {
                 if !app.jobs.loaded {
                     SectionLabel(text: "Jobs")
                     ProgressView().tint(Theme.brand).frame(maxWidth: .infinity).padding(.vertical, 40)
+                } else if let error = app.jobs.loadError, app.jobs.jobs.isEmpty {
+                    SectionLabel(text: "Jobs")
+                    errorState(error)
                 } else if app.jobs.jobs.isEmpty {
                     SectionLabel(text: "Jobs")
                     emptyState
@@ -100,6 +103,19 @@ struct TodayView: View {
         }
         .card()
         .overlay(RoundedRectangle(cornerRadius: Theme.corner).stroke(Theme.caution.opacity(0.45)))
+    }
+
+    private func errorState(_ message: String) -> some View {
+        VStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle").font(.system(size: 40)).foregroundStyle(Theme.caution)
+            Text("Can't show your jobs").font(.headline).foregroundStyle(Theme.textPrimary)
+            Text(message).font(.subheadline).multilineTextAlignment(.center).foregroundStyle(Theme.textSecondary)
+            Text("Fix packs still work: tap \(app.packs.packs.count) packs offline above.")
+                .font(.footnote).multilineTextAlignment(.center).foregroundStyle(Theme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .accessibilityElement(children: .combine)
     }
 
     private var emptyState: some View {

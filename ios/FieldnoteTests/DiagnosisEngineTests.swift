@@ -4,7 +4,7 @@ import Testing
 
 /// Scripted interpreter: records calls, returns a fixed decision or throws.
 final class MockInterpreter: ObservationInterpreter, @unchecked Sendable {
-    enum Mode { case answer(String, Double, String), unclear, fail }
+    enum Mode { case answer(String, Double, String), unclear, fail, rateLimited }
     private let lock = NSLock()
     private var _calls: [DiagnosisPrompt.Built] = []
     var calls: [DiagnosisPrompt.Built] { lock.withLock { _calls } }
@@ -23,6 +23,9 @@ final class MockInterpreter: ObservationInterpreter, @unchecked Sendable {
                                   source: .onDevice, modelVersion: InferenceSource.onDeviceModelVersion, latencyMs: 600)
         case .fail:
             throw URLError(.notConnectedToInternet)
+        case .rateLimited:
+            throw NSError(domain: "FirebaseAILogic.BackendError", code: 429,
+                          userInfo: [NSLocalizedDescriptionKey: "httpResponseCode: 429, status: resourceExhausted"])
         }
     }
 }
@@ -64,6 +67,41 @@ struct DiagnosisEngineTests {
         #expect(e.history.isEmpty)
         e.tap("vent and wind clear")
         #expect(e.history.count == 1)
+    }
+
+    @Test func rateLimitPausesTheModelForAMinute() async {
+        var now = Date(timeIntervalSince1970: 1_000)
+        let mock = MockInterpreter(.rateLimited)
+        let e = DiagnosisEngine(pack: carrier, fault: carrier.faultCodes.first { $0.code == "31" }!, interpreter: mock,
+                                confidenceThreshold: 0.7, clock: { now })
+        await e.submitNote("vent is clear")
+        #expect(e.phase == .clarifying(.aiUnavailable))
+        #expect(mock.calls.count == 1)
+        // Within the pause: no model call, the tech taps.
+        now += 30
+        await e.submitNote("vent is clear")
+        #expect(mock.calls.count == 1)
+        #expect(e.phase == .clarifying(.aiUnavailable))
+        // After it: the model is tried again.
+        now += 31
+        await e.submitNote("vent is clear")
+        #expect(mock.calls.count == 2)
+    }
+
+    @Test func guardrailErrorsAreRecognized() {
+        let guardrail = NSError(domain: "FoundationModels", code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Response may contain sensitive or unsafe content"])
+        #expect(HybridInterpreter.isGuardrail(guardrail))
+        #expect(!HybridInterpreter.isGuardrail(URLError(.notConnectedToInternet)))
+    }
+
+    @Test func otherFailuresDoNotPauseTheModel() async {
+        let mock = MockInterpreter(.fail)
+        let e = engine(carrier, code: "31", mock)
+        await e.submitNote("vent is clear")
+        await e.submitNote("vent is clear")
+        #expect(mock.calls.count == 2)
+        #expect(e.aiPausedUntil == nil)
     }
 
     @Test func undoStepsBackOverTapsAndConclusions() {

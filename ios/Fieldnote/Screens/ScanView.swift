@@ -25,6 +25,7 @@ struct ScanView: View {
     @State private var result = ScanResult()
     @State private var aiBadge: InferenceBadge.Kind?
     @State private var showCamera = false
+    @State private var cameraDenied = false
     @State private var photo: PhotosPickerItem?
     @State private var manualModel = ""
     @State private var message: String?
@@ -69,6 +70,7 @@ struct ScanView: View {
                     .background(.ultraThinMaterial)
                 }
             }
+            .cameraDeniedAlert(isPresented: $cameraDenied, alternative: "You can also choose a photo from your library.")
             .sheet(isPresented: $showCamera) {
                 CameraPicker { image in Task { await read(image.uprightCGImage(maxDimension: 2400)) } }.ignoresSafeArea()
             }
@@ -84,7 +86,9 @@ struct ScanView: View {
 
     private var captureButtons: some View {
         VStack(spacing: 12) {
-            Button { showCamera = true } label: { Label("Take a photo", systemImage: "camera.fill") }
+            Button {
+                Task { if await CameraAccess.requestIfNeeded() { showCamera = true } else { cameraDenied = true } }
+            } label: { Label("Take a photo", systemImage: "camera.fill") }
                 .buttonStyle(PrimaryButtonStyle())
                 .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
             PhotosPicker(selection: $photo, matching: .images) {

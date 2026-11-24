@@ -1,5 +1,32 @@
+import AVFoundation
 import SwiftUI
 import UIKit
+
+/// Camera permission, asked the first time a photo button is tapped. When access is off, screens
+/// explain how to turn it on and keep the other ways in (choose a photo, type the code).
+enum CameraAccess {
+    static func requestIfNeeded() async -> Bool {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized: return true
+        case .notDetermined: return await AVCaptureDevice.requestAccess(for: .video)
+        default: return false
+        }
+    }
+}
+
+extension View {
+    /// Shown when the camera is off for Fieldnote, with a shortcut to Settings.
+    func cameraDeniedAlert(isPresented: Binding<Bool>, alternative: String) -> some View {
+        alert("Camera access is off", isPresented: isPresented) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+            }
+            Button("Not now", role: .cancel) {}
+        } message: {
+            Text("Turn on Camera for Fieldnote in Settings. \(alternative)")
+        }
+    }
+}
 
 /// Minimal camera wrapper (UIKit): nameplate and display photos.
 struct CameraPicker: UIViewControllerRepresentable {

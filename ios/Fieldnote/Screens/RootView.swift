@@ -191,6 +191,21 @@ struct OnboardingView: View {
 struct AIStatusCard: View {
     let availability: String
 
+    /// Plain words for FoundationModels' unavailability reasons, with what the tech can do about it.
+    static func reason(_ availability: String) -> String {
+        let fallback = "Until then Fieldnote uses cloud AI when online, and plain fix packs when offline."
+        if availability.contains("modelNotReady") {
+            return "The on-device model is still downloading. Keep this iPhone on Wi-Fi and charging. \(fallback)"
+        }
+        if availability.contains("appleIntelligenceNotEnabled") {
+            return "Turn on Apple Intelligence in Settings to diagnose offline. \(fallback)"
+        }
+        if availability.contains("deviceNotEligible") {
+            return "This iPhone doesn't support Apple Intelligence. Fieldnote uses cloud AI when online, and plain fix packs when offline."
+        }
+        return "Fieldnote uses cloud AI when online, and plain fix packs when offline."
+    }
+
     var body: some View {
         let ready = availability == "available"
         HStack(alignment: .top, spacing: 12) {
@@ -201,9 +216,7 @@ struct AIStatusCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(ready ? "Apple Intelligence is ready" : "Apple Intelligence isn't available")
                     .font(.headline).foregroundStyle(Theme.textPrimary)
-                Text(ready
-                     ? "Diagnosis runs on this iPhone, offline and at no cost."
-                     : "Fieldnote will use cloud AI when online, and plain fix packs when offline. (\(availability))")
+                Text(ready ? "Diagnosis runs on this iPhone, offline and at no cost." : Self.reason(availability))
                     .font(.subheadline).foregroundStyle(Theme.textSecondary)
             }
         }

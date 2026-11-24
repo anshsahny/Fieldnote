@@ -86,6 +86,22 @@ nonisolated struct NameplateExtractor: Sendable {
         return regex.firstMatch(in: s, range: range).map { $0.range == range } ?? false
     }
 
+    /// The lines with the serial number replaced, for any model prompt: brand and model are all a
+    /// model needs to pick a pack, and the serial is read by code (privacy by design, P6).
+    static func redactingSerial(_ lines: [String]) -> [String] {
+        var out = lines
+        for (i, line) in lines.enumerated() {
+            let upper = line.uppercased()
+            guard let label = ["SERIAL", "S/N"].first(where: { upper.contains($0) }),
+                  let range = upper.range(of: label) else { continue }
+            let afterLabel = String(upper[range.upperBound...])
+            let hasValue = !tokens(afterLabel.replacingOccurrences(of: "NO.", with: " ").replacingOccurrences(of: "NUMBER", with: " ")).isEmpty
+            out[i] = String(line.prefix(upper.distance(from: upper.startIndex, to: range.upperBound))) + " [withheld]"
+            if !hasValue, i + 1 < lines.count { out[i + 1] = "[withheld]" }
+        }
+        return out
+    }
+
     /// The value after a "SERIAL" label, on the same line or the next.
     static func serial(in lines: [String]) -> String? {
         for (i, line) in lines.enumerated() where line.contains("SERIAL") || line.contains("S/N") {

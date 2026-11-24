@@ -9,6 +9,7 @@ struct FaultCodeView: View {
 
     @State private var input = ""
     @State private var showCamera = false
+    @State private var cameraDenied = false
     @State private var scanNote: String?
     @FocusState private var focused: Bool
 
@@ -26,6 +27,7 @@ struct FaultCodeView: View {
         .screenBackground()
         .navigationTitle("Fault code")
         .navigationBarTitleDisplayMode(.inline)
+        .cameraDeniedAlert(isPresented: $cameraDenied, alternative: "You can also type the code shown on the display.")
         .sheet(isPresented: $showCamera) {
             CameraPicker { image in Task { await readDisplay(image.uprightCGImage(maxDimension: 2000)) } }.ignoresSafeArea()
         }
@@ -57,7 +59,9 @@ struct FaultCodeView: View {
                         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(focused ? Theme.brand : Theme.stroke, lineWidth: focused ? 2 : 1))
                         .accessibilityLabel("Fault code")
-                    Button { showCamera = true } label: {
+                    Button {
+                        Task { if await CameraAccess.requestIfNeeded() { showCamera = true } else { cameraDenied = true } }
+                    } label: {
                         Image(systemName: "camera.viewfinder").font(.title2)
                             .frame(width: 72, height: 72)
                             .background(Theme.surfaceRaised, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
