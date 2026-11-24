@@ -1,5 +1,7 @@
 # Fieldnote
 
+[![CI](https://github.com/anshsahny/Fieldnote/actions/workflows/ci.yml/badge.svg)](https://github.com/anshsahny/Fieldnote/actions/workflows/ci.yml)
+
 Offline-first HVAC diagnostic copilot — Firebase AI Logic hybrid inference (iOS + Web).
 
 The cloud turns manufacturer manuals into compact, validated **fix packs**. The phone's own AI
@@ -7,11 +9,11 @@ The cloud turns manufacturer manuals into compact, validated **fix packs**. The 
 with zero bars in a basement. The web console uses Chrome's on-device Gemini Nano to pre-triage
 customer photos of error displays before dispatch.
 
-> **Status:** Phase 2 done. Three validated fix packs (Goodman, Carrier, Rheem), compiled from the
-> manufacturers' manuals by the cloud model in the web console and reviewed, are published to Firestore and
-> bundled in the iPhone app. Phase 1 proved on-device inference on the iPhone (Apple Foundation Models via
-> Firebase AI Logic, including in airplane mode) and in Chrome (Gemini Nano, text + image). Plan:
-> [`PLAN.md`](PLAN.md) · [P1 results](docs/phases/P1-hybrid-spikes.md) · [P2 results](docs/phases/P2-fixpacks.md).
+> **Status:** Phase 6 done. Three validated fix packs (Goodman, Carrier, Rheem) compiled from
+> manufacturer manuals in the web console; the iPhone app diagnoses on-device in airplane mode, saves
+> every step offline and writes the customer report in the cloud when signal returns; the console
+> pre-triages customer photos with Chrome's on-device model and shows the hybrid ledger. Live console:
+> https://fieldnote-c28dc.web.app · Plan: [`PLAN.md`](PLAN.md) · Eval: [`eval/results`](eval/results/README.md).
 
 ## Repo layout
 
@@ -20,7 +22,7 @@ web/                 Vite + React + TypeScript dispatcher console (Firebase Host
 ios/                 SwiftUI app; ios/project.yml (XcodeGen) is the source of truth for the .xcodeproj
 shared/prompts/      Single source of prompts for both platforms (versioned)
 content/             Fix packs + manual source URLs (no PDFs in the repo)
-eval/scenarios/      Diagnosis eval scenarios (Phase 6)
+eval/scenarios/      Diagnosis eval scenarios; eval/results/ holds the runs and the report
 scripts/             Local setup helpers
 firestore.rules  firestore.indexes.json  remoteconfig.template.json  firebase.json
 docs/                Phase plans, architecture, agent skills, submission material
@@ -38,6 +40,24 @@ docs/                Phase plans, architecture, agent skills, submission materia
 | **Hosting** | The web console |
 
 Current routing and model defaults live in [`remoteconfig.template.json`](remoteconfig.template.json).
+
+## Eval: on-device vs cloud
+
+24 diagnosis scenarios (8 per brand, 64 technician notes: clean, messy, hedged, safety and
+trade-knowledge) run through each platform's own rules with the route forced. Safety stops are code
+and never reach a model. Full report, every miss, and what was tuned:
+[`eval/results/README.md`](eval/results/README.md).
+
+| Route | Right answer on clear notes | Wrong answer accepted | Asked instead of answering | Model errors | Asked on hedged notes | Safety stops | Scenarios fully right | Median latency | Cloud cost (all turns) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| iPhone · On-device | 51/56 (91%) | **0** | 4 | 1 | 4/4 (100%) | 4/4, 0 model calls | 20/24 | 0.72 s | $0 |
+| iPhone · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.15 s | $0.02 |
+| iOS Simulator · On-device | 54/56 (96%) | **0** | 2 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 1.09 s | $0 |
+| iOS Simulator · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.04 s | $0.02 |
+| Chrome · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.00 s | $0.02 |
+
+**Wrong answer accepted** is the miss that matters; every other on-device miss is a question to the
+tech (one tap). Prompt v4 and a 0.8 confidence threshold (Remote Config) got it to zero on every route.
 
 ## Run it yourself
 
@@ -107,6 +127,16 @@ xcodebuild -project ios/Fieldnote.xcodeproj -scheme Fieldnote \
   in each mode. Each row shows the SDK-reported `inferenceSource` and latency.
 - iOS: **Debug → Hybrid spikes** in the app, or headless with launch arguments
   `-FNRunSpikes all` / `-FNRunSpikes offline` (results print as `FNSPIKE {json}` lines).
+
+### Diagnosis eval (debug builds only)
+The 24 scenarios in [`eval/scenarios/p6-scenarios.json`](eval/scenarios/p6-scenarios.json) run
+through each platform's own rules with the route forced, and write the same JSON:
+- iOS: **Diagnostics → P6 scenarios** (long-press the logo on Today; Share sends the JSON), or headless:
+  `xcrun devicectl device process launch --console --device <id> com.anshsahny.fieldnote -- -FNRunScenarios both -FNExitWhenDone YES`
+  (`FNEVALRUN {json}` lines). On the Simulator use `xcrun simctl launch --console-pty`.
+- Chrome: http://localhost:5173/eval (dev server) → **Run** → **Download JSON**. The cloud route also
+  runs headless: `cd web && EVAL_ROUTE=only_in_cloud npx playwright test e2e/eval.spec.ts`.
+- Put the JSON in `eval/results/`, then `cd web && npm run eval:report`.
 
 ### 4. Firebase backend
 ```bash

@@ -2,7 +2,7 @@
 //   cd web && npm run eval:report
 // Runs come from the iPhone (Diagnostics → P6 scenarios → Share, or -FNRunScenarios via devicectl),
 // the Simulator, and Chrome (/eval in dev, or EVAL_ROUTE=only_in_cloud npx playwright test e2e/eval.spec.ts).
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { EvalRun } from '../src/eval/summary';
 import { report, resultsTable, type Pricing } from '../src/eval/report';
@@ -34,6 +34,8 @@ if (!runs.length) {
   console.error(`No runs in ${dir}`);
   process.exit(1);
 }
-writeFileSync(join(dir, 'README.md'), report(runs, pricing));
+// Hand-written notes on what was tuned between runs (eval/results/tuning.md) follow the table.
+const tuning = existsSync(join(dir, 'tuning.md')) ? readFileSync(join(dir, 'tuning.md'), 'utf8') : '';
+writeFileSync(join(dir, 'README.md'), report(runs, pricing, tuning));
 console.log(resultsTable(runs, pricing));
 console.log(`\nWrote eval/results/README.md from ${runs.length} run(s).`);

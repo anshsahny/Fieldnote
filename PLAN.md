@@ -272,6 +272,11 @@ Code: validate `choice ∈ allowed`; if `unclear` or confidence < threshold (Rem
 | Nov 22 | Hosting: `index.html` and SPA routes `no-cache` | Default 1 h cache kept returning visitors on an old build after deploys |
 | Nov 22 | Cost avoided = on-device calls priced at Remote Config prices (Gemini 3.5 Flash-Lite $0.30 / $2.50 per 1M tokens, aistudio.google.com/docs/pricing) with stated output-token assumptions | Honest, auditable estimate; prices change without a release |
 | Nov 22 | Seeded jobs scheduled in working hours on the seed day; jobs carry `assignedName` | Demo reads like a real day; dispatchers can't read other users' profiles |
+| Nov 24 | App Check reCAPTCHA Enterprise minimum score 0.5 → **0.3** (`riskAnalysis.minValidScore`, set via the App Check API) | reCAPTCHA metrics for real console visits: scores 0.1 ×14, 0.3 ×20, 0.7 ×10, 0.9 ×9, so 64% of genuine requests were rejected at 0.5. 0.3 still blocks the lowest bucket |
+| Nov 24 | Safety guard drops apostrophes before matching (iOS + web); both platforms run the same cases from `shared/fixtures/diagnosis/rules.json` | The P6 scenarios found "something's burning" split into "something / s / burning", pushing the trigger word out of its window. The safety rules are code, so they get shared tests, not just per-platform ones |
+| Nov 24 | Eval = 24 scenarios (8 per brand), teacher-forced, scored by the app's own rules; the same JSON on iOS and web. Cloud eval runs are paced at about 13 requests a minute | Teacher forcing scores every note on its real step even after a miss. An unpaced cloud run hit the Gemini free tier's 15 requests/minute (HTTP 429). Normal use is one call per tech turn, so the quota decision stands |
+| Nov 24 | After a rate limit (cloud 429 or the on-device limit), diagnosis skips the model for 60 s and the tech taps (plain mode) | Each note would otherwise fail slowly. The fix pack works without AI |
+| Nov 24 | Serial numbers never go to a model (code reads them; nameplate prompts get `[withheld]`); triage strips phone numbers and emails from the customer's message | Neither is needed to pick a pack or read a display. This completes the privacy pass: reports were already PII-free (Nov 22), and triage photos go to the cloud only with consent |
 
 ## 11. Progress log
 _(Claude Code appends: date, phase, what's done, test status, open issues.)_
@@ -312,3 +317,10 @@ _(Claude Code appends: date, phase, what's done, test status, open issues.)_
 - Results: on-device triage in Chrome 6.8 s / $0 (photo stayed local); cloud triage 1.0–5.5 s; Lighthouse accessibility 100 on all audited pages; hosted smoke 3/3 green.
 - Tests: web 106/106, rules 25/25, Playwright smoke + axe (local and hosted) green; iOS unchanged (88/88).
 - Open: on-device retest of the new Goodman sample; HEIC conversion (P7, optional); bundle code-split (P7). Schedule: ~3 days ahead (P5 was due Wed–Thu).
+
+**Nov 24 · P6 Eval + hardening: complete (awaiting approval to start P7)**
+- Done: 24 scenarios (8 per brand) with the same runner on iOS (Diagnostics sheet / launch args) and Chrome (`/eval`, Playwright for the cloud route), same JSON, `npm run eval:report`; safety/hedge/clarify rules ported to TypeScript with shared cases; hardening (camera permission, jobs load errors, model status, rate-limit pause, guardrail cloud second look); privacy (serials withheld from prompts, triage strips phone/email); GitHub Actions CI + badge.
+- Results: wrong answers accepted 0 on every route (prompt v4 + threshold 0.8, both from the eval). iPhone on-device 51/56 clear notes right (the rest ask the tech), median 0.72 s, $0; iPhone cloud 56/56, 1.15 s; Chrome cloud 56/56, 1.00 s; safety stops 4/4 with 0 model calls everywhere. Found and fixed a safety gap (contractions) before any model run.
+- Tests: iOS 97/97, web 209/209, rules 25/25; CI green.
+- Open: Chrome on-device eval row (user's Chrome); App Check score threshold now 0.3 (Decision log); prewarm, code-split, `seed --reset` before filming (P7). Schedule: ~3 days ahead (P6 was due Fri Nov 27).
+

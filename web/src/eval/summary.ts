@@ -55,6 +55,8 @@ export interface EvalSummary {
   choice: { correct: number; total: number };
   /** clear notes where the app asked instead of answering */
   falseClarify: number;
+  /** any note where the app moved on with the wrong answer (the miss that matters) */
+  wrongAdvance: number;
   /** hedged notes where the app asked (the right outcome) */
   clarify: { correct: number; total: number };
   safety: { correct: number; total: number; modelCalls: number };
@@ -82,6 +84,9 @@ export function summarize(turns: TurnResult[]): EvalSummary {
     turns: turns.length,
     choice: { correct: choiceTurns.filter((t) => t.ok).length, total: choiceTurns.length },
     falseClarify: choiceTurns.filter((t) => t.outcome === 'clarify').length,
+    wrongAdvance: turns.filter(
+      (t) => !t.ok && t.outcome !== 'clarify' && t.outcome !== 'error' && !t.outcome.startsWith('safety:'),
+    ).length,
     clarify: { correct: clarifyTurns.filter((t) => t.ok).length, total: clarifyTurns.length },
     safety: {
       correct: safetyTurns.filter((t) => t.ok).length,

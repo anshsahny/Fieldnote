@@ -44,7 +44,7 @@ describe('eval report', () => {
       ],
     });
     const table = resultsTable([r], pricing);
-    expect(table).toContain('| iPhone · On-device | 1/2 (50%) | 1/1 (100%) | 0 | 1/1, 0 model calls | 1/2 | 1.00 s | $0 |');
+    expect(table).toContain('| iPhone · On-device | 1/2 (50%) | **1** | 0 | 0 | 1/1 (100%) | 1/1, 0 model calls | 1/2 | 1.00 s | $0 |');
     const md = report([r], pricing);
     expect(md).toContain('- s2 turn 1 (flow): expected `b`, got `a` at 0.75');
   });
