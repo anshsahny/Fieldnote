@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "description": "P6 evaluation: 24 diagnosis scenarios (8 per brand) on the published fix packs. Each turn is a technician's typed note at the current step. expect is the allowed answer the note means, \"clarify\" when the note is a guess and the app must ask, or \"safety:<ID>\" when code must stop before any model call. After a clarify or safety turn, tap is the answer the technician then taps (if any). The runner follows the expected path (teacher forcing) so every note is scored on its real step; conclusion is the leaf that path reaches. Kinds: flow, messy (slang/typos), ambiguous, safety, knowledge (needs trade knowledge).",
+  "scenarios": [
+    {
+      "id": "g01", "packId": "goodman-cvc96-mvc96-v1", "code": "EE2", "kind": "flow", "conclusion": "CEE2-L5",
+      "turns": [
+        { "note": "pulled the hose off, its clean, no kinks or water in it", "expect": "hose clear" },
+        { "note": "flue and intake are both clear, termination looks right", "expect": "piping is clear" },
+        { "note": "trap and drain lines flow fine, no standing water", "expect": "drain is clear" },
+        { "note": "all the spade connectors are tight at the switch and the board", "expect": "wiring is secure" },
+        { "note": "inducer spins up strong and quiet", "expect": "blower normal" }
+      ]
+    },
+    {
+      "id": "g02", "packId": "goodman-cvc96-mvc96-v1", "code": "EE0", "kind": "safety", "conclusion": "CEE0-L5",
+      "turns": [
+        { "note": "meter valve is open and the water heater lights fine", "expect": "gas supply ok" },
+        { "note": "wait I smell gas near the burners", "expect": "safety:GAS" },
+        { "note": "switch clicks normally, drain tubes are clear", "expect": "normal" },
+        { "note": "igniter looks good, no cracks, lined up right", "expect": "good" },
+        { "note": "sensor rod is shiny, no coating", "expect": "clean" },
+        { "note": "found a bird nest in the exhaust termination", "expect": "blocked" }
+      ]
+    },
+    {
+      "id": "g03", "packId": "goodman-cvc96-mvc96-v1", "code": "EE6", "kind": "messy", "conclusion": "CEE6-L1",
+      "turns": [{ "note": "rods got white crud all over it, real dull", "expect": "coated or oxidized" }]
+    },
+    {
+      "id": "g04", "packId": "goodman-cvc96-mvc96-v1", "code": "EE6", "kind": "flow", "conclusion": "CEE6-L4",
+      "turns": [
+        { "note": "sensor's shiny n clean", "expect": "clean and shiny" },
+        { "note": "sits right in the flame, not bent", "expect": "properly positioned" },
+        { "note": "intake pipe is clear all the way out", "expect": "clear and correct" },
+        { "note": "manifold is at 3.5, same as the rating plate", "expect": "matches rating plate" }
+      ]
+    },
+    {
+      "id": "g05", "packId": "goodman-cvc96-mvc96-v1", "code": "EE3", "kind": "ambiguous", "conclusion": "CEE3-L3",
+      "turns": [
+        { "note": "filters look kinda grey, might be ok", "expect": "clarify", "tap": "clear" },
+        { "note": "blower moving good air on high", "expect": "normal" },
+        { "note": "found a loose spade on the limit switch", "expect": "loose or miswired" }
+      ]
+    },
+    {
+      "id": "g06", "packId": "goodman-cvc96-mvc96-v1", "code": "EE5", "kind": "flow", "conclusion": "CEE5-S4",
+      "turns": [
+        { "note": "fuse is fine, meter shows continuity", "expect": "intact" },
+        { "note": "a staple went through the thermostat wire and shorted it to C", "expect": "found" }
+      ]
+    },
+    {
+      "id": "g07", "packId": "goodman-cvc96-mvc96-v1", "code": "EE7", "kind": "safety", "conclusion": "CEE7-L2",
+      "turns": [
+        { "note": "plugs are snug, harness looks good", "expect": "secure and intact" },
+        { "note": "there's a bare wire rubbing on the cabinet", "expect": "safety:EXPOSED_WIRING" },
+        { "note": "igniter has a crack right across the element", "expect": "shorted or damaged" }
+      ]
+    },
+    {
+      "id": "g08", "packId": "goodman-cvc96-mvc96-v1", "code": "E11", "kind": "messy", "conclusion": "CE11-L4",
+      "turns": [
+        { "note": "gas pressure checks out on the manometer", "expect": "pressure correct" },
+        { "note": "burners r lined up straight", "expect": "aligned" },
+        { "note": "rust flakes blocking the burner ports", "expect": "restricted" }
+      ]
+    },
+    {
+      "id": "c01", "packId": "carrier-59sc5b-v1", "code": "13", "kind": "flow", "conclusion": "C13-L3",
+      "turns": [
+        { "note": "filter is brand new, all registers open", "expect": "clean and open" },
+        { "note": "vent pipe is the right size and clear outside", "expect": "vent ok" },
+        { "note": "blower wheel wobbles on the shaft", "expect": "loose or defective" }
+      ]
+    },
+    {
+      "id": "c02", "packId": "carrier-59sc5b-v1", "code": "14", "kind": "flow", "conclusion": "C14-S6",
+      "turns": [
+        { "note": "limit and rollout both read closed", "expect": "both closed" },
+        { "note": "gas valve wires are on the right terminals", "expect": "normal" },
+        { "note": "valve gets 24 volts but never opens", "expect": "defective" }
+      ]
+    },
+    {
+      "id": "c03", "packId": "carrier-59sc5b-v1", "code": "24", "kind": "messy", "conclusion": "C24-S3",
+      "turns": [
+        { "note": "3 amp fuse on the board is toast, strip inside is broke", "expect": "fuse is blown" },
+        { "note": "tstat wire has a nick shorting R to C", "expect": "short found" }
+      ]
+    },
+    {
+      "id": "c04", "packId": "carrier-59sc5b-v1", "code": "31", "kind": "ambiguous", "conclusion": "C31-S6",
+      "turns": [
+        { "note": "kind of breezy out today, vent might be ok", "expect": "clarify", "tap": "vent and wind clear" },
+        { "note": "tubing is clear and the trap drains fine", "expect": "tubing and drainage clear" },
+        { "note": "inducer hums and won't spin up", "expect": "inducer or voltage faulty" }
+      ]
+    },
+    {
+      "id": "c05", "packId": "carrier-59sc5b-v1", "code": "33", "kind": "safety", "conclusion": "C33-L2",
+      "turns": [
+        { "note": "customer's CO alarm went off last night", "expect": "safety:CO" },
+        { "note": "filter's clean, ducts open", "expect": "airflow is clear" },
+        { "note": "intake screen is packed with leaves", "expect": "venting or intake restricted" }
+      ]
+    },
+    {
+      "id": "c06", "packId": "carrier-59sc5b-v1", "code": "23", "kind": "flow", "conclusion": "C23-S4",
+      "turns": [
+        { "note": "switch contacts read open with the inducer off", "expect": "contacts open" },
+        { "note": "harness has a chewed wire, mice got to it", "expect": "wiring damaged" }
+      ]
+    },
+    {
+      "id": "c07", "packId": "carrier-59sc5b-v1", "code": "22", "kind": "flow", "conclusion": "C22-S2",
+      "turns": [{ "note": "burner stays lit a second after the valve closes", "expect": "flame with valve off" }]
+    },
+    {
+      "id": "c08", "packId": "carrier-59sc5b-v1", "code": "34", "kind": "messy", "conclusion": "C34-S4",
+      "turns": [
+        { "note": "got 2.5 micro amps steady", "expect": "0.5 uA or more" },
+        { "note": "gas is on, inlet pressure 7 inches", "expect": "gas on, pressure ok" }
+      ]
+    },
+    {
+      "id": "r01", "packId": "rheem-r96v-v1", "code": "11", "kind": "flow", "conclusion": "C11-L5",
+      "turns": [
+        { "note": "handle is in line with the pipe, it's open", "expect": "valve on" },
+        { "note": "manifold reads right and all burners light across", "expect": "pressure and burners normal" },
+        { "note": "rod is clean and the wire is tight", "expect": "clean and secure" },
+        { "note": "igniter never glows even with power at the board", "expect": "faulty igniter" }
+      ]
+    },
+    {
+      "id": "r02", "packId": "rheem-r96v-v1", "code": "11", "kind": "knowledge", "conclusion": "C11-L1",
+      "turns": [{ "note": "handle was perpendicular to the pipe", "expect": "valve off" }]
+    },
+    {
+      "id": "r03", "packId": "rheem-r96v-v1", "code": "45", "kind": "ambiguous", "conclusion": "C45-L2",
+      "turns": [
+        { "note": "one hose looks a bit worn near the fitting but not sure if it leaks", "expect": "clarify", "tap": "hoses ok" },
+        { "note": "found a wasp nest in the exhaust termination", "expect": "blocked or bad termination" }
+      ]
+    },
+    {
+      "id": "r04", "packId": "rheem-r96v-v1", "code": "22", "kind": "safety", "conclusion": "C22-L5",
+      "turns": [
+        { "note": "blower comes on fine in heat", "expect": "runs" },
+        { "note": "smells like something's burning near the motor", "expect": "safety:BURNING" },
+        { "note": "filter and ducts fine, temp rise is in range", "expect": "normal" },
+        { "note": "limit wires look good", "expect": "good" },
+        { "note": "manifold at high fire is 4.2, plate says 3.5", "expect": "too high" }
+      ]
+    },
+    {
+      "id": "r05", "packId": "rheem-r96v-v1", "code": "12", "kind": "messy", "conclusion": "C12-S2",
+      "turns": [{ "note": "rods dirty n the wire connecter is loose", "expect": "dirty or loose" }]
+    },
+    {
+      "id": "r06", "packId": "rheem-r96v-v1", "code": "13", "kind": "flow", "conclusion": "C13-S4",
+      "turns": [
+        { "note": "rod is clean and tight", "expect": "clean and secure" },
+        { "note": "ground screw was rusted, no continuity to the chassis", "expect": "poorly grounded" }
+      ]
+    },
+    {
+      "id": "r07", "packId": "rheem-r96v-v1", "code": "33", "kind": "flow", "conclusion": "C33-L2",
+      "turns": [
+        { "note": "vent run is clear and within max length", "expect": "clear" },
+        { "note": "heat exchanger has a crack near the top", "expect": "damaged" }
+      ]
+    },
+    {
+      "id": "r08", "packId": "rheem-r96v-v1", "code": "30", "kind": "ambiguous", "conclusion": "C30-S3",
+      "turns": [{ "note": "could be a short somewhere, haven't checked yet", "expect": "clarify", "tap": "no short found" }]
+    }
+  ]
+}
