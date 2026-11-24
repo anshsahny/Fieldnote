@@ -110,7 +110,7 @@
         },
         "prompt_version_diagnosis": {
           "defaultValue": {
-            "value": "3"
+            "value": "4"
           },
           "valueType": "STRING"
         },
@@ -141,9 +141,9 @@
         },
         "diagnosis_confidence_threshold": {
           "defaultValue": {
-            "value": "0.7"
+            "value": "0.8"
           },
-          "description": "Below this model confidence, the app asks a clarifying tap-choice question.",
+          "description": "Below this model confidence, the app asks a clarifying tap-choice question. 0.8 since P6: every wrong on-device answer in the eval came at 0.70-0.75.",
           "valueType": "NUMBER"
         }
       }
