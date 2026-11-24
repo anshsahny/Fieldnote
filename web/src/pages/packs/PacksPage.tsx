@@ -54,6 +54,12 @@ export function PacksPage() {
           <div style={{ padding: 22 }}>
             <SkeletonRows rows={3} />
           </div>
+        ) : packs.error ? (
+          <div style={{ padding: 22 }}>
+            <Callout tone="danger" title="Packs couldn't load">
+              {packs.error}
+            </Callout>
+          </div>
         ) : packs.data.length === 0 ? (
           <EmptyState icon={BookOpen} title="No packs published yet">
             Compile a manual below to create the first one.

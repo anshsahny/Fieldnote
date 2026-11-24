@@ -17,6 +17,7 @@ import { getDb, getFirebase } from '../../firebase/client';
 import { validateFixPackJson } from '../../fixpack/validate';
 import type { FixPack } from '../../fixpack/schema';
 import { downscale, isHeic, toInlinePart, ACCEPTED } from '../../triage/image';
+import { redactContact } from '../../triage/privacy';
 import { matchTriage, packParts, parseTriage, type PackMatch, type TriageReading } from '../../triage/match';
 import { SAMPLES } from '../../triage/samples';
 import { Callout, Card, CodeChip, PageHeader, Segmented, SourceBadge } from '../../ui/components';
@@ -134,7 +135,7 @@ export function TriagePage() {
     setAskCloud(false);
     setAttached(null);
     setRun({ state: 'running', where: willUseCloud ? 'cloud' : 'device' });
-    const p = renderPrompt(PROMPTS.triage, { customer_message: message.trim() || 'No message.' });
+    const p = renderPrompt(PROMPTS.triage, { customer_message: redactContact(message.trim()) || 'No message.' });
     const tokens = Math.round((p.system.length + p.user.length) / 3.5) + 258; // + one image
     try {
       const model = makeModel(getAI(getFirebase().app), {
