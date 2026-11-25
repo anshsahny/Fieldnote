@@ -54,10 +54,14 @@ and never reach a model. Full report, every miss, and what was tuned:
 | iPhone · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.15 s | $0.02 |
 | iOS Simulator · On-device | 54/56 (96%) | **0** | 2 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 1.09 s | $0 |
 | iOS Simulator · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.04 s | $0.02 |
+| Chrome · On-device | 54/56 (96%) | **1** | 1 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 3.81 s | $0 |
 | Chrome · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.00 s | $0.02 |
 
 **Wrong answer accepted** is the miss that matters; every other on-device miss is a question to the
-tech (one tap). Prompt v4 and a 0.8 confidence threshold (Remote Config) got it to zero on every route.
+tech (one tap). Prompt v4 and a 0.8 confidence threshold (Remote Config) got it to zero on the iPhone
+and in the cloud. Chrome's Gemini Nano accepted one: "handle was perpendicular to the pipe" read as
+"valve on" at exactly 0.80 (it means off). The console doesn't diagnose in production (Chrome's model
+does photo triage), so the Chrome rows compare the same prompt and rules on a second on-device model.
 
 ## Run it yourself
 

@@ -22,3 +22,7 @@ perfect, so tuning targeted the on-device model, then every route was re-run.
   valve is off) needs trade knowledge the small model lacks, so it asks, which is a safe miss.
 - Cloud runs are paced at about 13 requests a minute: an unpaced burst hit the Gemini free tier's
   15 requests/minute (HTTP 429).
+- **Chrome on-device (Gemini Nano, Nov 25)**, run after tuning with the same prompt and threshold: 62/64
+  turns, 1 wrong answer accepted. r02 "handle was perpendicular to the pipe" was read as "valve on" at
+  exactly 0.80, and a ball valve handle across the pipe means off. The same note makes Apple's model
+  say "unclear". It is left as a reported miss rather than tuned away on the test set.

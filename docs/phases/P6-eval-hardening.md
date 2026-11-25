@@ -48,13 +48,13 @@
 - CI: GitHub Actions for web tests + rules tests (badge in README).
 
 ## Acceptance checks
-- [x] Eval table generated from real runs on both platforms (iPhone, Simulator, Chrome cloud; Chrome on-device pending the user).
+- [x] Eval table generated from real runs on both platforms (iPhone, Simulator, Chrome on-device and cloud).
 - [x] CI green.
 - [x] Every error state reachable and handled (checklist in this file, ticked).
 
 ## Checkpoint report
 
-**Status: complete (Nov 24), awaiting approval to start P7.** Chrome on-device eval row pending (needs Gemini Nano in the user's Chrome).
+**Status: complete (Nov 24; Chrome on-device row added Nov 25), awaiting approval to start P7.**
 
 ### Eval table (from `eval/results/*.json`, `npm run eval:report`)
 | Route | Right answer on clear notes | Wrong answer accepted | Asked instead of answering | Model errors | Asked on hedged notes | Safety stops | Scenarios fully right | Median latency | Cloud cost (all turns) |
@@ -63,6 +63,7 @@
 | iPhone · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.15 s | $0.02 |
 | iOS Simulator · On-device | 54/56 (96%) | **0** | 2 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 1.09 s | $0 |
 | iOS Simulator · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.04 s | $0.02 |
+| Chrome · On-device | 54/56 (96%) | **1** | 1 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 3.81 s | $0 |
 | Chrome · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.00 s | $0.02 |
 
 Full report with every miss: [`eval/results/README.md`](../../eval/results/README.md).
@@ -76,7 +77,8 @@ Full report with every miss: [`eval/results/README.md`](../../eval/results/READM
   ("won't spin", "never glows") and "choose by what was observed". Fixed both v3 on-device misreads; P3 note
   sets unchanged (9/10, 12/12).
 - **Threshold 0.7 → 0.8** (Remote Config, deployed): every wrong on-device answer came at 0.70–0.75, every
-  right one at ≥ 0.80. Result: **0 wrong answers accepted on every route**; the on-device misses that remain
+  right one at ≥ 0.80. Result: **0 wrong answers accepted on the iPhone and in the cloud**; Chrome's Gemini Nano accepted one
+  (r02 "handle was perpendicular to the pipe" → "valve on" at exactly 0.80; it means off). The other misses
   ask the tech (one tap).
 - **Guardrail false positives** (Apple on-device: "…termination looks right", "burners r lined up
   straight"; a different note each run): on prefer_on_device the cloud now takes a second look when online.
@@ -94,6 +96,6 @@ withheld from model prompts, contact details stripped from triage prompts, packs
   first run.
 
 ### Open
-- Chrome on-device eval row (user step, about 5 minutes).
+- r02 on Gemini Nano: a trade-knowledge note accepted wrong at 0.80. Not patched with scenario-specific rules; a fix pack hint (handle across the pipe = off) would be the honest fix.
 - Camera-permission alert checked in code and by build only; the Simulator has no camera (optional iPhone check).
 - P7 items carried: prewarm the on-device model, bundle code-split, `seed --reset` before filming.

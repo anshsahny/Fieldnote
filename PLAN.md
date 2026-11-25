@@ -320,7 +320,7 @@ _(Claude Code appends: date, phase, what's done, test status, open issues.)_
 
 **Nov 24 · P6 Eval + hardening: complete (awaiting approval to start P7)**
 - Done: 24 scenarios (8 per brand) with the same runner on iOS (Diagnostics sheet / launch args) and Chrome (`/eval`, Playwright for the cloud route), same JSON, `npm run eval:report`; safety/hedge/clarify rules ported to TypeScript with shared cases; hardening (camera permission, jobs load errors, model status, rate-limit pause, guardrail cloud second look); privacy (serials withheld from prompts, triage strips phone/email); GitHub Actions CI + badge.
-- Results: wrong answers accepted 0 on every route (prompt v4 + threshold 0.8, both from the eval). iPhone on-device 51/56 clear notes right (the rest ask the tech), median 0.72 s, $0; iPhone cloud 56/56, 1.15 s; Chrome cloud 56/56, 1.00 s; safety stops 4/4 with 0 model calls everywhere. Found and fixed a safety gap (contractions) before any model run.
+- Results: wrong answers accepted 0 on the iPhone and in the cloud (prompt v4 + threshold 0.8, both from the eval); Chrome on-device (Gemini Nano) 1, a trade-knowledge note at 0.80, 54/56, 3.8 s. iPhone on-device 51/56 clear notes right (the rest ask the tech), median 0.72 s, $0; iPhone cloud 56/56, 1.15 s; Chrome cloud 56/56, 1.00 s; safety stops 4/4 with 0 model calls everywhere. Found and fixed a safety gap (contractions) before any model run.
 - Tests: iOS 97/97, web 209/209, rules 25/25; CI green.
-- Open: Chrome on-device eval row (user's Chrome); App Check score threshold now 0.3 (Decision log); prewarm, code-split, `seed --reset` before filming (P7). Schedule: ~3 days ahead (P6 was due Fri Nov 27).
+- Open: App Check score threshold now 0.3 (Decision log); prewarm, code-split, `seed --reset` before filming (P7). Schedule: ~3 days ahead (P6 was due Fri Nov 27).
 

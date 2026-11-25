@@ -12,6 +12,7 @@ The expected path is followed after every turn (teacher forcing), so one miss do
 | iPhone · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.15 s | $0.02 |
 | iOS Simulator · On-device | 54/56 (96%) | **0** | 2 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 1.09 s | $0 |
 | iOS Simulator · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.04 s | $0.02 |
+| Chrome · On-device | 54/56 (96%) | **1** | 1 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 3.81 s | $0 |
 | Chrome · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.00 s | $0.02 |
 
 - **Right answer on clear notes**: the model picked the expected answer and the app advanced.
@@ -54,6 +55,10 @@ perfect, so tuning targeted the on-device model, then every route was re-run.
   valve is off) needs trade knowledge the small model lacks, so it asks, which is a safe miss.
 - Cloud runs are paced at about 13 requests a minute: an unpaced burst hit the Gemini free tier's
   15 requests/minute (HTTP 429).
+- **Chrome on-device (Gemini Nano, Nov 25)**, run after tuning with the same prompt and threshold: 62/64
+  turns, 1 wrong answer accepted. r02 "handle was perpendicular to the pipe" was read as "valve on" at
+  exactly 0.80, and a ball valve handle across the pipe means off. The same note makes Apple's model
+  say "unclear". It is left as a reported miss rather than tuned away on the test set.
 
 ## Misses
 
@@ -85,6 +90,13 @@ iPhone 17 Simulator (iOS 27.2), 2026-11-24 06:25 UTC, prompt v4, threshold 0.8.
 iPhone 17 Simulator (iOS 27.2), 2026-11-24 06:18 UTC, prompt v4, threshold 0.8, gemini-3.5-flash-lite.
 
 No misses.
+
+### Chrome · On-device
+
+Chrome 158, 2026-11-25 06:15 UTC, prompt v4, threshold 0.8.
+
+- c07 turn 1 (flow): expected `flame with valve off`, got `clarify` at 0.70
+- r02 turn 1 (knowledge): expected `valve off`, got `valve on` at 0.80
 
 ### Chrome · Cloud
 
