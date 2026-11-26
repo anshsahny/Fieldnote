@@ -42,8 +42,8 @@ enum ScenarioEval {
         let turns: [TurnResult]
     }
 
-    static func loadScenarios() -> [Scenario] {
-        guard let url = Bundle.main.url(forResource: "p6-scenarios", withExtension: "json", subdirectory: "scenarios"),
+    static func loadScenarios(file: String = "p6-scenarios") -> [Scenario] {
+        guard let url = Bundle.main.url(forResource: file, withExtension: "json", subdirectory: "scenarios"),
               let data = try? Data(contentsOf: url),
               let file = try? JSONDecoder().decode(File.self, from: data) else { return [] }
         return file.scenarios
@@ -55,12 +55,16 @@ enum ScenarioEval {
     }
 
     /// Runs every scenario on one route. `progress` reports turns done / total.
-    static func run(route: InferenceRoute, progress: (@MainActor (Int, Int) -> Void)? = nil) async -> Run? {
-        let scenarios = loadScenarios()
+    static func run(route: InferenceRoute, file: String = "p6-scenarios",
+                    progress: (@MainActor (Int, Int) -> Void)? = nil) async -> Run? {
+        let scenarios = loadScenarios(file: file)
         guard !scenarios.isEmpty, let template = try? PromptTemplate.load(named: "diagnosis") else { return nil }
         let packs = Dictionary(uniqueKeysWithValues: BundledPacks.load().map { ($0.packId, $0) })
         let config = await AIConfigLoader().load()
         let interpreter = HybridInterpreter(ai: AIService(), route: route, cloudModel: config.cloudModel(for: .diagnosis))
+        // Like the app, which prewarms when a job opens (so turn 1 isn't a cold model load).
+        let warm = route == .onlyInCloud ? nil : AIService.prewarmOnDevice()
+        if warm != nil { try? await Task.sleep(for: .seconds(2)) }
         let total = scenarios.reduce(0) { $0 + $1.turns.count }
         var done = 0
         var results: [TurnResult] = []
@@ -128,6 +132,7 @@ enum ScenarioEval {
                       promptVersion: template.meta.version, threshold: config.confidenceThreshold,
                       cloudModel: config.cloudModel(for: .diagnosis), turns: results)
         emit("FNEVALRUN", run)
+        _ = warm
         return run
     }
 

@@ -7,6 +7,7 @@ import Foundation
 ///   -FNOfflineStep write    Firestore: sign in, write offline, then exit (simulates a kill)
 ///   -FNOfflineStep verify   Firestore: confirm the write survived, reconnect, wait for sync
 ///   -FNRunEval p3-notes     the note sample in eval/scenarios (see NoteEval; -FNEvalRoute picks the route)
+///   -FNRunScenarios <route> the P6 scenarios (see ScenarioEval); -FNScenarioFile p7-filming picks another file
 ///   -FNExitWhenDone YES     exit after printing FNSPIKE_DONE (for scripted runs)
 /// Results go to stdout as `FNSPIKE {json}` lines.
 enum SpikeAutomation {
@@ -18,7 +19,8 @@ enum SpikeAutomation {
             let routes: [InferenceRoute] = which == "both"
                 ? [.onlyOnDevice, .onlyInCloud]
                 : [InferenceRoute(rawValue: which) ?? .onlyOnDevice]
-            for route in routes { _ = await ScenarioEval.run(route: route) }
+            let file = defaults.string(forKey: "FNScenarioFile") ?? "p6-scenarios"
+            for route in routes { _ = await ScenarioEval.run(route: route, file: file) }
             print("FNSPIKE_DONE")
             if defaults.bool(forKey: "FNExitWhenDone") {
                 try? await Task.sleep(for: .milliseconds(500))

@@ -1,0 +1,38 @@
+{
+  "$comment": "The exact flow filmed for the demo video (docs/submission/VIDEO_SCRIPT.md, Filming kit). Same format as p6-scenarios.json; run with -FNRunScenarios only_on_device -FNScenarioFile p7-filming.",
+  "scenarios": [
+    {
+      "id": "film-ee0",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "code": "EE0",
+      "kind": "flow",
+      "conclusion": "CEE0-L5",
+      "turns": [
+        {
+          "note": "gas is on at the meter and the water heater lights fine",
+          "expect": "gas supply ok"
+        },
+        {
+          "note": "wait I smell gas near the burners",
+          "expect": "safety:GAS"
+        },
+        {
+          "note": "switch clicks normally, drain tubes are clear",
+          "expect": "normal"
+        },
+        {
+          "note": "igniter looks good, no cracks, lined up right",
+          "expect": "good"
+        },
+        {
+          "note": "sensor rod is shiny, no coating",
+          "expect": "clean"
+        },
+        {
+          "note": "found a bird nest in the exhaust termination",
+          "expect": "blocked"
+        }
+      ]
+    }
+  ]
+}

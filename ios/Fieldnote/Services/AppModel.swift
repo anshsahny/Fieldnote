@@ -18,6 +18,7 @@ final class AppModel {
 
     private(set) var config: AIConfig
     private(set) var onDeviceAvailability = AIService.onDeviceAvailability
+    @ObservationIgnored private var warmSession: AnyObject?
     private var startedFor: String?
 
     /// Debug override for the diagnosis route (e.g. only_in_cloud to simulate no Apple Intelligence).
@@ -81,6 +82,12 @@ final class AppModel {
         return routeOverride ?? config.route(for: .diagnosis)
     }
     var onDeviceReady: Bool { onDeviceAvailability == "available" }
+
+    /// Called when a job opens (the tech is about to diagnose): loads the on-device model early.
+    func prewarmOnDevice() {
+        guard warmSession == nil, diagnosisRoute != .onlyInCloud else { return }
+        warmSession = AIService.prewarmOnDevice()
+    }
 
     func start() async {
         session.start()

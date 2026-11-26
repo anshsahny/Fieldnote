@@ -79,6 +79,17 @@ final class AIService {
                         latencyMs: Self.ms(clock.now - start))
     }
 
+    /// Loads Apple's on-device model into memory ahead of the first diagnosis note: the first call
+    /// after launch took up to 15 s on the iPhone, later ones about 0.7 s. Firebase AI Logic has no
+    /// prewarm of its own; the system model is shared, so warming a plain FoundationModels session
+    /// speeds up the hybrid session that follows. Returns the session so the caller keeps it alive.
+    static func prewarmOnDevice() -> AnyObject? {
+        guard case .available = FoundationModels.SystemLanguageModel.default.availability else { return nil }
+        let session = FoundationModels.LanguageModelSession()
+        session.prewarm()
+        return session
+    }
+
     /// Human-readable on-device availability (for the debug screen and logs).
     static var onDeviceAvailability: String {
         switch FirebaseAI.SystemLanguageModel.default.availability {

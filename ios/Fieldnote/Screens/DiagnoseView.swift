@@ -35,11 +35,15 @@ struct DiagnoseView: View {
                                        askRepairDone: app.reports.report(forSession: run.sessionId) == nil)
                     } else {
                         stepCard
+                            .id(engine.stepId)
+                            .transition(.asymmetric(insertion: .opacity.combined(with: .offset(y: 16)), removal: .opacity))
                     }
                     if !engine.history.isEmpty { historyTimeline }
                     Color.clear.frame(height: 1).id("bottom")
                 }
                 .padding(Theme.gutter)
+                .animation(.snappy, value: engine.stepId)
+                .animation(.snappy, value: engine.phase == .concluded)
             }
             .onChange(of: engine.stepId) { _, _ in withAnimation { proxy.scrollTo("top", anchor: .top) } }
             // A clarification lives in the step card: drop the keyboard and bring it into view, or it
@@ -64,6 +68,7 @@ struct DiagnoseView: View {
         .safeAreaInset(edge: .bottom) { bottomBar }
         .sensoryFeedback(.impact(weight: .medium), trigger: engine.stepId)
         .sensoryFeedback(.warning, trigger: isSafetyStop)
+        .sensoryFeedback(.success, trigger: engine.phase == .concluded) { _, concluded in concluded }
         .fullScreenCover(isPresented: Binding(get: { isSafetyStop }, set: { _ in })) {
             if case .safetyStop(let stop) = engine.phase {
                 SafetyStopView(stop: stop) {

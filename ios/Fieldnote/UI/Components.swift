@@ -23,6 +23,9 @@ struct InferenceBadge: View {
             .foregroundStyle(color)
             .background(color.opacity(0.14), in: Capsule())
             .overlay(Capsule().stroke(color.opacity(0.35)))
+            // Pulse when the route changes (on-device ↔ cloud), so a switch is visible on camera.
+            .symbolEffect(.bounce, value: symbol)
+            .animation(.snappy, value: symbol)
             .accessibilityElement(children: .combine)
     }
 
@@ -176,19 +179,42 @@ struct AnswerButton: View {
 }
 
 /// App mark used on onboarding and in the Today header.
+/// Fieldnote's mark: a field-note page with a diagnostic trace. Same 1024 grid as the app icon
+/// (scripts/make-icons.swift) and the web favicon, drawn in code so it stays sharp at any size.
 struct BrandMark: View {
     var size: CGFloat = 36
 
     var body: some View {
-        RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-            .fill(Theme.brand)
-            .frame(width: size, height: size)
-            .overlay(
-                Image(systemName: "wrench.adjustable.fill")
-                    .font(.system(size: size * 0.5, weight: .bold))
-                    .foregroundStyle(Theme.onBrand)
-            )
-            .accessibilityHidden(true)
+        Canvas { ctx, canvas in
+            let k = canvas.width / 1024
+            func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: x * k, y: y * k) }
+            let bg = Path(roundedRect: CGRect(origin: .zero, size: canvas), cornerRadius: canvas.width * 0.28, style: .continuous)
+            ctx.fill(bg, with: .linearGradient(Gradient(colors: [Color(red: 0.082, green: 0.467, blue: 0.373),
+                                                                 Color(red: 0.043, green: 0.290, blue: 0.235)]),
+                                               startPoint: .zero, endPoint: CGPoint(x: 0, y: canvas.height)))
+            var page = Path()
+            page.move(to: pt(318, 212))
+            page.addLine(to: pt(632, 212))
+            page.addLine(to: pt(762, 342))
+            page.addArc(tangent1End: pt(762, 812), tangent2End: pt(262, 812), radius: 56 * k)
+            page.addArc(tangent1End: pt(262, 812), tangent2End: pt(262, 212), radius: 56 * k)
+            page.addArc(tangent1End: pt(262, 212), tangent2End: pt(632, 212), radius: 56 * k)
+            page.closeSubpath()
+            ctx.fill(page, with: .color(Color(red: 0.957, green: 0.980, blue: 0.969)))
+            ctx.fill(Path { $0.addLines([pt(632, 212), pt(632, 342), pt(762, 342)]) },
+                     with: .color(Color(red: 0.749, green: 0.890, blue: 0.839)))
+            let lines = Path { p in
+                p.move(to: pt(322, 332)); p.addLine(to: pt(560, 332))
+                p.move(to: pt(322, 412)); p.addLine(to: pt(492, 412))
+            }
+            ctx.stroke(lines, with: .color(Color(red: 0.659, green: 0.827, blue: 0.769)),
+                       style: StrokeStyle(lineWidth: 30 * k, lineCap: .round))
+            let trace = Path { $0.addLines([pt(322, 602), pt(422, 602), pt(472, 492), pt(552, 722), pt(612, 552), pt(652, 602), pt(702, 602)]) }
+            ctx.stroke(trace, with: .color(Color(red: 0.075, green: 0.502, blue: 0.373)),
+                       style: StrokeStyle(lineWidth: 44 * k, lineCap: .round, lineJoin: .round))
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
 

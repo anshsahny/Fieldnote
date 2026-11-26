@@ -55,6 +55,7 @@ struct JobDetailView: View {
         }
         .onAppear {
             if packId == nil { packId = app.packs.pack(forModel: job.model)?.packId }
+            app.prewarmOnDevice()
         }
         .alert("Can't resume this diagnosis", isPresented: $resumeFailed) {
             Button("OK", role: .cancel) {}
