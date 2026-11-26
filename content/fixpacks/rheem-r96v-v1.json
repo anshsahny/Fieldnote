@@ -8,7 +8,7 @@
 	"modelPatterns": [
 		"^[RU]96V[A-Z0-9]+$"
 	],
-	"version": 2,
+	"version": 3,
 	"sourceRefs": [
 		{
 			"id": "src1",
@@ -124,7 +124,7 @@
 	],
 	"steps": {
 		"C11-S1": {
-			"instruction": "Verify if the manual gas shut-off valve is turned on.",
+			"instruction": "Verify the manual gas shut-off valve is turned on (handle in line with the pipe = on, across the pipe = off).",
 			"ask": {
 				"type": "observation",
 				"options": [

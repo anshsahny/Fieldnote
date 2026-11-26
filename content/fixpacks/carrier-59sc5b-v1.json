@@ -8,7 +8,7 @@
 	"modelPatterns": [
 		"^59SC5B.*$"
 	],
-	"version": 2,
+	"version": 3,
 	"sourceRefs": [
 		{
 			"id": "src1",
@@ -699,7 +699,7 @@
 			}
 		},
 		"C34-S3": {
-			"instruction": "Check if gas supply is turned on and gas pressure is adequate.",
+			"instruction": "Check that the gas supply is turned on (manual valve: handle in line with the pipe = on, across the pipe = off) and gas pressure is adequate.",
 			"ask": {
 				"type": "observation",
 				"options": [
@@ -722,7 +722,7 @@
 			"safety": "EXPOSED_WIRING"
 		},
 		"C34-S5": {
-			"instruction": "Open the manual gas shut-off valve.",
+			"instruction": "Open the manual gas shut-off valve (turn the handle in line with the pipe).",
 			"outcome": {
 				"kind": "fix",
 				"summary": "Open manual shut-off valve to restore gas supply.",
