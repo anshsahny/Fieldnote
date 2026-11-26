@@ -295,17 +295,6 @@ kbd {
   text-decoration: none;
 }
 
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: var(--brand);
-  color: var(--on-brand);
-  flex: none;
-}
-
 .brand-name {
   font-family: var(--font-display);
   font-weight: 700;

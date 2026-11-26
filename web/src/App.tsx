@@ -1,3 +1,4 @@
+import { BrandMark } from './ui/BrandMark';
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import {
@@ -13,7 +14,6 @@ import {
   Moon,
   ScanSearch,
   Sun,
-  Wrench,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
@@ -146,9 +146,7 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
   return (
     <nav className="sidebar" aria-label="Main">
       <Link to="/" className="brand" onClick={onNavigate}>
-        <span className="brand-mark" aria-hidden="true">
-          <Wrench size={18} strokeWidth={2.4} />
-        </span>
+        <BrandMark size={34} />
         <span>
           <span className="brand-name">Fieldnote</span>
           <span className="brand-sub">Dispatch console</span>
@@ -208,9 +206,7 @@ function Shell() {
           <button type="button" className="ghost icon-only" aria-label="Open navigation" aria-expanded={navOpen} onClick={() => setNavOpen(true)}>
             <Menu size={20} aria-hidden="true" />
           </button>
-          <span className="brand-mark" aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 8 }}>
-            <Wrench size={15} strokeWidth={2.4} />
-          </span>
+          <BrandMark size={28} />
           <strong>Fieldnote</strong>
         </div>
         <main id="main" tabIndex={-1}>

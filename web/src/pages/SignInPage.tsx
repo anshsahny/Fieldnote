@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { Cloud, ListChecks, PlayCircle, Smartphone, Wrench } from 'lucide-react';
+import { BrandMark } from '../ui/BrandMark';
+import { Cloud, ListChecks, PlayCircle, Smartphone } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 
 export function SignInPage() {
@@ -39,9 +40,7 @@ export function SignInPage() {
     <div className="auth-layout">
       <section className="auth-hero" aria-labelledby="hero-title">
         <div className="brand" style={{ padding: 0 }}>
-          <span className="brand-mark" aria-hidden="true">
-            <Wrench size={18} strokeWidth={2.4} />
-          </span>
+          <BrandMark size={34} />
           <span>
             <span className="brand-name">Fieldnote</span>
             <span className="brand-sub">Dispatch console</span>
