@@ -4,7 +4,7 @@ import { loadAIConfig, type AIConfig } from '../../ai/config';
 import { diagnosisSchema } from '../../ai/diagnosis';
 import { getAIInstance } from '../../ai/firebase';
 import { makeModel, runTimed } from '../../ai/hybrid';
-import { browserAvailability, type Availability } from '../../ai/onDevice';
+import { browserAvailability, prewarmOnDevice, type Availability } from '../../ai/onDevice';
 import { PROMPTS } from '../../ai/prompts';
 import { paced, runScenarios, summarize, type EvalRun, type Interpret, type Scenario, type TurnResult } from '../../eval/runner';
 import { validateFixPackJson } from '../../fixpack/validate';
@@ -111,6 +111,9 @@ export function EvalPage() {
       setBusy(false);
     }
   }
+
+  // Like the triage page: load Gemini Nano before the first on-device turn.
+  useEffect(() => (route === 'only_on_device' && availability === 'available' ? prewarmOnDevice(false) : undefined), [route, availability]);
 
   useEffect(() => {
     if (config && params.get('auto') === '1' && !started.current) {

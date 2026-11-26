@@ -6,7 +6,7 @@ import { BookOpen, Check, Cloud, ImageUp, Lock, ScanSearch, Smartphone, Sparkles
 import { TRIAGE_SCHEMA } from '../../ai/diagnosis';
 import { makeModel, runTimed, type Source } from '../../ai/hybrid';
 import { logInferenceEvent } from '../../ai/ledger';
-import { browserAvailability, type Availability } from '../../ai/onDevice';
+import { browserAvailability, prewarmOnDevice, type Availability } from '../../ai/onDevice';
 import { PROMPTS, renderPrompt } from '../../ai/prompts';
 import type { Route } from '../../ai/routing';
 import { useAIConfig } from '../../ai/useAIConfig';
@@ -81,6 +81,8 @@ export function TriagePage() {
   const job = jobs.data.find((j) => j.id === jobId);
   const onDeviceReady = availability === 'available';
   const willUseCloud = route === 'only_in_cloud' || route === 'prefer_in_cloud' || (!onDeviceReady && route === 'prefer_on_device');
+  // Load Gemini Nano while the dispatcher picks a photo, so the first triage isn't a cold start.
+  useEffect(() => (onDeviceReady && !willUseCloud ? prewarmOnDevice(true) : undefined), [onDeviceReady, willUseCloud]);
   const blocked = route === 'only_on_device' && !onDeviceReady;
 
   async function choose(blob: Blob, label: string, sampleId?: string) {
@@ -443,9 +445,20 @@ function ResultPanel({
               <dd className="mono">{run.reading.model ?? 'Not visible'}</dd>
               <dt>Code read</dt>
               <dd>{run.reading.errorCode ? <CodeChip code={run.reading.errorCode} /> : 'None visible'}</dd>
-              <dt>Model's guess</dt>
-              <dd>{run.reading.likelyFault}</dd>
-              <dt>Confidence</dt>
+              {/* A matched code's meaning comes from the fix pack, so the model's free-text guess (which
+                  can disagree) is shown only when no pack matches. */}
+              {run.match.kind === 'matched' ? (
+                <>
+                  <dt>Fault</dt>
+                  <dd data-testid="triage-fault">{run.match.fault.meaning}</dd>
+                </>
+              ) : (
+                <>
+                  <dt>Model's guess</dt>
+                  <dd data-testid="triage-fault">{run.reading.likelyFault}</dd>
+                </>
+              )}
+              <dt>{run.match.kind === 'matched' ? 'Read confidence' : 'Confidence'}</dt>
               <dd>
                 <span className="row" style={{ gap: 10 }}>
                   <span className="meter" style={{ width: 120 }} aria-hidden="true">

@@ -33,6 +33,37 @@ export async function browserAvailability(image: boolean): Promise<Availability>
   }
 }
 
+interface WarmSession {
+  destroy?: () => void;
+}
+
+/**
+ * Loads Gemini Nano before the first request. In the P6 eval the first on-device call took 59 s
+ * (model load) and later ones about 4 s. Firebase AI Logic creates its own session on the first
+ * call; the model stays loaded while this one is open. Call only when availability is
+ * "available" (creating a session for a model that still has to download needs a user gesture).
+ * Returns a disposer for effect cleanup.
+ */
+export function prewarmOnDevice(image: boolean): () => void {
+  const lm = (globalThis as { LanguageModel?: { create?: (options: unknown) => Promise<WarmSession> } }).LanguageModel;
+  if (typeof lm?.create !== 'function') return () => {};
+  let session: WarmSession | undefined;
+  let disposed = false;
+  lm.create({
+    expectedInputs: [{ type: 'text', languages: ['en'] }, ...(image ? [{ type: 'image' }] : [])],
+    expectedOutputs: [{ type: 'text', languages: ['en'] }],
+  })
+    .then((s) => {
+      if (disposed) s.destroy?.();
+      else session = s;
+    })
+    .catch(() => {});
+  return () => {
+    disposed = true;
+    session?.destroy?.();
+  };
+}
+
 /** Chrome major version, from UA client hints when present. */
 export function chromeVersion(nav: Navigator = navigator): number | undefined {
   const brands = (nav as Navigator & { userAgentData?: { brands?: { brand: string; version: string }[] } }).userAgentData?.brands;

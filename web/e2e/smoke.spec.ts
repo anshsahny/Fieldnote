@@ -72,7 +72,7 @@ test('demo: sign in, dashboard, triage a sample photo, ledger', async ({ page })
   // On the hosted site, App Check's reCAPTCHA sometimes scores a brand-new automated browser as a
   // bot and rejects the cloud call; the page must then explain it. Locally (debug token) and for
   // real visitors the result appears.
-  const result = page.getByText("Model's guess");
+  const result = page.getByTestId('triage-fault');
   const botCheck = page.getByText(/didn't pass Google's bot check/);
   await expect(result.or(botCheck)).toBeVisible({ timeout: 60_000 });
   if (await botCheck.isVisible()) {
