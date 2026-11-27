@@ -282,6 +282,11 @@ Code: validate `choice ∈ allowed`; if `unclear` or confidence < threshold (Rem
 | Nov 26 | Triage shows the fix pack's meaning for a matched code; the model's free-text guess only when no pack matches | Screenshot review: the cloud guess ("ignition failure") contradicted the verified EE2 meaning on the same card |
 | Nov 26 | Own mark (field-note page + diagnostic trace) for the app icon, favicon and in-app logo | The iOS app had no icon; the in-app logo was an SF Symbol, which Apple's license excludes from logos and icons |
 | Nov 26 | Console bundle: React and Firebase core split into long-cached vendor chunks | Entry chunk 966 KB → 118 KB; app deploys no longer invalidate the vendor code |
+| Nov 27 | Apple guardrail errors get one more on-device try before the cloud's second look (prefer-on-device), then the tech taps | iPhone probe: "termination looks right" rejected on 3 of 4 runs, passed on the fourth; rewordings always passed. Sporadic, so a 0.6 s offline retry recovers most |
+| Nov 27 | Demo story is one fault end to end: the Goodman customer photo shows EE0 (was EE2), the R. Okafor job describes an ignition lockout, the filmed flow is EE0; filmed note avoids "termination" | Triage, job and diagnosis now agree on camera. Cloud triage read the new photo as EE0 at 95% and matched the pack |
+| Nov 27 | Dashboard headline = diagnosis notes on-device (all-calls share stays in the ledger); How it works shows the measured eval table, generated from `eval/results` | Manual compile is cloud-only by design, so the all-calls share (42%) understated the on-device-first feature (92% of tech notes) |
+| Nov 27 | Impact figures from the BLS Occupational Outlook (~40,600 openings a year, 11% growth 2025–35) instead of "110,000 short, 5 retiring for every 2" | The latter had no primary source; judges score a "credible, specific case" |
+| Nov 27 | The P3 note harness (`NoteEval`, p3 note files) was removed; job summary dropped from the routing table | P6 `ScenarioEval` supersedes it; job summary was never a shipped feature (only the /status on-device check uses the prompt) |
 
 ## 11. Progress log
 _(Claude Code appends: date, phase, what's done, test status, open issues.)_
@@ -328,4 +333,10 @@ _(Claude Code appends: date, phase, what's done, test status, open issues.)_
 - Results: wrong answers accepted 0 on the iPhone and in the cloud (prompt v4 + threshold 0.8, both from the eval); Chrome on-device (Gemini Nano) 1, a trade-knowledge note at 0.80, 54/56, 3.8 s. iPhone on-device 51/56 clear notes right (the rest ask the tech), median 0.72 s, $0; iPhone cloud 56/56, 1.15 s; Chrome cloud 56/56, 1.00 s; safety stops 4/4 with 0 model calls everywhere. Found and fixed a safety gap (contractions) before any model run.
 - Tests: iOS 97/97, web 209/209, rules 25/25; CI green.
 - Open: App Check score threshold now 0.3 (Decision log); prewarm, code-split, `seed --reset` before filming (P7). Schedule: ~3 days ahead (P6 was due Fri Nov 27).
+
+**Nov 26–27 · P7 Polish + review: done (filming is next, 👤)**
+- Done: packs v3 (gas valve hint), own app icon and mark, prewarm on both platforms, step motion and haptics, triage shows the pack's meaning, vendor code split, console screenshots, filming kit and display prop; full review against the judging criteria (AI turn shows note → answer → where it ran, safety stop shows its trigger, report Send to customer, guardrail retry, EE0 demo story, dashboard headline, measured table in the console, README and Devpost write-up, video script with dialogue).
+- Results: Chrome on-device 64/64, 0 wrong (first call 9.9 s, was 59 s); iPhone on-device 54/56 clear notes, 0 wrong, median 0.65 s; iPhone cloud 64/64.
+- Tests: iOS 100/100, web 212/212, rules 25/25.
+- Open: filming (Sat Nov 28) after `seed --reset`; iOS screenshots during the rehearsal; free provisioning valid to Dec 4.
 

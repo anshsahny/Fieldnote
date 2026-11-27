@@ -13,6 +13,7 @@ demo company with read access and can run photo triage. Nothing you do can delet
 4. **Hybrid ledger**: every model call from iPhone and web (metadata only), on-device vs cloud, latency, cost avoided.
 5. **Fix packs** → **Review** a pack to see a manual compiled into a decision tree. (Compiling new manuals needs a dispatcher
    account.)
+6. **How it works**: the routing table (live from Remote Config) and the measured on-device vs cloud results.
 
 **To run on-device in Chrome:** desktop Chrome 148+; enable `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`,
 relaunch; check `chrome://on-device-internals`. The first run downloads the model.
