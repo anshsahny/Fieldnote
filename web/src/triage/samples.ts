@@ -10,10 +10,10 @@ export interface TriageSample {
 
 export const SAMPLES: TriageSample[] = [
   {
-    id: 'goodman-ee2',
+    id: 'goodman-ee0',
     label: 'Goodman display',
-    src: '/samples/goodman-ee2.jpg?v=2',
-    message: "No heat since this morning. The little screen on the furnace says something and the fan outside isn't running.",
+    src: '/samples/goodman-ee0.jpg?v=3',
+    message: 'No heat since this morning. It clicks like it wants to start, then gives up. The little screen on the furnace shows a code.',
     jobId: 'job-1001',
   },
   {

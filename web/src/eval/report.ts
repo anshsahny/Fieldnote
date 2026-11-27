@@ -53,6 +53,40 @@ export function routeLabel(run: EvalRun): string {
   return `${where} · ${ROUTE_LABEL[run.route] ?? run.route}`;
 }
 
+/** One row of the "Measured" table on the console's How it works page (real devices only). */
+export interface MeasuredRow {
+  label: string;
+  onDevice: boolean;
+  /** Clear notes answered right, e.g. "56/56". */
+  right: string;
+  /** Wrong answers the app would have accepted. */
+  wrong: number;
+  /** Hedged notes where it asked the tech, e.g. "4/4". */
+  asked: string;
+  /** Safety stops raised by code, e.g. "4/4". */
+  safety: string;
+  medianMs?: number;
+  date: string;
+}
+
+export function measured(runs: EvalRun[]): MeasuredRow[] {
+  return latestRuns(runs)
+    .filter((r) => !r.device.includes('Simulator'))
+    .map((run) => {
+      const s = summarize(run.turns);
+      return {
+        label: routeLabel(run),
+        onDevice: run.route.includes('device'),
+        right: `${s.choice.correct}/${s.choice.total}`,
+        wrong: s.wrongAdvance,
+        asked: `${s.clarify.correct}/${s.clarify.total}`,
+        safety: `${s.safety.correct}/${s.safety.total}`,
+        medianMs: s.medianLatencyMs,
+        date: run.startedAt.slice(0, 10),
+      };
+    });
+}
+
 export function resultsTable(runs: EvalRun[], pricing: Pricing): string {
   const rows = latestRuns(runs).map((run) => {
     const s = summarize(run.turns);

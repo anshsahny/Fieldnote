@@ -84,7 +84,7 @@ const JOBS = (techUid: string) => [
     id: 'job-1001',
     customer: { name: 'R. Okafor (demo)', phone: '416-555-0142', address: '14 Demo Crescent, Etobicoke, ON (fictional)' },
     equipment: { type: 'gas_furnace', brand: 'Goodman', model: 'GMVC960803BN', serial: '1609123456' },
-    reported: 'No heat since this morning. Furnace display shows a code and the inducer seems quiet.',
+    reported: 'No heat since this morning. Furnace clicks and tries to start, then gives up; the display shows a code.',
     priority: 'urgent',
     status: 'assigned',
     assignedTo: techUid,

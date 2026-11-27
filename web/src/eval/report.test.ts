@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cloudCost, latestRuns, OUTPUT_TOKENS_PER_CALL, report, resultsTable } from './report';
+import { cloudCost, latestRuns, measured, OUTPUT_TOKENS_PER_CALL, report, resultsTable } from './report';
 import type { EvalRun, TurnResult } from './summary';
 
 const pricing = { inputPerMTok: 0.3, outputPerMTok: 2.5, source: 'test' };
@@ -47,5 +47,16 @@ describe('eval report', () => {
     expect(table).toContain('| iPhone · On-device | 1/2 (50%) | **1** | 0 | 0 | 1/1 (100%) | 1/1, 0 model calls | 1/2 | 1.00 s | $0 |');
     const md = report([r], pricing);
     expect(md).toContain('- s2 turn 1 (flow): expected `b`, got `a` at 0.75');
+  });
+
+  it('lists real-device runs for the console, without the Simulator', () => {
+    const rows = measured([
+      run({ turns: [turn({}), turn({ kind: 'safety', expect: 'safety:GAS', outcome: 'safety:GAS', modelCalled: false })] }),
+      run({ device: 'iPhone 17 Simulator (iOS 27.2)' }),
+      run({ platform: 'web', route: 'only_in_cloud', device: 'Chrome 158', turns: [turn({ ok: false, outcome: 'b' })] }),
+    ]);
+    expect(rows.map((r) => r.label)).toEqual(['iPhone · On-device', 'Chrome · Cloud']);
+    expect(rows[0]).toMatchObject({ onDevice: true, right: '1/1', safety: '1/1', date: '2026-11-24' });
+    expect(rows[1]).toMatchObject({ onDevice: false, right: '0/1', wrong: 1 });
   });
 });

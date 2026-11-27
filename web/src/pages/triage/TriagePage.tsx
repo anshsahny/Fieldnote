@@ -21,7 +21,7 @@ import { redactContact } from '../../triage/privacy';
 import { matchTriage, packParts, parseTriage, type PackMatch, type TriageReading } from '../../triage/match';
 import { SAMPLES } from '../../triage/samples';
 import { Callout, Card, CodeChip, PageHeader, Segmented, SourceBadge } from '../../ui/components';
-import { percent } from '../../ui/format';
+import { capitalize, percent } from '../../ui/format';
 
 interface Photo {
   blob: Blob;
@@ -511,7 +511,7 @@ function PackMatchPanel({ match, parts }: { match: PackMatch; parts: string[] })
           </div>
           <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>
             {f.likelyCauses.map((c) => (
-              <li key={c}>{c}</li>
+              <li key={c}>{capitalize(c)}</li>
             ))}
           </ul>
         </div>

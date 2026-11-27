@@ -2,7 +2,7 @@
 // Run from the repo root:  swift scripts/make-triage-samples.swift
 //
 // Each image matches a published fix pack, so judges can see the code→pack match:
-//   goodman-ee2.jpg     Goodman *MVC96 control board, 7-segment display showing EE2
+//   goodman-ee0.jpg     Goodman *MVC96 control board, 7-segment display showing EE0 (the filmed demo job)
 //   carrier-led.jpg     Carrier 59SC5B control board with the red status LED (blink count is in the message)
 //   rheem-45.jpg        Rheem R96V two-digit display showing 45
 //   nameplate-only.jpg  Goodman nameplate, no code visible (the "ask the customer" path)
@@ -123,20 +123,20 @@ let red = NSColor(calibratedRed: 1, green: 0.18, blue: 0.12, alpha: 1)
 // Unlit segments almost black: a faint red "8" behind every digit made Gemini Nano read EE2 as 888.
 let offSeg = NSColor(calibratedRed: 0.075, green: 0.04, blue: 0.04, alpha: 1)
 
-// 1. Goodman, EE2 on the board display
+// 1. Goodman, EE0 on the board display (ignition lockout: the R. Okafor demo job)
 try save(render(width: 1280, height: 960) { r in
     fill(r, cabinet)
     let b = CGRect(x: 80, y: 150, width: 560, height: 600)
     board(b)
     fill(CGRect(x: 270, y: 230, width: 330, height: 190), NSColor(white: 0.04, alpha: 1), radius: 10)
-    sevenSegment("EE2", at: CGPoint(x: 300, y: 260), height: 130, on: red, off: offSeg)
+    sevenSegment("EE0", at: CGPoint(x: 300, y: 260), height: 130, on: red, off: offSeg)
     text("STATUS", at: CGPoint(x: 380, y: 440), size: 24, weight: .bold, color: .white)
     sticker(CGRect(x: 730, y: 160, width: 470, height: 300), lines: [
         ("GOODMAN", 46, .black, false), ("GAS FURNACE · 96% AFUE", 24, .semibold, false),
         ("MODEL GMVC960803BN", 28, .semibold, true), ("SERIAL 1609123456", 26, .regular, true),
     ])
     photoFinish(r)
-}, "goodman-ee2.jpg")
+}, "goodman-ee0.jpg")
 
 // 2. Carrier, red LED (the blink count is in the customer's message)
 try save(render(width: 1280, height: 960) { r in
@@ -189,4 +189,4 @@ try save(render(width: 1280, height: 960) { r in
     photoFinish(r)
 }, "nameplate-only.jpg")
 
-print("wrote web/public/samples/{goodman-ee2,carrier-led,rheem-45,nameplate-only}.jpg")
+print("wrote web/public/samples/{goodman-ee0,carrier-led,rheem-45,nameplate-only}.jpg")

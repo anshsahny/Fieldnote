@@ -22,6 +22,10 @@ export function DashboardPage() {
 
   const board = useMemo(() => jobs.data.filter((j) => isOnTodaysBoard(j)), [jobs.data]);
   const summary = useMemo(() => summarize(ledger.data, config.pricing, 7), [ledger.data, config.pricing]);
+  // Field diagnosis is the on-device-first feature (manual compile is cloud-only by design), so the
+  // headline is how many technician notes were understood on the phone; the ledger has every call.
+  const diagnosis = summary.byFeature.find((f) => f.feature === 'diagnosis');
+  const diagnosisTotal = diagnosis ? diagnosis.onDevice + diagnosis.cloud : 0;
   const urgent = board.filter((j) => j.priority === 'urgent' && j.status !== 'done').length;
   const inProgress = jobs.data.filter((j) => j.status === 'in_progress').length;
   const drafts = reports.data.filter((r) => r.status === 'draft').length;
@@ -67,12 +71,16 @@ export function DashboardPage() {
           hint={drafts ? `${drafts} drafted offline, waiting for signal` : 'All written in the cloud'}
         />
         <Stat
-          label="AI on-device (7 days)"
+          label="Diagnosis on-device (7 days)"
           icon={Smartphone}
           tone="ondevice"
           loading={ledger.loading}
-          value={summary.aiCalls ? percent(summary.onDevice, summary.aiCalls) : '–'}
-          hint={`${summary.onDevice} of ${summary.aiCalls} AI calls · median ${seconds(summary.medianMs.onDevice) || '–'}`}
+          value={diagnosisTotal ? percent(diagnosis!.onDevice, diagnosisTotal) : '–'}
+          hint={
+            diagnosisTotal
+              ? `${diagnosis!.onDevice} of ${diagnosisTotal} tech notes · median ${seconds(diagnosis!.medianOnDeviceMs) || '–'}`
+              : 'No technician notes yet this week'
+          }
         />
         <Stat
           label="Cost avoided (7 days)"

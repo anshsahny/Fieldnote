@@ -1,11 +1,11 @@
-// Builds eval/results/README.md from the eval runs in eval/results/*.json.
+// Builds eval/results/README.md (and web/src/eval/measured.json) from the eval runs in eval/results/*.json.
 //   cd web && npm run eval:report
 // Runs come from the iPhone (Diagnostics → P6 scenarios → Share, or -FNRunScenarios via devicectl),
 // the Simulator, and Chrome (/eval in dev, or EVAL_ROUTE=only_in_cloud npx playwright test e2e/eval.spec.ts).
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { EvalRun } from '../src/eval/summary';
-import { report, resultsTable, type Pricing } from '../src/eval/report';
+import { measured, report, resultsTable, type Pricing } from '../src/eval/report';
 
 const root = resolve(import.meta.dirname, '..', '..');
 const dir = join(root, 'eval', 'results');
@@ -37,5 +37,7 @@ if (!runs.length) {
 // Hand-written notes on what was tuned between runs (eval/results/tuning.md) follow the table.
 const tuning = existsSync(join(dir, 'tuning.md')) ? readFileSync(join(dir, 'tuning.md'), 'utf8') : '';
 writeFileSync(join(dir, 'README.md'), report(runs, pricing, tuning));
+// The console's How it works page shows the latest real-device runs (no Simulator rows).
+writeFileSync(join(root, 'web', 'src', 'eval', 'measured.json'), JSON.stringify(measured(runs), null, 2) + '\n');
 console.log(resultsTable(runs, pricing));
-console.log(`\nWrote eval/results/README.md from ${runs.length} run(s).`);
+console.log(`\nWrote eval/results/README.md and web/src/eval/measured.json from ${runs.length} run(s).`);

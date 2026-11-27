@@ -1,0 +1,42 @@
+[
+  {
+    "label": "iPhone · On-device",
+    "onDevice": true,
+    "right": "54/56",
+    "wrong": 0,
+    "asked": "4/4",
+    "safety": "4/4",
+    "medianMs": 654,
+    "date": "2026-11-27"
+  },
+  {
+    "label": "iPhone · Cloud",
+    "onDevice": false,
+    "right": "56/56",
+    "wrong": 0,
+    "asked": "4/4",
+    "safety": "4/4",
+    "medianMs": 930,
+    "date": "2026-11-27"
+  },
+  {
+    "label": "Chrome · On-device",
+    "onDevice": true,
+    "right": "56/56",
+    "wrong": 0,
+    "asked": "4/4",
+    "safety": "4/4",
+    "medianMs": 3425,
+    "date": "2026-11-27"
+  },
+  {
+    "label": "Chrome · Cloud",
+    "onDevice": false,
+    "right": "56/56",
+    "wrong": 0,
+    "asked": "4/4",
+    "safety": "4/4",
+    "medianMs": 1173,
+    "date": "2026-11-26"
+  }
+]

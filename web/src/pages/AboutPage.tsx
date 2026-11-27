@@ -2,8 +2,15 @@ import { Cloud, ListChecks, Lock, PiggyBank, Smartphone } from 'lucide-react';
 import type { Feature } from '../ai/routing';
 import { useAIConfig } from '../ai/useAIConfig';
 import { ASSUMED_OUTPUT_TOKENS, DEFAULT_PROMPT_TOKENS, featureLabel } from '../ledger/aggregate';
+import MEASURED from '../eval/measured.json';
 import { Card, PageHeader } from '../ui/components';
-import { dollars } from '../ui/format';
+import { dollars, seconds } from '../ui/format';
+
+const latestDate = new Date(`${MEASURED.map((r) => r.date).sort().at(-1)}T12:00:00`).toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
 
 /** The routing table from PLAN.md §4; the live route comes from Remote Config. */
 const ROUTING: { feature: Feature | null; label: string; platform: string; fixed?: string; why: string }[] = [
@@ -16,7 +23,6 @@ const ROUTING: { feature: Feature | null; label: string; platform: string; fixed
   { feature: null, label: 'Safety stops', platform: 'iPhone', fixed: 'Code', why: 'Never delegated to a model.' },
   { feature: 'report', label: 'Customer report', platform: 'iPhone', why: 'Better long-form in the cloud; drafted on-device offline.' },
   { feature: 'triage', label: 'Photo pre-triage', platform: 'Web', why: "Customers' home photos stay in the browser when possible." },
-  { feature: 'job_summary', label: 'Job summary', platform: 'Web', why: 'Short and free on-device.' },
 ];
 
 const ROUTE_TEXT: Record<string, string> = {
@@ -107,6 +113,47 @@ export function AboutPage() {
             </tbody>
           </table>
         </div>
+      </Card>
+
+      <Card flush title="Measured: on-device vs cloud" labelledBy="measured-title" hint="24 scenarios · 64 technician turns per run">
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Device · route</th>
+                <th scope="col">Clear notes read right</th>
+                <th scope="col">Wrong answers accepted</th>
+                <th scope="col">Asked when unsure</th>
+                <th scope="col">Safety stops</th>
+                <th scope="col">Median</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MEASURED.map((r) => (
+                <tr key={r.label}>
+                  <td style={{ fontWeight: 600 }}>
+                    <span className={`badge ${r.onDevice ? 'badge-ondevice' : 'badge-cloud'}`}>
+                      {r.onDevice ? <Smartphone size={12} aria-hidden="true" /> : <Cloud size={12} aria-hidden="true" />}
+                      {r.label}
+                    </span>
+                  </td>
+                  <td className="num">{r.right}</td>
+                  <td className="num" style={{ fontWeight: 700 }}>
+                    {r.wrong}
+                  </td>
+                  <td className="num">{r.asked}</td>
+                  <td className="num">{r.safety}</td>
+                  <td className="num">{seconds(r.medianMs) || '–'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="subtle" style={{ fontSize: 'var(--t-sm)', padding: '12px 20px 16px', margin: 0 }}>
+          Same notes, prompt and code checks on every route, scored by the app's own rules. When a note is hedged or the model isn't
+          sure, the app asks the technician instead of guessing; safety stops are raised by code with no model call. On-device calls
+          cost $0. Runs from {latestDate}; raw results and how to rerun them are in the repository's eval/ folder.
+        </p>
       </Card>
 
       <div className="grid grid-2">

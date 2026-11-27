@@ -80,7 +80,12 @@ function NotFound() {
 function RequireSignIn({ children }: { children: ReactNode }) {
   const { state } = useAuth();
   const location = useLocation();
-  if (state.status === 'loading') return <p className="lede">Checking your session…</p>;
+  if (state.status === 'loading')
+    return (
+      <p className="lede subtle" role="status" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span className="spinner" aria-hidden="true" /> Loading…
+      </p>
+    );
   if (state.status !== 'signed-in') return <Navigate to="/signin" replace state={{ from: location.pathname }} />;
   return <>{children}</>;
 }
