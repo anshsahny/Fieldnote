@@ -40,7 +40,6 @@
 		50B568F8E38494B104253188 /* PromptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91566BBE62569A68FF0DEA /* PromptTemplate.swift */; };
 		51D38DB5A244348E67BC9EFD /* DiagnosisEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF1B23662DACDD996B832AA /* DiagnosisEngineTests.swift */; };
 		543BA4340D75C5AD4457876F /* FaultCodeLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620EC1D525FF539206A072D3 /* FaultCodeLookup.swift */; };
-		56B74519F96485E6CA82D073 /* NoteEval.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F7750A51925C2083642C81 /* NoteEval.swift */; };
 		573C4E551D0BB8C69162A2D3 /* FixPackValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F518690E01FDB3438E59D7 /* FixPackValidator.swift */; };
 		5E93E87B360CF801BBD1E49C /* ReportStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457D1D727A69443A802CAE3C /* ReportStore.swift */; };
 		60BBE93B3FE615A0321C71DF /* NameplateExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD46ABC8D2BA28F322371F6 /* NameplateExtractor.swift */; };
@@ -134,7 +133,6 @@
 		678317D3E7ECC44444540F95 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		67A13B48C7C3ACFADE133B88 /* DiagnosisDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosisDecision.swift; sourceTree = "<group>"; };
 		6EC924D7E9B0A020A5717F17 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
-		73F7750A51925C2083642C81 /* NoteEval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEval.swift; sourceTree = "<group>"; };
 		78AF6AACDBDE3B03D1C59A9B /* FirebaseBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseBootstrap.swift; sourceTree = "<group>"; };
 		78D9AFD5345BB8078E900FEF /* FixPack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixPack.swift; sourceTree = "<group>"; };
 		78F518690E01FDB3438E59D7 /* FixPackValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixPackValidator.swift; sourceTree = "<group>"; };
@@ -259,7 +257,6 @@
 		6400AB656B34E618F52DC190 /* Spike */ = {
 			isa = PBXGroup;
 			children = (
-				73F7750A51925C2083642C81 /* NoteEval.swift */,
 				2FDE40284CE1336905FF9272 /* OfflineSyncSpike.swift */,
 				47A3A321A08DC3C616E76336 /* ScenarioEval.swift */,
 				25A30193D2A66B671A6F2343 /* SpikeAutomation.swift */,
@@ -576,7 +573,6 @@
 				60BBE93B3FE615A0321C71DF /* NameplateExtractor.swift in Sources */,
 				20E73E841DA1928C5F810D8D /* NameplateOCR.swift in Sources */,
 				48CCB042BB3EBEB321E35B6F /* NetworkMonitor.swift in Sources */,
-				56B74519F96485E6CA82D073 /* NoteEval.swift in Sources */,
 				343BEC6FBC88CB0D85A0E2AF /* OfflineSyncSpike.swift in Sources */,
 				8631EC39AB71A18B6C68693C /* PackStore.swift in Sources */,
 				E8321110E5FDCEC8D501605C /* PacksSheet.swift in Sources */,

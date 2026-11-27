@@ -54,3 +54,6 @@ All 22 notes ran on-device. Miss: n06 (asks; safe). Walkthrough by hand: Goodman
 Carrier 13 all reached their conclusions. Ledger for both airplane-mode walkthroughs: 24 on-device
 diagnosis turns, median 1.1 s (slowest 15 s, first call after launch), 0 failures; 2 safety stops,
 0 ms, no model call.
+
+> Nov 27: the P3 note harness (`NoteEval`) and its two note files were folded into the P6 scenarios
+> (`eval/scenarios/p6-scenarios.json`, run by `ScenarioEval`). They remain in git history.
