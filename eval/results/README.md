@@ -8,12 +8,12 @@ The expected path is followed after every turn (teacher forcing), so one miss do
 
 | Route | Right answer on clear notes | Wrong answer accepted | Asked instead of answering | Model errors | Asked on hedged notes | Safety stops | Scenarios fully right | Median latency | Cloud cost (all turns) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| iPhone · On-device | 51/56 (91%) | **0** | 4 | 1 | 4/4 (100%) | 4/4, 0 model calls | 20/24 | 0.72 s | $0 |
-| iPhone · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.15 s | $0.02 |
-| iOS Simulator · On-device | 54/56 (96%) | **0** | 2 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 1.09 s | $0 |
-| iOS Simulator · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.04 s | $0.02 |
-| Chrome · On-device | 54/56 (96%) | **1** | 1 | 0 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 3.81 s | $0 |
-| Chrome · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.00 s | $0.02 |
+| iPhone · On-device | 54/56 (96%) | **0** | 1 | 1 | 4/4 (100%) | 4/4, 0 model calls | 22/24 | 0.65 s | $0 |
+| iPhone · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 0.93 s | $0.02 |
+| iOS Simulator · On-device | 55/56 (98%) | **0** | 1 | 0 | 4/4 (100%) | 4/4, 0 model calls | 23/24 | 1.97 s | $0 |
+| iOS Simulator · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 2.48 s | $0.02 |
+| Chrome · On-device | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 3.42 s | $0 |
+| Chrome · Cloud | 56/56 (100%) | **0** | 0 | 0 | 4/4 (100%) | 4/4, 0 model calls | 24/24 | 1.17 s | $0.02 |
 
 - **Right answer on clear notes**: the model picked the expected answer and the app advanced.
 - **Wrong answer accepted**: the app moved on with the wrong answer. This is the miss that matters;
@@ -64,42 +64,37 @@ perfect, so tuning targeted the on-device model, then every route was re-run.
 
 ### iPhone · On-device
 
-iPhone (iOS 27.2.1), 2026-11-24 06:17 UTC, prompt v4, threshold 0.8.
+iPhone (iOS 27.2.1), 2026-11-27 21:56 UTC, prompt v4, threshold 0.8.
 
 - g01 turn 2 (flow): expected `piping is clear`, got `error` (Response may contain sensitive or unsafe content)
-- g01 turn 5 (flow): expected `blower normal`, got `clarify` at 0.70
-- c01 turn 3 (flow): expected `loose or defective`, got `clarify` at 0.75
-- c04 turn 3 (ambiguous): expected `inducer or voltage faulty`, got `clarify` at 0.30
-- r02 turn 1 (knowledge): expected `valve off`, got `clarify` at 0.20
+- c04 turn 3 (ambiguous): expected `inducer or voltage faulty`, got `clarify` at 0.20
 
 ### iPhone · Cloud
 
-iPhone (iOS 27.2.1), 2026-11-24 06:24 UTC, prompt v4, threshold 0.8, gemini-3.5-flash-lite.
+iPhone (iOS 27.2.1), 2026-11-27 21:57 UTC, prompt v4, threshold 0.8, gemini-3.5-flash-lite.
 
 No misses.
 
 ### iOS Simulator · On-device
 
-iPhone 17 Simulator (iOS 27.2), 2026-11-24 06:25 UTC, prompt v4, threshold 0.8.
+iPhone 17 Simulator (iOS 27.2), 2026-11-26 06:12 UTC, prompt v4, threshold 0.8.
 
 - c04 turn 3 (ambiguous): expected `inducer or voltage faulty`, got `clarify` at 0.30
-- r02 turn 1 (knowledge): expected `valve off`, got `clarify` at 0.20
 
 ### iOS Simulator · Cloud
 
-iPhone 17 Simulator (iOS 27.2), 2026-11-24 06:18 UTC, prompt v4, threshold 0.8, gemini-3.5-flash-lite.
+iPhone 17 Simulator (iOS 27.2), 2026-11-26 06:16 UTC, prompt v4, threshold 0.8, gemini-3.5-flash-lite.
 
 No misses.
 
 ### Chrome · On-device
 
-Chrome 158, 2026-11-25 06:15 UTC, prompt v4, threshold 0.8.
+Chrome 158, 2026-11-27 21:50 UTC, prompt v4, threshold 0.8.
 
-- c07 turn 1 (flow): expected `flame with valve off`, got `clarify` at 0.70
-- r02 turn 1 (knowledge): expected `valve off`, got `valve on` at 0.80
+No misses.
 
 ### Chrome · Cloud
 
-Chrome 159, 2026-11-24 06:11 UTC, prompt v4, threshold 0.7, gemini-3.5-flash-lite.
+Chrome 159, 2026-11-26 05:20 UTC, prompt v4, threshold 0.8, gemini-3.5-flash-lite.
 
 No misses.

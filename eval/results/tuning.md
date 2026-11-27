@@ -26,3 +26,16 @@ perfect, so tuning targeted the on-device model, then every route was re-run.
   turns, 1 wrong answer accepted. r02 "handle was perpendicular to the pipe" was read as "valve on" at
   exactly 0.80, and a ball valve handle across the pipe means off. The same note makes Apple's model
   say "unclear". It is left as a reported miss rather than tuned away on the test set.
+- **Packs v3 + prewarm re-runs (Nov 26–27).** A fact in the Rheem and Carrier packs ("handle in line
+  with the pipe = on, across = off") fixed r02 everywhere without touching the prompt or threshold:
+  Simulator on-device 63/64, Chrome on-device (Gemini Nano) **64/64 with no wrong answers** (first call
+  9.9 s after the prewarm, was 59 s), iPhone on-device 54/56 clear notes with 0 wrong (first call 2.1 s,
+  median 0.65 s), iPhone cloud 64/64.
+- **iPhone guardrail, measured (Nov 27).** g01 "flue and intake are both clear, termination looks right"
+  was rejected by Apple's on-device safety filter on 3 of 4 iPhone runs and passed on the fourth; the
+  same step reworded ("vent caps outside look right", "flue and intake are both clear") passed every
+  time, and the Simulator never trips it (`eval/scenarios/p7-guardrail-probe.json`). Since it is
+  sporadic, a guardrail error now gets one more on-device try (about 0.6 s, works offline) before the
+  cloud's second look on prefer-on-device, then the tech taps. The filmed flow avoids the word.
+- **Still asks:** c04 "inducer hums and won't spin up" makes the iPhone's model say "unclear"; the app
+  asks the tech (one tap), a safe miss, left as is.

@@ -1,0 +1,80 @@
+{
+  "$comment": "Probe for Apple's on-device guardrail false positive (iPhone only; the Simulator never trips it). g01 turn 2 'termination looks right' failed on both iPhone runs. Run with -FNRunScenarios only_on_device -FNScenarioFile p7-guardrail-probe.",
+  "scenarios": [
+    {
+      "id": "probe-g01-original",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "code": "EE2",
+      "kind": "flow",
+      "conclusion": "CEE2-L5",
+      "turns": [
+        { "note": "pulled the hose off, its clean, no kinks or water in it", "expect": "hose clear" },
+        { "note": "flue and intake are both clear, termination looks right", "expect": "piping is clear" }
+      ]
+    },
+    {
+      "id": "probe-g01-vent-ends",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "code": "EE2",
+      "kind": "flow",
+      "conclusion": "CEE2-L5",
+      "turns": [
+        { "note": "pulled the hose off, its clean, no kinks or water in it", "expect": "hose clear" },
+        { "note": "flue and intake are both clear, vent caps outside look right", "expect": "piping is clear" }
+      ]
+    },
+    {
+      "id": "probe-g01-no-ending",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "code": "EE2",
+      "kind": "flow",
+      "conclusion": "CEE2-L5",
+      "turns": [
+        { "note": "pulled the hose off, its clean, no kinks or water in it", "expect": "hose clear" },
+        { "note": "flue and intake are both clear", "expect": "piping is clear" }
+      ]
+    },
+    {
+      "id": "probe-film-original",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "code": "EE0",
+      "kind": "flow",
+      "conclusion": "CEE0-L5",
+      "turns": [
+        { "note": "gas is on at the meter and the water heater lights fine", "expect": "gas supply ok" },
+        { "note": "switch clicks normally, drain tubes are clear", "expect": "normal" },
+        { "note": "igniter looks good, no cracks, lined up right", "expect": "good" },
+        { "note": "sensor rod is shiny, no coating", "expect": "clean" },
+        { "note": "found a bird nest in the exhaust termination", "expect": "blocked" }
+      ]
+    },
+    {
+      "id": "probe-film-pipe",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "code": "EE0",
+      "kind": "flow",
+      "conclusion": "CEE0-L5",
+      "turns": [
+        { "note": "gas is on at the meter and the water heater lights fine", "expect": "gas supply ok" },
+        { "note": "switch clicks normally, drain tubes are clear", "expect": "normal" },
+        { "note": "igniter looks good, no cracks, lined up right", "expect": "good" },
+        { "note": "sensor rod is shiny, no coating", "expect": "clean" },
+        { "note": "found a bird nest in the exhaust pipe outside", "expect": "blocked" }
+      ]
+    },
+    {
+      "id": "probe-film-vent",
+      "packId": "goodman-cvc96-mvc96-v1",
+      "code": "EE0",
+      "kind": "flow",
+      "conclusion": "CEE0-L5",
+      "turns": [
+        { "note": "gas is on at the meter and the water heater lights fine", "expect": "gas supply ok" },
+        { "note": "switch clicks normally, drain tubes are clear", "expect": "normal" },
+        { "note": "igniter looks good, no cracks, lined up right", "expect": "good" },
+        { "note": "sensor rod is shiny, no coating", "expect": "clean" },
+        { "note": "bird nest blocking the exhaust vent outside", "expect": "blocked" }
+      ]
+    }
+  ]
+}

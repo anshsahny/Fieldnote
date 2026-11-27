@@ -29,7 +29,7 @@
           "expect": "clean"
         },
         {
-          "note": "found a bird nest in the exhaust termination",
+          "note": "found a bird nest in the exhaust pipe outside",
           "expect": "blocked"
         }
       ]
