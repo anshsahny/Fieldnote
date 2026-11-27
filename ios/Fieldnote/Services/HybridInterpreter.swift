@@ -10,21 +10,15 @@ nonisolated struct HybridInterpreter: ObservationInterpreter {
 
     func interpret(_ prompt: DiagnosisPrompt.Built) async throws -> Interpretation {
         do {
-            let r = try await ai.respond(prompt.user, generating: DiagnosisDecision.self, instructions: prompt.system,
-                                         route: route, cloudModel: cloudModel)
+            let r = try await Self.retryingGuardrail(route: route) { route in
+                try await ai.respond(prompt.user, generating: DiagnosisDecision.self, instructions: prompt.system,
+                                     route: route, cloudModel: cloudModel)
+            }
             #if DEBUG
             if case .failure(let f) = DiagnosisDecisionValidator.validate(r.content, allowed: prompt.allowed) {
                 print("FNDEBUG rejected \(f): \(r.content)")
             }
             #endif
-            return interpretation(DiagnosisDecisionValidator.validate(r.content, allowed: prompt.allowed),
-                                  source: r.source, model: r.modelVersion, latency: r.latencyMs)
-        } catch where route == .preferOnDevice && Self.isGuardrail(error) {
-            // Apple's on-device guardrail can trip on ordinary trade words (P6: "termination looks
-            // right"). On prefer_on_device the cloud model takes a second look when online; offline
-            // this throws and the tech taps the answer.
-            let r = try await ai.respond(prompt.user, generating: DiagnosisDecision.self, instructions: prompt.system,
-                                         route: .onlyInCloud, cloudModel: cloudModel)
             return interpretation(DiagnosisDecisionValidator.validate(r.content, allowed: prompt.allowed),
                                   source: r.source, model: r.modelVersion, latency: r.latencyMs)
         } catch {
@@ -37,6 +31,23 @@ nonisolated struct HybridInterpreter: ObservationInterpreter {
             #endif
             return interpretation(DiagnosisDecisionValidator.parse(text: r.content, allowed: prompt.allowed),
                                   source: r.source, model: r.modelVersion, latency: r.latencyMs)
+        }
+    }
+
+    /// Apple's on-device guardrail sometimes trips on ordinary trade words: "termination looks right"
+    /// failed on 3 of 4 iPhone runs, and passed on the fourth. So a guardrail error gets one more
+    /// on-device try (about 0.6 s, works offline); on prefer_on_device the cloud takes a last look
+    /// when online. If it still fails, the caller's text fallback runs, then the tech taps the answer.
+    static func retryingGuardrail<T>(route: InferenceRoute,
+                                     _ attempt: (InferenceRoute) async throws -> T) async throws -> T {
+        do {
+            return try await attempt(route)
+        } catch where route != .onlyInCloud && isGuardrail(error) {
+            do {
+                return try await attempt(route)
+            } catch where route == .preferOnDevice && isGuardrail(error) {
+                return try await attempt(.onlyInCloud)
+            }
         }
     }
 

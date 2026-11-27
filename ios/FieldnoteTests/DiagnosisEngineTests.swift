@@ -95,6 +95,47 @@ struct DiagnosisEngineTests {
         #expect(!HybridInterpreter.isGuardrail(URLError(.notConnectedToInternet)))
     }
 
+    @Test func guardrailGetsOneMoreOnDeviceTryThenTheCloud() async throws {
+        let guardrail = NSError(domain: "FoundationModels", code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Response may contain sensitive or unsafe content"])
+        // Sporadic: the second on-device try answers, offline-safe.
+        var routes: [InferenceRoute] = []
+        let second = try await HybridInterpreter.retryingGuardrail(route: .preferOnDevice) { route in
+            routes.append(route)
+            if routes.count == 1 { throw guardrail }
+            return "ok"
+        }
+        #expect(second == "ok")
+        #expect(routes == [.preferOnDevice, .preferOnDevice])
+
+        // Persistent on prefer_on_device: the cloud takes the last look.
+        routes = []
+        _ = try await HybridInterpreter.retryingGuardrail(route: .preferOnDevice) { route in
+            routes.append(route)
+            if route != .onlyInCloud { throw guardrail }
+            return "cloud"
+        }
+        #expect(routes == [.preferOnDevice, .preferOnDevice, .onlyInCloud])
+
+        // only_on_device never reaches the cloud; other errors aren't retried.
+        routes = []
+        await #expect(throws: (any Error).self) {
+            try await HybridInterpreter.retryingGuardrail(route: .onlyOnDevice) { route -> String in
+                routes.append(route)
+                throw guardrail
+            }
+        }
+        #expect(routes == [.onlyOnDevice, .onlyOnDevice])
+        routes = []
+        await #expect(throws: (any Error).self) {
+            try await HybridInterpreter.retryingGuardrail(route: .preferOnDevice) { route -> String in
+                routes.append(route)
+                throw URLError(.notConnectedToInternet)
+            }
+        }
+        #expect(routes == [.preferOnDevice])
+    }
+
     @Test func otherFailuresDoNotPauseTheModel() async {
         let mock = MockInterpreter(.fail)
         let e = engine(carrier, code: "31", mock)
