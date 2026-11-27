@@ -4,6 +4,8 @@ import SwiftUI
 /// explicit acknowledgement; logged to the ledger.
 struct SafetyStopView: View {
     let stop: FixPack.SafetyStop
+    /// The tech's note that matched a trigger, when a note raised the stop.
+    var note: String?
     let onContinue: () -> Void
     let onEndJob: () -> Void
     @State private var confirmed = false
@@ -20,9 +22,21 @@ struct SafetyStopView: View {
                 Text("STOP").font(.system(size: 52, weight: .black, design: .rounded)).foregroundStyle(.white)
                 Text(SafetyCopy.headline(stop.id)).font(.title.weight(.bold)).foregroundStyle(.white)
                     .accessibilityAddTraits(.isHeader)
-                Text(stop.message).font(.title3).foregroundStyle(.white.opacity(0.95)).fixedSize(horizontal: false, vertical: true)
-                Label("This stop comes from Fieldnote's safety rules, not the AI.", systemImage: "lock.shield")
-                    .font(.footnote).foregroundStyle(.white.opacity(0.75))
+                Text(SafetyCopy.instructions(stop.message)).font(.title3).foregroundStyle(.white.opacity(0.95))
+                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 6) {
+                    if let note {
+                        Text("You wrote “\(note)”").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                            .lineLimit(3)
+                    }
+                    Label("Raised by Fieldnote's safety rules in code, before any AI. The model can't skip it.",
+                          systemImage: "lock.shield")
+                        .font(.footnote).foregroundStyle(.white.opacity(0.8))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 Spacer()
                 // Whole row is the target (gloves); a checkbox reads as a deliberate confirmation.
                 Button { confirmed.toggle() } label: {

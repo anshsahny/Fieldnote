@@ -159,7 +159,7 @@ struct FaultCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 SectionLabel(text: "Likely causes")
                 ForEach(fault.likelyCauses, id: \.self) { cause in
-                    Label(cause, systemImage: "smallcircle.filled.circle").font(.subheadline).foregroundStyle(Theme.textPrimary)
+                    Label(cause.sentenceCased, systemImage: "smallcircle.filled.circle").font(.subheadline).foregroundStyle(Theme.textPrimary)
                         .labelStyle(.titleAndIcon)
                 }
             }

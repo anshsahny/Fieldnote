@@ -159,6 +159,14 @@ struct ReportView: View {
         }
     }
 
+    private func shareText(_ v: ReportVersion, facts: ReportFacts) -> String {
+        let equipment = "\(run.engine.pack.brand) \(run.job.model.isEmpty ? run.engine.pack.family : run.job.model)"
+        return v.content.shareText(customer: run.job.customerName, address: run.job.address, equipment: equipment,
+                                   code: run.engine.fault.code,
+                                   date: run.startedAt.formatted(date: .abbreviated, time: .omitted),
+                                   parts: facts.parts, credit: "Prepared with Fieldnote. \(credit(v))")
+    }
+
     private func credit(_ v: ReportVersion) -> String {
         let when = v.createdAt.formatted(date: .omitted, time: .shortened)
         switch v.generatedBy {
@@ -177,7 +185,7 @@ struct ReportView: View {
             section("Work performed", c.workPerformed, symbol: "wrench.and.screwdriver")
             section("Findings", c.findings, symbol: "magnifyingglass")
             section("Recommendations", c.recommendations, symbol: "arrow.right.circle")
-            section("Parts", facts.parts.map { $0.prefix(1).uppercased() + $0.dropFirst() }, symbol: "shippingbox")
+            section("Parts", facts.parts, symbol: "shippingbox")
             if !c.safetyNotes.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     SectionLabel(text: "Safety")
@@ -200,7 +208,7 @@ struct ReportView: View {
             VStack(alignment: .leading, spacing: 6) {
                 SectionLabel(text: title)
                 ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                    Label(item.prefix(1).uppercased() + item.dropFirst(), systemImage: symbol)
+                    Label(item.sentenceCased, systemImage: symbol)
                         .font(.subheadline).foregroundStyle(Theme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -212,6 +220,14 @@ struct ReportView: View {
 
     private var bottomBar: some View {
         VStack(spacing: 8) {
+            if let report, let index = selectedIndex(report) {
+                let version = report.versions[index]
+                ShareLink(item: shareText(version, facts: report.facts),
+                          subject: Text("Service report · \(run.job.customerName)")) {
+                    Label("Send to customer", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(SecondaryButtonStyle())
+            }
             Button {
                 app.jobs.setStatus("done", for: run.job)
                 path.removeAll()

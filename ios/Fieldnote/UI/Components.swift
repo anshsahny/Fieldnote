@@ -149,6 +149,23 @@ enum SafetyCopy {
         default: title(id)
         }
     }
+
+    /// The stop message under the STOP sign and headline: drops the leading "Stop." and a short
+    /// restatement ("Possible gas leak."), which the screen already shows, so it opens with what to do.
+    static func instructions(_ message: String) -> String {
+        var text = message.trimmingCharacters(in: .whitespaces)
+        if text.hasPrefix("Stop. ") { text = String(text.dropFirst(6)) }
+        if let end = text.range(of: ". "),
+           text[..<end.lowerBound].split(separator: " ").count <= 5 {
+            text = String(text[end.upperBound...])
+        }
+        return text
+    }
+}
+
+extension String {
+    /// "gas supply ok" → "Gas supply ok": pack answers are lower-case keys; the UI shows them as labels.
+    nonisolated var sentenceCased: String { prefix(1).uppercased() + dropFirst() }
 }
 
 /// A big tappable answer row (gloves).
@@ -160,7 +177,7 @@ struct AnswerButton: View {
     var body: some View {
         Button(action: action) {
             HStack {
-                Text(title.prefix(1).uppercased() + title.dropFirst())
+                Text(title.sentenceCased)
                     .font(.body.weight(.semibold))
                     .multilineTextAlignment(.leading)
                 Spacer(minLength: 8)

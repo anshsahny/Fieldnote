@@ -126,3 +126,14 @@ struct NameplateExtractorTests {
         #expect(reply.serial == nil)
     }
 }
+
+struct SafetyCopyTests {
+    @Test func stopScreenOpensWithWhatToDo() throws {
+        let gas = try #require(UniversalSafetyStops.load().first { $0.id == "GAS" })
+        #expect(SafetyCopy.instructions(gas.message).hasPrefix("Don't operate switches"))
+        // A longer second sentence carries information, so it stays.
+        #expect(SafetyCopy.instructions("Stop. Flame rollout is a fire hazard. Shut off gas and power.")
+                == "Flame rollout is a fire hazard. Shut off gas and power.")
+        #expect(SafetyCopy.instructions("Shut off power.") == "Shut off power.")
+    }
+}

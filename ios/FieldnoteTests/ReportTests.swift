@@ -299,3 +299,17 @@ struct ReportTests {
         #expect(await manualOnly.upgrade(draft)?.status == .final)
     }
 }
+
+struct ReportShareTextTests {
+    @Test func shareTextHasTheHeaderBodyAndCredit() {
+        let c = ReportContent(summary: "The vent was blocked by a bird nest.", workPerformed: ["checked the gas supply"],
+                              findings: ["vent blocked"], recommendations: [], safetyNotes: [])
+        let text = c.shareText(customer: "R. Okafor (demo)", address: "14 Demo Crescent", equipment: "Goodman GMVC96",
+                               code: "EE0", date: "Nov 27, 2026", parts: ["flue pipe"], credit: "Prepared with Fieldnote.")
+        #expect(text.hasPrefix("Service report · Nov 27, 2026\nR. Okafor (demo)\n14 Demo Crescent\nGoodman GMVC96 · fault code EE0"))
+        #expect(text.contains("WORK PERFORMED\n• Checked the gas supply"))
+        #expect(text.contains("PARTS\n• Flue pipe"))
+        #expect(!text.contains("RECOMMENDATIONS"))
+        #expect(text.hasSuffix("Prepared with Fieldnote."))
+    }
+}

@@ -6,6 +6,8 @@ struct DiagnoseView: View {
     @Binding var path: [FlowRoute]
 
     @State private var note = ""
+    /// The last note sent, shown on a safety stop it raised.
+    @State private var sentNote: String?
     @State private var reading = ""
     @State private var readingRejected = false
     @State private var repairDone = false
@@ -71,7 +73,7 @@ struct DiagnoseView: View {
         .sensoryFeedback(.success, trigger: engine.phase == .concluded) { _, concluded in concluded }
         .fullScreenCover(isPresented: Binding(get: { isSafetyStop }, set: { _ in })) {
             if case .safetyStop(let stop) = engine.phase {
-                SafetyStopView(stop: stop) {
+                SafetyStopView(stop: stop, note: sentNote) {
                     engine.acknowledgeSafety()
                 } onEndJob: {
                     engine.acknowledgeSafety()
@@ -124,8 +126,8 @@ struct DiagnoseView: View {
 
     private var stepCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            if let last = engine.history.last, let i = last.interpretation, case .note = last.via {
-                aiTurn(say: i.decision.say, answer: last.answer, interpretation: i)
+            if let last = engine.history.last, let i = last.interpretation, case .note(let text) = last.via {
+                aiTurn(note: text, say: i.decision.say, answer: last.answer, interpretation: i)
             }
             if let caution = engine.cautionStop { CautionBanner(stop: caution) }
 
@@ -143,7 +145,7 @@ struct DiagnoseView: View {
 
             VStack(spacing: 10) {
                 ForEach(engine.allowedAnswers, id: \.self) { option in
-                    AnswerButton(title: option, highlighted: suggested == option) { engine.tap(option); note = "" }
+                    AnswerButton(title: option, highlighted: suggested == option) { sentNote = nil; engine.tap(option); note = "" }
                         .disabled(engine.phase == .interpreting)
                 }
             }
@@ -191,12 +193,26 @@ struct DiagnoseView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func aiTurn(say: String, answer: String, interpretation: Interpretation) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Understood: \(answer)").font(.subheadline.weight(.bold)).foregroundStyle(Theme.textPrimary)
-                Spacer()
-                InferenceBadge(kind: .init(interpretation.source, latencyMs: interpretation.latencyMs))
+    /// The AI moment, legible at a glance: the tech's words, what the model read them as, and where
+    /// it ran. The model only picked among the step's answers; code checked it.
+    private func aiTurn(note: String, say: String, answer: String, interpretation: Interpretation) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label {
+                Text("“\(note)”").font(.subheadline).foregroundStyle(Theme.textSecondary).lineLimit(3)
+            } icon: {
+                Image(systemName: "text.bubble").foregroundStyle(Theme.textSecondary)
+            }
+            .accessibilityLabel("Your note: \(note)")
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    understood(answer)
+                    Spacer(minLength: 4)
+                    InferenceBadge(kind: .init(interpretation.source, latencyMs: interpretation.latencyMs))
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    understood(answer)
+                    InferenceBadge(kind: .init(interpretation.source, latencyMs: interpretation.latencyMs))
+                }
             }
             Button(action: undo) {
                 Label("Not right? Undo", systemImage: "arrow.uturn.backward").font(.footnote.weight(.semibold))
@@ -210,6 +226,15 @@ struct DiagnoseView: View {
         }
         .padding(12)
         .background(Theme.surfaceRaised, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func understood(_ answer: String) -> some View {
+        Label {
+            Text("Read as \(Text(answer.sentenceCased).foregroundStyle(Theme.textPrimary))").foregroundStyle(Theme.textSecondary)
+        } icon: {
+            Image(systemName: "arrow.turn.down.right").foregroundStyle(Theme.brand)
+        }
+        .font(.headline)
     }
 
     private func readingInput(_ ranges: [(option: String, range: ReadingRange)]) -> some View {
@@ -251,7 +276,7 @@ struct DiagnoseView: View {
                         Text(entry.instruction).font(.subheadline).foregroundStyle(Theme.textPrimary)
                         HStack(spacing: 6) {
                             Image(systemName: icon(for: entry.via)).imageScale(.small).accessibilityHidden(true)
-                            Text(entry.answer).font(.subheadline.weight(.semibold))
+                            Text(entry.answer.sentenceCased).font(.subheadline.weight(.semibold))
                         }
                         .foregroundStyle(Theme.brand)
                         if case .note(let text) = entry.via {
@@ -337,6 +362,7 @@ struct DiagnoseView: View {
         let text = note
         guard !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         note = ""
+        sentNote = text.trimmingCharacters(in: .whitespacesAndNewlines)
         noteFocused = false
         Task { await engine.submitNote(text) }
     }
@@ -386,7 +412,7 @@ struct ConclusionCard: View {
             // When a note decided the last step, show how it was read so a misread is easy to catch.
             if let last = engine.history.last, case .note(let text) = last.via {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Based on your note “\(text)”, read as “\(last.answer)”.")
+                    Text("Based on your note “\(text)”, read as “\(last.answer.sentenceCased)”.")
                         .font(.footnote).foregroundStyle(Theme.textSecondary)
                     Button(action: onUndo) {
                         Label("Not right? Undo last answer", systemImage: "arrow.uturn.backward")
@@ -403,7 +429,7 @@ struct ConclusionCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     SectionLabel(text: "Parts")
                     ForEach(parts, id: \.self) { part in
-                        Label(part.prefix(1).uppercased() + part.dropFirst(), systemImage: "shippingbox").font(.subheadline).foregroundStyle(Theme.textPrimary)
+                        Label(part.sentenceCased, systemImage: "shippingbox").font(.subheadline).foregroundStyle(Theme.textPrimary)
                     }
                 }
             }
@@ -420,7 +446,7 @@ struct ConclusionCard: View {
     static func summary(steps: Int, notes: Int, onDevice: Int, stops: Int) -> String {
         func count(_ n: Int, _ word: String) -> String { "\(n) \(word)\(n == 1 ? "" : "s")" }
         var parts = [count(steps, "step")]
-        if notes > 0 { parts.append("\(count(notes, "note")) understood (\(onDevice) on-device)") }
+        if notes > 0 { parts.append("\(count(notes, "note")) understood, \(onDevice) on this iPhone") }
         if stops > 0 { parts.append(count(stops, "safety stop")) }
         return parts.joined(separator: " · ")
     }

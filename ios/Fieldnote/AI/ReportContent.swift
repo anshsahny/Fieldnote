@@ -26,6 +26,21 @@ nonisolated struct ReportContent: Codable, Equatable, Sendable {
     var safetyNotes: [String]
 }
 
+extension ReportContent {
+    /// Plain text for the share sheet (Messages, Mail, AirDrop): the app's own header, then the body.
+    func shareText(customer: String, address: String, equipment: String, code: String, date: String,
+                   parts: [String], credit: String) -> String {
+        func block(_ title: String, _ items: [String]) -> String? {
+            items.isEmpty ? nil : ([title.uppercased()] + items.map { "• " + $0.sentenceCased }).joined(separator: "\n")
+        }
+        let header = ["Service report · \(date)", customer, address, "\(equipment) · fault code \(code)"].joined(separator: "\n")
+        return ([header, summary,
+                 block("Work performed", workPerformed), block("Findings", findings),
+                 block("Recommendations", recommendations), block("Parts", parts), block("Safety", safetyNotes),
+                 credit] as [String?]).compactMap { $0 }.joined(separator: "\n\n")
+    }
+}
+
 nonisolated enum ReportContentValidator {
     enum Failure: Error, Equatable { case emptySummary, noJSON, malformedJSON }
 
